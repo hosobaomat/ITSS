@@ -18,12 +18,10 @@ class _LoginPageState extends State<LoginPage> {
   final AuthService _authService = AuthService();
 
   void _login() async {
-
     bool success = await _authService.login(
       _usernameController.text,
       _passwordController.text,
     );
-
 
     if (success) {
       signInUser(context);
@@ -35,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void signInUser(BuildContext context) {
-    Navigator.pushReplacement(
+    Navigator.push(
         context, MaterialPageRoute(builder: (context) => const HomePage()));
   }
 
