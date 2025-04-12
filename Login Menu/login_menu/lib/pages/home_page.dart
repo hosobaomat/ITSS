@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:login_menu/pages/cart_tab.dart';
+import 'package:login_menu/pages/categories_tab.dart';
+import 'package:login_menu/pages/profil_tab.dart';
+import 'package:login_menu/pages/shop_tab.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -43,131 +47,16 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex,
         children: [
           // Tab profile
-          const Center(child: Text('Profile')),
+          ProfilTab(),
 
           // Tab Shop
-          Center(
-            child: Column(
-              children: [
-                // Thanh tìm kiếm
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Tìm kiếm sản phẩm...',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        borderSide: BorderSide(color: Colors.green),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ShopTab(),
 
           // Tab Categories
-          Center(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Tiêu đề "All Categories"
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'All Categories',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-                // Danh sách các category
-                Expanded(
-                  child: ListView(
-                    children: const [
-                      ListTile(
-                        title: Text('Category 1'),
-                        leading: Icon(Icons.category),
-                      ),
-                      ListTile(
-                        title: Text('Category 2'),
-                        leading: Icon(Icons.category),
-                      ),
-                      ListTile(
-                        title: Text('Category 3'),
-                        leading: Icon(Icons.category),
-                      ),
-                      ListTile(
-                        title: Text('Category 4'),
-                        leading: Icon(Icons.category),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          CategoriesTab(),
 
           // Tab Cart
-          Center(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Tiêu đề "My Cart"
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'My Cart',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                // Nút chọn danh sách theo ngày
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          // Logic để chọn ngày
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          padding: EdgeInsets.symmetric(
-                            vertical: 16,
-                            horizontal: 24,
-                          ),
-                          textStyle: TextStyle(fontSize: 16),
-                        ),
-                        child: const Text(
-                          'Chọn ngày',
-                          style: TextStyle(color: Colors.black),
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-                // Danh sách các mặt hàng
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      'Giỏ hàng của bạn trống!',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          CartTab(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
