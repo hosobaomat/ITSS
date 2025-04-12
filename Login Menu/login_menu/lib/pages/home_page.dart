@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:login_menu/pages/cart_tab.dart';
-import 'package:login_menu/pages/categories_tab.dart';
-import 'package:login_menu/pages/profil_tab.dart';
-import 'package:login_menu/pages/shop_tab.dart';
+import 'package:login_menu/tabs/cart_tab.dart';
+import 'package:login_menu/tabs/categories_tab.dart';
+import 'package:login_menu/tabs/profil_tab.dart';
+import 'package:login_menu/tabs/shop_tab.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
