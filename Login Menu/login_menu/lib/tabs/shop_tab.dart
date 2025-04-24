@@ -40,17 +40,19 @@ class ShopTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 color: Colors.yellow[200],
                 image: const DecorationImage(
-                  image: AssetImage('assets/banner.jpg'), // Add banner image
+                  image: AssetImage('lib/images/meme.jpg'), // Add banner image
                   fit: BoxFit.cover,
+                  alignment: Alignment(0.0,-0.6),
                 ),
               ),
               child: const Center(
                 child: Text(
-                  'Furry Side Up\nExplore now',
+                  'Mặt hàng nổi bật \n Khám phá gay',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white
                   ),
                 ),
               ),
