@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:login_menu/tabs/ShoppingList.dart';
 import 'package:login_menu/tabs/cart_tab.dart';
 import 'package:login_menu/tabs/categories_tab.dart';
 import 'package:login_menu/tabs/profil_tab.dart';
@@ -27,7 +28,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: Colors.green,
-        actions: _selectedIndex == 3
+        actions: _selectedIndex == 2
             ? [
                 // chỉ tab Cart mới có nút share
                 IconButton(
@@ -46,9 +47,8 @@ class _HomePageState extends State<HomePage> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          // Tab profile
-          ProfilTab(),
-
+          //tab shopping
+          ShoppingListApp(),
           // Tab Shop
           ShopTab(),
 
@@ -57,6 +57,9 @@ class _HomePageState extends State<HomePage> {
 
           // Tab Cart
           CartTab(),
+
+          // Tab profile
+          ProfilTab(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -66,7 +69,7 @@ class _HomePageState extends State<HomePage> {
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.shopify), label: 'Shop'),
           BottomNavigationBarItem(
             icon: Icon(Icons.category),
@@ -76,6 +79,7 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.shopping_bag),
             label: 'Cart',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
