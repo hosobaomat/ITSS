@@ -51,7 +51,11 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 //logo
                 const SizedBox(height: 50),
-                const Icon(Icons.lock, size: 100),
+                const Icon(
+                  Icons.local_grocery_store,
+                  size: 100,
+                  color: Colors.green,
+                ),
                 const SizedBox(height: 50),
 
                 const Text(

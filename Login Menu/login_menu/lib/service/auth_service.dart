@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class AuthService {
   static const String apiUrl =
-      "http://192.168.0.104:5000"; // Đổi IP backend của bạn
+      "http://192.168.5.224:5000"; // Đổi IP backend của bạn
 
   Future<bool> login(String username, String password) async {
     try {

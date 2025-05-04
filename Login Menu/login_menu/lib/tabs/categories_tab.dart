@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:login_menu/screen/productlistscreen.dart';
 
 class CategoriesTab extends StatelessWidget {
   const CategoriesTab({super.key});
@@ -25,27 +26,113 @@ class CategoriesTab extends StatelessWidget {
           ),
           // Danh sách các category
           Expanded(
-            child: ListView(
-              children: const [
-                ListTile(
-                  title: Text('Category 1'),
-                  leading: Icon(Icons.category),
+              child: ListView(
+            children: [
+              ListTile(
+                title: const Text(
+                  'Fruits',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
-                ListTile(
-                  title: Text('Category 2'),
-                  leading: Icon(Icons.category),
+                leading: SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: Image.asset('lib/images/fruit.jpg', fit: BoxFit.cover),
                 ),
-                ListTile(
-                  title: Text('Category 3'),
-                  leading: Icon(Icons.category),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ProductListScreen(category: 'Fruits'),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                title: const Text(
+                  'Meats',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
-                ListTile(
-                  title: Text('Category 4'),
-                  leading: Icon(Icons.category),
+                leading: SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: Image.asset('lib/images/meat.jpg', fit: BoxFit.cover),
                 ),
-              ],
-            ),
-          ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ProductListScreen(category: 'Meats'),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                title: const Text(
+                  'Vegetables',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+                leading: SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: Image.asset('lib/images/vegetables.jpg',
+                      fit: BoxFit.cover),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ProductListScreen(category: 'Vegetables'),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                title: const Text(
+                  'Drinks',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+                leading: SizedBox(
+                  width: 80,
+                  height: 80,
+                  child:
+                      Image.asset('lib/images/drinks.jpg', fit: BoxFit.cover),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ProductListScreen(category: 'Drinks'),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                title: const Text(
+                  'Spices',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+                leading: SizedBox(
+                  width: 80,
+                  height: 80,
+                  child:
+                      Image.asset('lib/images/spices.jpg', fit: BoxFit.cover),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ProductListScreen(category: 'Spices'),
+                    ),
+                  );
+                },
+              ),
+            ],
+          )),
         ],
       ),
     );

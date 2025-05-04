@@ -10,12 +10,8 @@ class ForgotPass extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.grey,
+        backgroundColor: Colors.green,
         centerTitle: true,
-        title: Text(
-          'Forgot Password Page',
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-        ),
       ),
       body: SafeArea(
         child: Center(
@@ -23,7 +19,11 @@ class ForgotPass extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.key, size: 120),
+                Icon(
+                  Icons.key,
+                  size: 120,
+                  color: Colors.green,
+                ),
                 SizedBox(height: 30),
 
                 Padding(
@@ -72,7 +72,7 @@ class ForgotPass extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 60),
                 //Sign in button
                 NewPassButton(onTap: NewPass),
               ],

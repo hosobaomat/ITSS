@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+class AddressPage extends StatelessWidget {
+  const AddressPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,14 +15,13 @@ class ProfilePage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
-              'Name',
+              'Street Address',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: TextField(
-              obscureText: true,
               decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.grey[300],
@@ -39,14 +38,13 @@ class ProfilePage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
-              'Phone number',
+              'district',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: TextField(
-              obscureText: true,
               decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.grey[300],
@@ -63,14 +61,13 @@ class ProfilePage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
-              'Email address',
+              'City/Province',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: TextField(
-              obscureText: true,
               decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.grey[300],

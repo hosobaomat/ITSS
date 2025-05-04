@@ -10,14 +10,9 @@ class RegisterPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.grey,
+        backgroundColor: Colors.green,
         centerTitle: true,
-        title: Text(
-          'Register Page',
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-        ),
       ),
-
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -26,7 +21,11 @@ class RegisterPage extends StatelessWidget {
               children: [
                 //icon
                 const SizedBox(height: 10),
-                const Icon(Icons.lock, size: 150),
+                const Icon(
+                  Icons.lock,
+                  size: 150,
+                  color: Colors.green,
+                ),
                 const SizedBox(height: 70),
 
                 //enter username

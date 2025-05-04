@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:login_menu/pages/login_page.dart';
 import 'package:login_menu/pages/profile_page.dart';
+import 'package:login_menu/pages/address_page.dart';
 
 class ProfilTab extends StatelessWidget {
   const ProfilTab({super.key});
@@ -43,8 +44,6 @@ class ProfilTab extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           const Divider(),
-          const _ProfileMenuItem(
-              icon: Icons.shopping_bag_outlined, title: 'Orders'),
           const _ProfileMenuItem(icon: Icons.credit_card, title: 'Profile'),
           const _ProfileMenuItem(
               icon: Icons.location_on_outlined, title: 'Addresses'),
@@ -104,13 +103,12 @@ class _ProfileMenuItem extends StatelessWidget {
             context,
             MaterialPageRoute(builder: (context) => const ProfilePage()),
           );
-        } else if (title == "Orders") {
         } else if (title == "Addresses") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddressPage()),
+          );
         } else {}
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Bạn vừa chọn "$title"')),
-        );
       },
     );
   }
