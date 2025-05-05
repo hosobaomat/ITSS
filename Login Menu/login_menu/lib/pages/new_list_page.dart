@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:login_menu/pages/CategoryDetailScreen.dart';
-import 'package:login_menu/tabs/ShoppingList.dart';
+import 'package:login_menu/tabs/shoppinglist_tab.dart';
 
 import '../models/shopping_list_model.dart.dart';
 
@@ -49,6 +49,7 @@ class _NewListPageState extends State<NewListPage> {
                 builder: (_) => CategoryDetailScreen(
                   categoryName: categoryName,
                   items: widget.itemsByCategory[categoryName] ?? [],
+                  selectedItems: _selectedItemsByCategory[categoryName] ?? [],
                 ),
               ),
             );

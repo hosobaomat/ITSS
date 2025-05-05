@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class CategoryDetailScreen extends StatefulWidget {
   final String categoryName;
   final List<String> items;
+  final List<String> selectedItems;
 
   const CategoryDetailScreen({
     super.key,
     required this.categoryName,
     required this.items,
+    this.selectedItems = const [],
   });
 
   @override
@@ -23,6 +25,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   void initState() {
     super.initState();
     _items = List.from(widget.items); // clone tránh sửa trực tiếp
+    _selectedItems.addAll(widget.selectedItems);
   }
 
   void _addItem(String itemName) {
@@ -72,7 +75,8 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context, _items); // Trả về danh sách mới
+              Navigator.pop(
+                  context, _selectedItems.toList()); // Trả về danh sách mới
             },
             child: const Text('Done', style: TextStyle(color: Colors.black)),
           ),

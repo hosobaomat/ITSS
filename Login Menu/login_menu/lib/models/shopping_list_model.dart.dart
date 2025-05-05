@@ -1,4 +1,4 @@
-import 'package:login_menu/tabs/ShoppingList.dart';
+import 'package:login_menu/tabs/shoppinglist_tab.dart';
 
 class ShoppingListModel {
   final DateTime date;

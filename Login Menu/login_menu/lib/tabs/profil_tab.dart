@@ -2,14 +2,64 @@ import 'package:flutter/material.dart';
 import 'package:login_menu/pages/login_page.dart';
 import 'package:login_menu/pages/profile_page.dart';
 
-class ProfilTab extends StatelessWidget {
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ProfilTab extends StatefulWidget {
   const ProfilTab({super.key});
 
   @override
+  State<ProfilTab> createState() => _ProfilTabState();
+}
+
+class _ProfilTabState extends State<ProfilTab> {
+  File? _avatarImage;
+  String _name = '';
+  String _email = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAvatar();
+    _loadProfileInfo();
+  }
+
+  Future<void> _loadProfileInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _name = prefs.getString('user_name') ?? 'No Name';
+      _email = prefs.getString('user_email') ?? 'No Email';
+    });
+  }
+
+  Future<void> _loadAvatar() async {
+    final prefs = await SharedPreferences.getInstance();
+    final path = prefs.getString('avatar_path');
+    if (path != null && File(path).existsSync()) {
+      setState(() {
+        _avatarImage = File(path);
+      });
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _avatarImage = File(pickedFile.path);
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('avatar_path', pickedFile.path);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return
-        // Tab Profile
-        SingleChildScrollView(
+    return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -18,24 +68,28 @@ class ProfilTab extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
               children: [
-                const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.red,
-                  child: Icon(Icons.person, color: Colors.white, size: 30),
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.grey[300],
+                    backgroundImage:
+                        _avatarImage != null ? FileImage(_avatarImage!) : null,
+                    child: _avatarImage == null
+                        ? const Icon(Icons.person,
+                            color: Colors.white, size: 30)
+                        : null,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'RamanPreet Singh',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      'snippetcoder@outlook.com',
-                      style: TextStyle(fontSize: 13, color: Colors.grey),
-                    ),
+                  children: [
+                    Text(_name,
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(_email,
+                        style: TextStyle(fontSize: 13, color: Colors.grey)),
                   ],
                 ),
               ],
@@ -58,7 +112,7 @@ class ProfilTab extends StatelessWidget {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (context) => LoginPage()),
-                    (route) => false, // Xóa hết các trang trước
+                    (route) => false,
                   );
                 },
                 style: ElevatedButton.styleFrom(

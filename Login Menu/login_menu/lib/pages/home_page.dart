@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:login_menu/tabs/ShoppingList.dart';
+import 'package:login_menu/tabs/shoppinglist_tab.dart';
 import 'package:login_menu/tabs/cart_tab.dart';
 import 'package:login_menu/tabs/categories_tab.dart';
 import 'package:login_menu/tabs/profil_tab.dart';
@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex,
         children: [
           //tab shopping
-          ShoppingListApp(),
+          ShoppingListTab(),
           // Tab Shop
           ShopTab(),
 

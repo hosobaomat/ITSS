@@ -3,26 +3,14 @@ import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/shopping_list_model.dart.dart';
 import 'package:login_menu/pages/new_list_page.dart';
 
-class ShoppingListApp extends StatelessWidget {
-  const ShoppingListApp({super.key});
+class ShoppingListTab extends StatefulWidget {
+  const ShoppingListTab({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: const ShoppingListPage(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
+  State<ShoppingListTab> createState() => _ShoppingListTabState();
 }
 
-class ShoppingListPage extends StatefulWidget {
-  const ShoppingListPage({super.key});
-
-  @override
-  State<ShoppingListPage> createState() => _ShoppingListPageState();
-}
-
-class _ShoppingListPageState extends State<ShoppingListPage> {
+class _ShoppingListTabState extends State<ShoppingListTab> {
   final List<ShoppingListModel> _lists = [];
   final List<String> _weekdayNames = [
     'Monday',
@@ -103,8 +91,12 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                         final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => NewListPage(itemsByCategory: DataStore.itemsByCategory,)),
+                            builder: (_) => NewListPage(
+                              itemsByCategory: DataStore.itemsByCategory,
+                            ),
+                          ),
                         );
+
                         if (result is ShoppingListModel) {
                           final index = _lists.indexWhere((list) =>
                               list.date.year == result.date.year &&
