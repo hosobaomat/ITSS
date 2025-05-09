@@ -16,13 +16,28 @@ import java.sql.Timestamp;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Recipe {
     @Id
+    @Column(name = "recipe_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int recipe_id;
-    String recipe_name;
+    Integer recipeId;
+
+    @Column(name = "recipe_name", nullable = false)
+    String recipeName;
+
+    @Column(name = "description")
     String description;
+
+    @Column(name = "instructions", nullable = false)
     String instructions;
-    int prep_time;
-    int cook_time;
-    int created_by;
-    Timestamp created_at;
+
+    @Column(name = "prep_time")
+    Integer prepTime;
+
+    @Column(name = "cook_time")
+    Integer cookTime;
+
+    @Column(name = "created_by")
+    Integer createdBy;
+
+    @Column(name = "created_at")
+    Timestamp createdAt;
 }

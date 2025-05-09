@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import nhom27.itss.be.enums.Role;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Set;
 
 @Entity
@@ -18,16 +19,29 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
     @Id
+    @Column(name = "user_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int user_id;
-    String username;
-    String password;
-    String email;
-    String full_name;
-    Timestamp created_at;
-    Timestamp updated_at;
+    Integer userId;
 
-    @Enumerated(EnumType.STRING)
+    @Column(name = "username", nullable = false)
+    String username;
+
+    @Column(name = "password", nullable = false)
+    String password;
+
+    @Column(name = "email", nullable = false)
+    String email;
+
+    @Column(name = "full_name")
+    String fullName;
+
+    @Column(name = "role")
     Role role;
+
+    @Column(name = "created_at")
+    Timestamp createdAt;
+
+    @Column(name = "updated_at")
+    Timestamp updatedAt;
 
 }

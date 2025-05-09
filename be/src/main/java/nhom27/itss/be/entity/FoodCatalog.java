@@ -12,13 +12,20 @@ import lombok.experimental.FieldDefaults;
 @Table(name = "FoodCatalog")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FoodCatalog {
+public class FoodCatalog implements java.io.Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int food_catalog_id ;
+    @Column(name = "food_catalog_id", nullable = false)
+    Integer foodCatalogId;
 
-    String food_name;
-    int category_id;
+    @Column(name = "food_name", nullable = false)
+    String foodName;
+
+    @Column(name = "category_id")
+    Integer categoryId;
+
+
+    @Column(name = "description")
     String description;
 
 }

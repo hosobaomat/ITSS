@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Date;
 
 
 @Entity
@@ -18,13 +18,28 @@ import java.sql.Timestamp;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShoppingList {
     @Id
+    @Column(name = "list_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int list_id;
-    int group_id;
-    String list_name;
-    int created_by;
-    Timestamp created_at;
-    Date start_date;
-    Date end_date;
+    Integer listId;
+
+    @Column(name = "group_id")
+    Integer groupId;
+
+    @Column(name = "list_name", nullable = false)
+    String listName;
+
+    @Column(name = "created_by")
+    Integer createdBy;
+
+    @Column(name = "created_at")
+    Timestamp createdAt;
+
+    @Column(name = "start_date")
+    Timestamp startDate;
+
+    @Column(name = "end_date")
+    Timestamp endDate;
+
+    @Column(name = "Status")
     String status;
 }

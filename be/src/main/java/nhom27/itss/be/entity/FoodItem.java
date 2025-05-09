@@ -5,8 +5,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -18,17 +18,33 @@ import java.sql.Timestamp;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FoodItem {
     @Id
+    @Column(name = "food_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int food_id;
-    int group_id;
-    int catergory_id;
+    Integer foodId;
 
-    String food_name;
-    BigDecimal quantity;
-    Date expiry_date;
-    String storage_location;
-    Timestamp added_at;
-    Timestamp updated_at;
+    @Column(name = "group_id")
+    Integer groupId;
+
+    @Column(name = "category_id")
+    Integer categoryId;
+
+    @Column(name = "food_name", nullable = false)
+    String foodName;
+
+    @Column(name = "quantity", nullable = false)
+    Integer quantity;
+
+    @Column(name = "expiry_date")
+    Timestamp expiryDate;
+
+    @Column(name = "storage_location")
+    String storageLocation;
+
+    @Column(name = "added_at")
+    Timestamp addedAt;
+
+    @Column(name = "updated_at")
+    Timestamp updatedAt;
 
 
 

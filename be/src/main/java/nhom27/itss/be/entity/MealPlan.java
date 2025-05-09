@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -17,14 +17,25 @@ import java.sql.Timestamp;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MealPlan {
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    int plan_id;
-    int group_id;
+    @Column(name = "plan_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Integer planId;
 
-    String plan_name;
-    Date start_date;
-    Date end_date;
+    @Column(name = "group_id")
+    Integer groupId;
 
-    int created_by;
-    Timestamp created_at;
+    @Column(name = "plan_name", nullable = false)
+    String planName;
+
+    @Column(name = "start_date")
+    Timestamp startDate;
+
+    @Column(name = "end_date")
+    Timestamp endDate;
+
+    @Column(name = "created_by")
+    Integer createdBy;
+
+    @Column(name = "created_at")
+    Timestamp createdAt;
 }

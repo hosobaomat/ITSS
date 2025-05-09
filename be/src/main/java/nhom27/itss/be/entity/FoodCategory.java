@@ -14,10 +14,17 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FoodCategory {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int category_id ;
+    //static final long serialVersionUID = 1L;
 
-    String category_name;
+    @Id
+    @Column(name = "category_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Integer categoryId;
+
+    @Column(name = "category_name", nullable = false)
+    String categoryName;
+
+    @Column(name = "description")
     String description;
+
 }

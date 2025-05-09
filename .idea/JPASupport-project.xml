@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoGeneratorSettingsState">
+    <option name="ignoredFields">
+      <set>
+        <option value="" />
+      </set>
+    </option>
+    <option name="moduleName" value="be" />
+    <option name="moduleNameToSettings">
+      <map>
+        <entry key="ITSS_PROJECT_BE">
+          <value>
+            <ModuleSettings>
+              <option name="controllerParentDirectory" value="D:\ITSS_PROJECT\ITSS_PROJECT_BE\src\main\java" />
+              <option name="dtoParentDirectory" value="D:\ITSS_PROJECT\ITSS_PROJECT_BE\src\main\java" />
+              <option name="entityPackageName" value="nhom27.itss.be.entity" />
+              <option name="entityParentDirectory" value="D:\ITSS_PROJECT\ITSS_PROJECT_BE\src\main\java" />
+              <option name="mapperXmlParentDirectory" value="D:\ITSS_PROJECT\ITSS_PROJECT_BE\src\main\resources" />
+              <option name="repositoryPackageName" value="nhom27.itss.be.repository" />
+              <option name="repositoryParentDirectory" value="D:\ITSS_PROJECT\ITSS_PROJECT_BE\src\main\java" />
+              <option name="serviceParentDirectory" value="D:\ITSS_PROJECT\ITSS_PROJECT_BE\src\main\java" />
+              <option name="voParentDirectory" value="D:\ITSS_PROJECT\ITSS_PROJECT_BE\src\main\java" />
+            </ModuleSettings>
+          </value>
+        </entry>
+        <entry key="be">
+          <value>
+            <ModuleSettings>
+              <option name="controllerParentDirectory" value="$PROJECT_DIR$/be/src/main/java" />
+              <option name="dtoParentDirectory" value="$PROJECT_DIR$/be/src/main/java" />
+              <option name="entityPackageName" value="nhom27.itss.be.entity" />
+              <option name="entityParentDirectory" value="$PROJECT_DIR$/be/src/main/java" />
+              <option name="mapperXmlParentDirectory" value="D:\ITSS_PROJECT\ITSS_PROJECT_BE\be\src\main\resources" />
+              <option name="repositoryPackageName" value="nhom27.itss.be.repository" />
+              <option name="repositoryParentDirectory" value="$PROJECT_DIR$/be/src/main/java" />
+              <option name="serviceParentDirectory" value="$PROJECT_DIR$/be/src/main/java" />
+              <option name="voParentDirectory" value="$PROJECT_DIR$/be/src/main/java" />
+            </ModuleSettings>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="useJakartaEE" value="true" />
+  </component>
+</project>

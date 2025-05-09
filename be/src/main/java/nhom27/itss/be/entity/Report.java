@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -17,14 +17,25 @@ import java.sql.Timestamp;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Report {
     @Id
+    @Column(name = "report_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int report_id;
-    int group_id;
-    @Enumerated(EnumType.STRING)
-    String report_type;
-    Date start_date;
-    Date end_date;
-    @Column(columnDefinition = "json")
+    Integer reportId;
+
+    @Column(name = "group_id")
+    Integer groupId;
+
+    @Column(name = "report_type")
+    String reportType;
+
+    @Column(name = "start_date")
+    Timestamp startDate;
+
+    @Column(name = "end_date")
+    Timestamp endDate;
+
+    @Column(name = "data")
     String data;
-    Timestamp created_at;
+
+    @Column(name = "created_at")
+    Timestamp createdAt;
 }

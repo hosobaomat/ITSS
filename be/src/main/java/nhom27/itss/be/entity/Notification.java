@@ -17,13 +17,24 @@ import java.sql.Timestamp;
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int notification_id;
-    int user_id;
-    int food_id;
-    String messages;
+    @Column(name = "notification_id", nullable = false)
+    Integer notificationId;
 
-    @Enumerated(EnumType.STRING)
-    String notification_type;
-    Timestamp created_at;
-    boolean is_read;
+    @Column(name = "user_id")
+    Integer userId;
+
+    @Column(name = "food_id")
+    Integer foodId;
+
+    @Column(name = "message", nullable = false)
+    String message;
+
+    @Column(name = "notification_type")
+    String notificationType;
+
+    @Column(name = "created_at")
+    Timestamp createdAt;
+
+    @Column(name = "is_read")
+    Boolean read;
 }

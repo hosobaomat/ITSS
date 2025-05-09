@@ -1,5 +1,6 @@
 package nhom27.itss.be.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -18,8 +19,16 @@ import java.math.BigDecimal;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RecipeIngredient {
     @Id
-    int recipe_id;
-    int food_id;
+    @Column(name = "recipe_id", nullable = false)
+    private Integer recipeId;
+
+    @Id
+    @Column(name = "food_id", nullable = false)
+    Integer foodId;
+
+    @Column(name = "quantity", nullable = false)
     BigDecimal quantity;
+
+    @Column(name = "unit")
     String unit;
 }

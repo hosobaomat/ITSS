@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 @Entity
 @Getter
@@ -16,12 +17,19 @@ import java.sql.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MealPlanDetail {
     @Id
+    @Column(name = "plan_detail_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int plan_detail_id;
-    int plan_id;
-    int recipe_id;
+    Integer planDetailId;
 
-    Date meal_date;
-    @Enumerated(EnumType.STRING)
-    String meal_type;
+    @Column(name = "plan_id")
+    Integer planId;
+
+    @Column(name = "recipe_id")
+    Integer recipeId;
+
+    @Column(name = "meal_date")
+    Timestamp mealDate;
+
+    @Column(name = "meal_type")
+    String mealType;
 }

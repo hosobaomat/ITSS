@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -17,15 +18,31 @@ import java.sql.Timestamp;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShoppingListItem {
     @Id
+    @Column(name = "list_item_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int list_item_id;
-    int list_id;
-    int food_id;
-    String food_name;
-    int category_id;
-    BigDecimal quantity;
-    @Enumerated(EnumType.STRING)
+    Integer listItemId;
+
+    @Column(name = "list_id")
+    Integer listId;
+
+    @Column(name = "food_id")
+    Integer foodId;
+
+    @Column(name = "food_name")
+    String foodName;
+
+    @Column(name = "category_id")
+    Integer categoryId;
+
+    @Column(name = "quantity", nullable = false)
+    Integer quantity;
+
+    @Column(name = "status")
     String status;
-    Integer purchased_by;
-    Timestamp purchased_at;
+
+    @Column(name = "purchased_by")
+    Integer purchasedBy;
+
+    @Column(name = "purchased_at")
+    Timestamp purchasedAt;
 }
