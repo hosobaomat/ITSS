@@ -10,6 +10,7 @@ import nhom27.itss.be.dto.response.ApiResponse;
 import nhom27.itss.be.dto.response.UserResponse;
 import nhom27.itss.be.entity.User;
 import nhom27.itss.be.service.UserService;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,19 +38,17 @@ public class UserController {
                 .result(userService.getMyInfo())
                 .build();
     }*/
-    /*
-    @GetMapping("")
-    ApiResponse<List<User>> getAllUsers() {
-        var authenticate = SecurityContextHolder.getContext().getAuthentication();
+    @GetMapping
+    ApiResponse<List<UserResponse>> getUsers(){
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        log.info("Username : {}",authenticate.getName());
-        authenticate.getAuthorities().forEach(a -> log.info("Role : {}",a.getAuthority()));
+        log.info("Username: {}", authentication.getName());
+        authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
 
-
-        return ApiResponse.<List<Users>>builder()
-                .result(userService.getAllUsers())
-                .build();
-    }*/
+        return ApiResponse.<List<UserResponse>>builder()
+                .result(userService.getUsers())
+                .code(200).build();
+    }
 
     @GetMapping("/{userId}")
     ApiResponse<UserResponse> getUserById(@PathVariable("userId") Integer userId) {
@@ -66,7 +65,10 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    void deleteUser(@PathVariable Integer userId) {
+    ApiResponse<String> deleteUser(@PathVariable Integer userId){
         userService.deleteUser(userId);
+        return ApiResponse.<String>builder()
+                .result("User has been deleted")
+                .code(200).build();
     }
 }

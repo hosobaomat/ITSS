@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.BeanUtils;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 @Slf4j
@@ -130,5 +131,25 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
+    public List<UserResponse> getUsers(){
+        List<User> users = userRepository.findAll(); // Lấy toàn bộ user từ DB
 
+        List<UserResponse> responses = new ArrayList<>();
+        for (User user : users) {
+            UserResponse response = new UserResponse();
+            response.setUsername(user.getUsername());
+            response.setEmail(user.getEmail());
+            response.setFullName(user.getFullName());
+            response.setRole(String.valueOf(user.getRole()));
+            response.setCreatedAt(user.getCreatedAt());
+            response.setUpdatedAt(user.getUpdatedAt());
+            responses.add(response);
+        }
+
+        return responses;
+
+    }
 }
+
+
+
