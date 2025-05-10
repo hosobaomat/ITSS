@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:login_menu/service/auth_service.dart';
 import 'package:login_menu/tabs/shoppinglist_tab.dart';
-import 'package:login_menu/tabs/cart_tab.dart';
 import 'package:login_menu/tabs/categories_tab.dart';
 import 'package:login_menu/tabs/profil_tab.dart';
 import 'package:login_menu/tabs/food_inventory_screen.dart';

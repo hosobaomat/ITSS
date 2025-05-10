@@ -19,7 +19,6 @@ class CategoryDetailScreen extends StatefulWidget {
 class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   late List<String> _items;
   final Set<String> _selectedItems = {};
-  final TextEditingController _itemController = TextEditingController();
 
   @override
   void initState() {
@@ -28,55 +27,15 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     _selectedItems.addAll(widget.selectedItems);
   }
 
-  void _addItem(String itemName) {
-    if (itemName.isNotEmpty && !_items.contains(itemName)) {
-      setState(() {
-        _items.add(itemName);
-      });
-    }
-  }
-
-  void _showAddItemDialog() {
-    _itemController.clear();
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Add Item"),
-        content: TextField(
-          controller: _itemController,
-          decoration: const InputDecoration(hintText: "Item name"),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              _addItem(_itemController.text.trim());
-              Navigator.pop(context);
-            },
-            child: const Text("Add"),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.categoryName),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _showAddItemDialog,
-          ),
           TextButton(
             onPressed: () {
-              Navigator.pop(
-                  context, _selectedItems.toList()); // Trả về danh sách mới
+              Navigator.pop(context, _selectedItems.toList());
             },
             child: const Text('Done', style: TextStyle(color: Colors.black)),
           ),

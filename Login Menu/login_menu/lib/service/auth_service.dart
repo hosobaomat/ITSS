@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const String apiUrl =
-      "http://192.168.1.18:5000"; // Đổi IP backend của bạn
+      "http://192.168.0.108:5000"; // Đổi IP backend của bạn
 
   Future<bool> login(String username, String password) async {
     try {
@@ -32,30 +32,31 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>> fetchShoppingLists() async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
 
-  if (token == null) {
-    throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
+    if (token == null) {
+      throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
+    }
+
+    final response = await http.get(
+      Uri.parse('$apiUrl/shopping-lists'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Lỗi: ${response.statusCode} - ${response.body}');
+    }
   }
 
-  final response = await http.get(
-    Uri.parse('$apiUrl/shopping-lists'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-  );
-
-  print('Response status: ${response.statusCode}');
-  print('Response body: ${response.body}');
-
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body);
-  } else {
-    throw Exception('Lỗi: ${response.statusCode} - ${response.body}');
-  }
-}
   Future<void> addShoppingList(
       String title, List<Map<String, dynamic>> items) async {
     final prefs = await SharedPreferences.getInstance();
