@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const String apiUrl =
-      "http://192.168.0.108:5000"; // Đổi IP backend của bạn
+      "http://192.168.1.18:5000"; // Đổi IP backend của bạn
 
   Future<bool> login(String username, String password) async {
     try {

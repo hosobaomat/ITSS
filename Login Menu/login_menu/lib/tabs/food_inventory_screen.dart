@@ -1,51 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:login_menu/models/fooditem.dart';
+import 'package:provider/provider.dart';
 
 class FoodInventoryScreen extends StatefulWidget {
-  const FoodInventoryScreen({super.key});
-
+  const FoodInventoryScreen({super.key, required this.inventoryItems});
+  final List<FoodItem> inventoryItems;
   @override
   _FoodInventoryScreenState createState() => _FoodInventoryScreenState();
 }
 
 class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
-  final List<Map<String, String>> allItems = [
-    {
-      'name': 'Apples',
-      'amount': '6 ml',
-      'desc': 'Erin, aus gent\n16t / 34 |14',
-    },
-    {
-      'name': 'Milk',
-      'amount': '23 g',
-      'desc': 'Brolicht expart\n16t / 8-9',
-    },
-    {
-      'name': 'Bread',
-      'amount': '15 km',
-      'desc': 'Day het hax an\n3 day, aire',
-    },
-    {
-      'name': 'Chicken',
-      'amount': '4 g',
-      'desc': 'Chicken\n14 ctykan',
-    },
-  ];
+  List<FoodItem> filteredItems = [];
 
-  List<Map<String, String>> filteredItems = [];
   final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    filteredItems = allItems;
+    final merged = mergeItems(widget.inventoryItems,
+        Provider.of<FoodInventoryProvider>(context, listen: false).items);
+    final provider = Provider.of<FoodInventoryProvider>(context, listen: false);
+    for (var item in merged) {
+      if (!provider.items.any((e) => e.name == item.name)) {
+        provider.addItem(item);
+      }
+    }
+    filteredItems = List.from(provider.items);
   }
 
   void updateSearch(String query) {
+    final inventory =
+        Provider.of<FoodInventoryProvider>(context, listen: false).items;
     setState(() {
-      filteredItems = allItems.where((item) {
-        return item['name']!.toLowerCase().contains(query.toLowerCase());
+      filteredItems = inventory.where((item) {
+        return item.name.toLowerCase().contains(query.toLowerCase());
       }).toList();
     });
+  }
+
+  List<FoodItem> mergeItems(List<FoodItem> base, List<FoodItem> updated) {
+    final Map<String, FoodItem> itemMap = {
+      for (var item in base) item.name: item,
+    };
+
+    for (var item in updated) {
+      itemMap[item.name] = item; // Ghi đè nếu đã có
+    }
+
+    return itemMap.values.toList();
   }
 
   @override
@@ -78,23 +80,35 @@ class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
           ),
           const SizedBox(height: 10),
           Expanded(
-            child: filteredItems.isEmpty
-                ? const Center(child: Text('No items found.'))
-                : ListView.builder(
-                    itemCount: filteredItems.length,
-                    itemBuilder: (context, index) {
-                      final item = filteredItems[index];
-                      return ListTile(
-                        title: Text(
-                          item['name']!,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        trailing: Text(item['amount']!),
-                        subtitle: Text(item['desc']!),
+            child: Selector<FoodInventoryProvider, List<FoodItem>>(
+              selector: (_, provider) => provider.items,
+              builder: (context, inventory, _) {
+                final query = searchController.text.trim().toLowerCase();
+                final results = query.isEmpty
+                    ? inventory
+                    : inventory
+                        .where(
+                            (item) => item.name.toLowerCase().contains(query))
+                        .toList();
+
+                return results.isEmpty
+                    ? const Center(child: Text('No items found.'))
+                    : ListView.builder(
+                        itemCount: results.length,
+                        itemBuilder: (context, index) {
+                          final item = results[index];
+                          return ListTile(
+                            title: Text(item.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
+                            trailing: const Text('amount'),
+                            subtitle: const Text('description'),
+                          );
+                        },
                       );
-                    },
-                  ),
-          ),
+              },
+            ),
+          )
         ],
       ),
     );

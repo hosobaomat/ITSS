@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> {
           CategoriesTab(),
 
           // Tab Cart
-          FoodInventoryScreen(),
+          FoodInventoryScreen(inventoryItems: [],),
           // Tab profile
           ProfilTab(),
         ],

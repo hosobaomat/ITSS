@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:login_menu/data/data_store.dart';
+import 'package:login_menu/models/fooditem.dart';
 import 'package:login_menu/models/shopping_list_model.dart.dart';
 import 'package:login_menu/models/ShoppingListModelShare.dart';
 import 'package:login_menu/pages/new_list_page.dart';
 import 'package:login_menu/pages/share_member_page.dart';
 import 'package:login_menu/service/auth_service.dart';
+import 'package:provider/provider.dart';
 
 class ShoppingListTab extends StatefulWidget {
   const ShoppingListTab({super.key, required this.authService});
@@ -18,6 +20,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
   List<Map<String, dynamic>> _shareInvitations = [];
   List<ShoppingListModelShare> _sharedLists = [];
   bool _hasUnreadInvites = false;
+  List<FoodItem> foodInventory = [];
 
   final List<String> _weekdayNames = [
     'Monday',
@@ -426,6 +429,25 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           onChanged: (val) {
             setState(() {
               item.checked = val ?? false;
+              bool alreadyExists =
+                  foodInventory.any((food) => food.name == item.name);
+              if (item.checked) {
+                //them vao invetory neu chua co
+                if (!alreadyExists) {
+                  final newItem = FoodItem(item.name, item.icon, item.checked);
+                  foodInventory.add(newItem);
+                  Provider.of<FoodInventoryProvider>(context, listen: false)
+                      .addItem(newItem);
+                }
+              } else {
+                // Nếu bỏ check: xóa khỏi inventory nếu đang có
+                if (alreadyExists) {
+                  Provider.of<FoodInventoryProvider>(context, listen: false)
+                      .removeItem(foodInventory
+                          .firstWhere((food) => food.name == item.name));
+                  foodInventory.removeWhere((food) => food.name == item.name);
+                }
+              }
             });
           },
         ),

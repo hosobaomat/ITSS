@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:login_menu/models/fooditem.dart';
 import 'package:login_menu/pages/login_page.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => FoodInventoryProvider(),
+      child: MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
