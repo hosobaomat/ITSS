@@ -6,15 +6,13 @@ import lombok.experimental.FieldDefaults;
 import nhom27.itss.be.enums.Role;
 
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
-@Table(name = "USERS")
+@Table(name = "users")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
@@ -35,6 +33,7 @@ public class User {
     @Column(name = "full_name")
     String fullName;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "role")
     Role role;
 

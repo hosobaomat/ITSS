@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 @Setter
 @Builder
 @NoArgsConstructor
-@Table(name = "Notifications")
+@Table(name = "notifications")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Notification {

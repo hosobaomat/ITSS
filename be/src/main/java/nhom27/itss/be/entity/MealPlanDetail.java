@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 
 @Entity
@@ -12,7 +11,7 @@ import java.sql.Timestamp;
 @Setter
 @Builder
 @NoArgsConstructor
-@Table(name = "MealPlanDetails")
+@Table(name = "mealplandetails")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MealPlanDetail {

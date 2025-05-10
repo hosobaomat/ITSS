@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.Timestamp;
-import java.util.Date;
 
 
 @Entity
@@ -13,7 +12,7 @@ import java.util.Date;
 @Setter
 @Builder
 @NoArgsConstructor
-@Table(name = "ShoppingLists")
+@Table(name = "shoppinglists")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShoppingList {

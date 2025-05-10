@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-@jakarta.persistence.Table(name = "ShoppingListItems")
+@jakarta.persistence.Table(name = "shoppinglistitems")
 @jakarta.persistence.Entity
 @lombok.Data
 @Data

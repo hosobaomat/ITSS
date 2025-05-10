@@ -5,14 +5,13 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.Timestamp;
-import java.util.Date;
 
 @Entity
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
-@Table(name = "Reports")
+@Table(name = "reports")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Report {

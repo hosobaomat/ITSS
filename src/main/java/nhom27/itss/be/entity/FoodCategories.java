@@ -4,7 +4,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 
-@jakarta.persistence.Table(name = "FoodCategories")
+@jakarta.persistence.Table(name = "foodcategories")
 @jakarta.persistence.Entity
 @lombok.Data
 @Data

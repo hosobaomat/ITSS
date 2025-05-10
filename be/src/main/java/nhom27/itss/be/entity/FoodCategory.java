@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @Builder
 @NoArgsConstructor
-@Table(name = "FoodCategories")
+@Table(name = "foodcategories")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FoodCategory {

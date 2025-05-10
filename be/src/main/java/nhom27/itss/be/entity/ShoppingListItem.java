@@ -4,16 +4,14 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
 
 @Entity
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
-@Table(name = "ShoppingListItems")
+@Table(name = "shoppinglistitems")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShoppingListItem {

@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserResponse {
 
@@ -16,4 +17,5 @@ public class UserResponse {
     String fullName;
     String role;
     Timestamp createdAt;
+    Timestamp updatedAt;
 }

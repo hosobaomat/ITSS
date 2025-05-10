@@ -9,7 +9,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-@jakarta.persistence.Table(name = "RecipeIngredients")
+@jakarta.persistence.Table(name = "recipeingredients")
 @jakarta.persistence.Entity
 @lombok.Data
 @Data

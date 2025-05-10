@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @Builder
 @NoArgsConstructor
-@Table(name = "FoodCatalog")
+@Table(name = "foodcatalog")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FoodCatalog implements java.io.Serializable {

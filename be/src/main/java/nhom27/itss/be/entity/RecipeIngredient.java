@@ -1,11 +1,9 @@
 package nhom27.itss.be.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import nhom27.itss.be.entity.embeddedID.RecipeIngredientID;
 
 import java.math.BigDecimal;
 
@@ -14,17 +12,12 @@ import java.math.BigDecimal;
 @Setter
 @Builder
 @NoArgsConstructor
-@Table(name = "RecipeIngredients")
+@Table(name = "recipeingredients")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RecipeIngredient {
-    @Id
-    @Column(name = "recipe_id", nullable = false)
-    private Integer recipeId;
-
-    @Id
-    @Column(name = "food_id", nullable = false)
-    Integer foodId;
+    @EmbeddedId
+    RecipeIngredientID recipeIngredientID;
 
     @Column(name = "quantity", nullable = false)
     BigDecimal quantity;

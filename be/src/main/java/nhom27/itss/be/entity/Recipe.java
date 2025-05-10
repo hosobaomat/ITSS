@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 @Setter
 @Builder
 @NoArgsConstructor
-@Table(name = "Recipes")
+@Table(name = "recipes")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Recipe {

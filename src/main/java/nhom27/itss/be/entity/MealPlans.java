@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.Date;
 
-@jakarta.persistence.Table(name = "MealPlans")
+@jakarta.persistence.Table(name = "mealplans")
 @jakarta.persistence.Entity
 @lombok.Data
 @Data
