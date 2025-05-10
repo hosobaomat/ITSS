@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:login_menu/service/auth_service.dart';
 import 'package:login_menu/tabs/shoppinglist_tab.dart';
 import 'package:login_menu/tabs/cart_tab.dart';
 import 'package:login_menu/tabs/categories_tab.dart';
 import 'package:login_menu/tabs/profil_tab.dart';
-import 'package:login_menu/tabs/shop_tab.dart';
+import 'package:login_menu/tabs/food_inventory_screen.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
+  const HomePage({super.key, required this.authService});
+  final AuthService authService;
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -28,19 +28,19 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: Colors.green,
-        actions: _selectedIndex == 2
-            ? [
-                // chỉ tab Cart mới có nút share
-                IconButton(
-                  icon: const Icon(Icons.share),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Đã chia sẻ danh sách!')),
-                    );
-                  },
-                ),
-              ]
-            : null,
+        // actions: _selectedIndex == 2
+        //     ? [
+        //         // chỉ tab Cart mới có nút share
+        //         IconButton(
+        //           icon: const Icon(Icons.share),
+        //           onPressed: () {
+        //             ScaffoldMessenger.of(context).showSnackBar(
+        //               const SnackBar(content: Text('Đã chia sẻ danh sách!')),
+        //             );
+        //           },
+        //         ),
+        //       ]
+        //     : null,
       ),
 
       // Các tab ở bottom bar
@@ -48,16 +48,13 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex,
         children: [
           //tab shopping
-          ShoppingListTab(),
-          // Tab Shop
-          ShopTab(),
+          ShoppingListTab(authService: widget.authService),
 
           // Tab Categories
           CategoriesTab(),
 
           // Tab Cart
-          CartTab(),
-
+          FoodInventoryScreen(),
           // Tab profile
           ProfilTab(),
         ],
@@ -70,14 +67,13 @@ class _HomePageState extends State<HomePage> {
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopify), label: 'Shop'),
           BottomNavigationBarItem(
             icon: Icon(Icons.category),
             label: 'Categories',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_bag),
-            label: 'Cart',
+            label: 'Food Inventory',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],

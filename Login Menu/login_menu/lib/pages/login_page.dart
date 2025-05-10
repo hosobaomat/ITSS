@@ -15,10 +15,10 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final AuthService _authService = AuthService();
-
+  final AuthService authService = AuthService();
+  
   void _login() async {
-    bool success = await _authService.login(
+    bool success = await authService.login(
       _usernameController.text,
       _passwordController.text,
     );
@@ -36,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void signInUser(BuildContext context) {
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const HomePage()));
+        context, MaterialPageRoute(builder: (context) => HomePage(authService: authService,)));
   }
 
   @override
