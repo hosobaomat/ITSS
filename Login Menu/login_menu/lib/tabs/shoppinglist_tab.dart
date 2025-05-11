@@ -3,6 +3,7 @@ import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/fooditem.dart';
 import 'package:login_menu/models/shopping_list_model.dart.dart';
 import 'package:login_menu/models/ShoppingListModelShare.dart';
+import 'package:login_menu/pages/inventory_ipput.dart';
 import 'package:login_menu/pages/new_list_page.dart';
 import 'package:login_menu/pages/share_member_page.dart';
 import 'package:login_menu/service/auth_service.dart';
@@ -153,6 +154,26 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           Text('${list.completedCount} of ${list.items.length} items'),
           const SizedBox(height: 12),
           ...list.items.map((item) => buildItem(item)),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+                onPressed: () {},
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => InventoryItemInputWidget(
+                                  items: foodInventory,
+                                )));
+                  },
+                  label: const Text('Add Inventory'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                )),
+          ),
         ],
       ),
     );
@@ -373,7 +394,21 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                                     ),
                                     TextButton(
                                       onPressed: () {
+                                        // 1. Lấy danh sách item cũ
+                                        final oldItems = _lists[index].items;
                                         setState(() {
+                                          // 2. Xóa khỏi foodInventory
+                                          for (var oldItem in oldItems) {
+                                            Provider.of<FoodInventoryProvider>(
+                                                    context,
+                                                    listen: false)
+                                                .removeItem(foodInventory
+                                                    .firstWhere((food) =>
+                                                        food.name ==
+                                                        oldItem.name));
+                                            foodInventory.removeWhere((inv) =>
+                                                inv.name == oldItem.name);
+                                          }
                                           _lists[index] = result;
                                         });
                                         Navigator.pop(context);
@@ -434,7 +469,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
               if (item.checked) {
                 //them vao invetory neu chua co
                 if (!alreadyExists) {
-                  final newItem = FoodItem(item.name, item.icon, item.checked);
+                  final newItem = FoodItem(item.name, item.icon, item.checked,0,'',DateTime.now());
                   foodInventory.add(newItem);
                   Provider.of<FoodInventoryProvider>(context, listen: false)
                       .addItem(newItem);

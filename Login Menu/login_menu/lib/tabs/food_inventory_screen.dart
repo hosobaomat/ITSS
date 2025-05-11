@@ -101,8 +101,8 @@ class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
                             title: Text(item.name,
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold)),
-                            trailing: const Text('amount'),
-                            subtitle: const Text('description'),
+                            trailing: Text('${item.quantity}'),
+                            subtitle: Text('${item.expiry}'),
                           );
                         },
                       );
