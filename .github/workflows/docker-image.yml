@@ -1,0 +1,39 @@
+name: Deploy to EC2 via SSH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code (for Actions context, not deployed)
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Đường dẫn tới folder dự án trên EC2
+            PROJECT_DIR=/home/ubuntu/itss_be
+
+            echo "===> Pulling latest code..."
+            cd $PROJECT_DIR
+            git reset --hard
+            git pull origin main
+
+            echo "===> Building Docker image..."
+            docker build -t itss_be:latest .
+
+            echo "===> Restarting Docker container..."
+            docker stop itss_be || true
+            docker rm itss_be || true
+            docker run -d --name itss_be -p 80:3000 itss_be:latest
+
+            echo "✅ Deployment completed!"
