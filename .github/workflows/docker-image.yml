@@ -23,8 +23,9 @@ jobs:
             PROJECT_DIR=/home/ubuntu/itss_be
             REPO_URL=https://github.com/abobeothui812/ITSS_PROJECT_BE.git  # đổi URL repo thật
             
-            echo "===> Preparing project directory..."
-            if [ ! -d "$PROJECT_DIR" ]; then
+            if [ ! -d "$PROJECT_DIR/.git" ]; then
+              echo "⚠️  Project folder is missing or not a git repo. Re-cloning..."
+              rm -rf $PROJECT_DIR  # Xóa thư mục cũ nếu không đúng
               git clone $REPO_URL $PROJECT_DIR
             fi
             
