@@ -20,7 +20,7 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME}}
           key: ${{ secrets.SERVER_PRIVATE_KEY }}
           script: |
-            PROJECT_DIR=/home/ec2-user/itss_be
+            PROJECT_DIR=/home/ubuntu/itss_be
             REPO_URL=https://github.com/abobeothui812/ITSS_PROJECT_BE.git  # đổi URL repo thật
             
             echo "===> Preparing project directory..."
