@@ -20,16 +20,33 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME}}
           key: ${{ secrets.SERVER_PRIVATE_KEY }}
           script: |
-            # Đường dẫn tới folder dự án trên EC2
-            PROJECT_DIR=/home/ubuntu/itss_be
+            PROJECT_DIR=/home/ec2-user/itss_be
+            REPO_URL=https://github.com/abobeothui812/ITSS_PROJECT_BE.git  # đổi URL repo thật
+            
+            echo "===> Preparing project directory..."
+            if [ ! -d "$PROJECT_DIR" ]; then
+              git clone $REPO_URL $PROJECT_DIR
+            fi
+            
+            cd $PROJECT_DIR || { echo "❌ Cannot access project directory!"; exit 1; }
+            
+            echo "===> Updating code..."
+            if [ -d ".git" ]; then
+              git reset --hard
+              git pull origin main
+            else
+              echo "❌ Not a git repository."
+              exit 1
+            fi
+            
+            if [ -f be/Dockerfile ]; then
+              docker build -t itss_be:latest ./be
+            else
+              echo "❌ Dockerfile not found in be/"
+              exit 1
+            fi
 
-            echo "===> Pulling latest code..."
-            cd $PROJECT_DIR
-            git reset --hard
-            git pull origin main
-
-            echo "===> Building Docker image..."
-            docker build -t itss_be:latest .
+           
 
             echo "===> Restarting Docker container..."
             docker stop itss_be || true
