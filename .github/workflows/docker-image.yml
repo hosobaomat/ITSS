@@ -17,7 +17,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.HOST_IP }}
-          username: ${{ secrets.DBMS_USERNAME}}
+          username: ${{ secrets.SERVER_USERNAME}}
           key: ${{ secrets.SERVER_PRIVATE_KEY }}
           script: |
             # Đường dẫn tới folder dự án trên EC2
