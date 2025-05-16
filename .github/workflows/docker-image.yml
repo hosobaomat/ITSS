@@ -41,6 +41,7 @@ jobs:
             fi
             
             if [ -f be/Dockerfile ]; then
+              docker rmi itss_be:latest
               docker build -t itss_be:latest ./be
             else
               echo "❌ Dockerfile not found in be/"
