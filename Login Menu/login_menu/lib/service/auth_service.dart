@@ -4,7 +4,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const String apiUrl =
-      "http://192.168.100.18:8082/ITSS_BE"; // Đổi IP backend của bạn
+      "http://192.168.0.102:8082/ITSS_BE"; // Đổi IP backend của bạn
+  String? _token;
+  String? get token => _token;
+
+  // Phương thức để lấy token từ SharedPreferences
 
   Future<bool> login(String username, String password) async {
     try {
@@ -16,8 +20,9 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final prefs = await SharedPreferences.getInstance();
-        prefs.getString('token');
+
         await prefs.setString('token', data['result']['token']); // Lưu token
+        _token = data['result']['token'];
         // Lưu token vào SharedPreferences hoặc xử lý token nếu cần thiết
         print("Đăng nhập thành công, token: ${data['result']['token']}");
         return true;
