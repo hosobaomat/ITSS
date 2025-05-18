@@ -45,5 +45,8 @@ public class FoodItem {
     Timestamp updatedAt;
 
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_id")
+    private Unit unit;
 
 }

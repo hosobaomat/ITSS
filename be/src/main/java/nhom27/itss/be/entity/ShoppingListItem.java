@@ -43,4 +43,9 @@ public class ShoppingListItem {
 
     @Column(name = "purchased_at")
     Timestamp purchasedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_id")
+    private Unit unit;
+
 }
