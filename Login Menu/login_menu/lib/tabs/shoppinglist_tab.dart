@@ -144,6 +144,18 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                   IconButton(
                     onPressed: () {
                       _removeList(index);
+                      for (var item in list.items) {
+                        bool alreadyExists =
+                            foodInventory.any((food) => food.name == item.name);
+                        if (alreadyExists) {
+                          Provider.of<FoodInventoryProvider>(context,
+                                  listen: false)
+                              .removeItem(foodInventory.firstWhere(
+                                  (food) => food.name == item.name));
+                          foodInventory
+                              .removeWhere((food) => food.name == item.name);
+                        }
+                      }
                     },
                     icon: const Icon(Icons.delete_outline, color: Colors.red),
                   ),
@@ -153,7 +165,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           ),
           Text('${list.completedCount} of ${list.items.length} items'),
           const SizedBox(height: 12),
-          ...list.items.map((item) => buildItem(item)),
+          ...list.items.map((item) => buildItem(item, list.date)),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
@@ -456,35 +468,42 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
     );
   }
 
-  Widget buildItem(ShoppingItem item) {
+  Widget buildItem(ShoppingItem item, DateTime selectedDate) {
+    final bool isDisable = selectedDate.isAfter(DateTime.now());
     return Row(
       children: [
         Checkbox(
           value: item.checked,
-          onChanged: (val) {
-            setState(() {
-              item.checked = val ?? false;
-              bool alreadyExists =
-                  foodInventory.any((food) => food.name == item.name);
-              if (item.checked) {
-                //them vao invetory neu chua co
-                if (!alreadyExists) {
-                  final newItem = FoodItem(item.name, item.icon, item.checked,0,'',DateTime.now());
-                  foodInventory.add(newItem);
-                  Provider.of<FoodInventoryProvider>(context, listen: false)
-                      .addItem(newItem);
-                }
-              } else {
-                // Nếu bỏ check: xóa khỏi inventory nếu đang có
-                if (alreadyExists) {
-                  Provider.of<FoodInventoryProvider>(context, listen: false)
-                      .removeItem(foodInventory
-                          .firstWhere((food) => food.name == item.name));
-                  foodInventory.removeWhere((food) => food.name == item.name);
-                }
-              }
-            });
-          },
+          onChanged: isDisable
+              ? null
+              : (val) {
+                  setState(() {
+                    item.checked = val ?? false;
+                    bool alreadyExists =
+                        foodInventory.any((food) => food.name == item.name);
+                    if (item.checked) {
+                      //them vao invetory neu chua co
+                      if (!alreadyExists) {
+                        final newItem = FoodItem(item.name, item.icon,
+                            item.checked, 0, '', DateTime.now());
+                        foodInventory.add(newItem);
+                        Provider.of<FoodInventoryProvider>(context,
+                                listen: false)
+                            .addItem(newItem);
+                      }
+                    } else {
+                      // Nếu bỏ check: xóa khỏi inventory nếu đang có
+                      if (alreadyExists) {
+                        Provider.of<FoodInventoryProvider>(context,
+                                listen: false)
+                            .removeItem(foodInventory
+                                .firstWhere((food) => food.name == item.name));
+                        foodInventory
+                            .removeWhere((food) => food.name == item.name);
+                      }
+                    }
+                  });
+                },
         ),
         Icon(item.icon),
         const SizedBox(width: 8),
