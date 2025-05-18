@@ -4,6 +4,9 @@ import 'package:login_menu/pages/home_page.dart';
 import 'package:login_menu/pages/register_page.dart';
 import 'package:login_menu/pages/forgot_pass.dart';
 import 'package:login_menu/service/auth_service.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:login_menu/admin/adminHomePage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,18 +18,38 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final AuthService _authService = AuthService();
+  final AuthService authService = AuthService();
 
   void _login() async {
-    bool success = await _authService.login(
+    bool success = await authService.login(
       _usernameController.text,
       _passwordController.text,
     );
 
     if (success) {
-      signInUser(context);
-      _usernameController.clear(); //xoa
-      _passwordController.clear();
+      String? token = authService.token;
+
+      if (token != null) {
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+
+        String role = decodedToken['role'] ?? 'user';
+
+        if (role == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Adminhomepage(), // Trang riêng cho admin
+            ),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomePage(authService: authService),
+            ),
+          );
+        }
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Sai tài khoản hoặc mật khẩu")),
@@ -34,9 +57,30 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void signInUser(BuildContext context) {
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const HomePage()));
+  void signInUser(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token != null) {
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      String role = decodedToken['role']; // ví dụ như: 'admin' hoặc 'user'
+
+      if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Adminhomepage(), // truyền token nếu cần
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(authService: authService),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -51,11 +95,7 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 //logo
                 const SizedBox(height: 50),
-                const Icon(
-                  Icons.local_grocery_store,
-                  size: 100,
-                  color: Colors.green,
-                ),
+                const Icon(Icons.lock, size: 100),
                 const SizedBox(height: 50),
 
                 const Text(

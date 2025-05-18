@@ -3,9 +3,11 @@ import 'package:login_menu/tabs/cart_tab.dart';
 import 'package:login_menu/tabs/categories_tab.dart';
 import 'package:login_menu/tabs/profil_tab.dart';
 import 'package:login_menu/tabs/shop_tab.dart';
+import 'package:login_menu/service/auth_service.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final AuthService authService;
+  const HomePage({super.key, required this.authService});
 
   @override
   State<HomePage> createState() => _HomePageState();
