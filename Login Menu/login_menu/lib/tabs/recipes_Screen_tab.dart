@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:login_menu/models/fooditem.dart';
 import 'package:login_menu/models/recipes.dart';
+import 'package:login_menu/tabs/meal_plan_tab.dart';
 import 'package:provider/provider.dart';
 
 class RecipesScreen extends StatefulWidget {
@@ -66,6 +67,22 @@ class _RecipesScreenState extends State<RecipesScreen> {
     }
   }
 
+  void _navigateToMealPlan(BuildContext context) {
+    final inventory =
+        Provider.of<FoodInventoryProvider>(context, listen: false).items;
+    final mergedItems = mergeItems(widget.inventoryItems, inventory);
+    final filteredRecipes = filterRecipes(allRecipes, mergedItems, searchText);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MealPlanScreen(
+          inventory: mergedItems,
+          recipes: filteredRecipes,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<FoodInventoryProvider>(
@@ -81,6 +98,12 @@ class _RecipesScreenState extends State<RecipesScreen> {
             elevation: 0,
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.calendar_today),
+                onPressed: () => _navigateToMealPlan(context),
+              ),
+            ],
           ),
           backgroundColor: Colors.white,
           body: Column(

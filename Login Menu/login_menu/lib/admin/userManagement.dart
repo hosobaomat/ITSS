@@ -46,7 +46,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     if (token == null) return;
 
     final response = await http.get(
-      Uri.parse('http://192.168.0.102:8082/user/me'),
+      Uri.parse('http://192.168.0.100:8082/user/me'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -64,7 +64,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     if (token == null) return;
 
     final response = await http.get(
-      Uri.parse('http://192.168.100.18:8082/admin/users'),
+      Uri.parse('http://192.168.0.100:8082/admin/users'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -78,68 +78,66 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   Future<void> createUser() async {
-  final username = _usernameController.text.trim();
-  final password = _passwordController.text.trim();
-  final email = _emailController.text.trim();
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+    final email = _emailController.text.trim();
 
-  if (username.isEmpty || password.isEmpty || email.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin.')),
-    );
-    return;
-  }
-
-  final token = widget.authService.token;
-  print("Token: $token");
-  if (token == null) {
-    print("Token is null");
-    return;
-  }
-
-  final url = Uri.parse('http://192.168.100.18:8082/ITSS_BE/users');
-
-  try {
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token'
-      },
-      body: json.encode({
-        'username': username,
-        'password': password,
-        'email': email,
-        "fullName": 'hien',
-        'role': 'user',
-      }),
-    );
-
-
-    if (response.statusCode == 201||response.statusCode == 200) {
-      fetchUsers();
-      _usernameController.clear();
-      _passwordController.clear();
-      _emailController.clear();
-    } else {
+    if (username.isEmpty || password.isEmpty || email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không thể tạo tài khoản.')),
+        SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin.')),
+      );
+      return;
+    }
+
+    final token = widget.authService.token;
+    print("Token: $token");
+    if (token == null) {
+      print("Token is null");
+      return;
+    }
+
+    final url = Uri.parse('http://192.168.0.100:8082/ITSS_BE/users');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: json.encode({
+          'username': username,
+          'password': password,
+          'email': email,
+          "fullName": 'hien',
+          'role': 'user',
+        }),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        fetchUsers();
+        _usernameController.clear();
+        _passwordController.clear();
+        _emailController.clear();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không thể tạo tài khoản.')),
+        );
+      }
+    } catch (e) {
+      print("Lỗi khi gửi request: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đã xảy ra lỗi: $e')),
       );
     }
-  } catch (e) {
-    print("Lỗi khi gửi request: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Đã xảy ra lỗi: $e')),
-    );
   }
-}
-
 
   Future<void> deleteUser(int id) async {
     final token = widget.authService.token;
     if (token == null) return;
 
     final response = await http.delete(
-      Uri.parse('http://192.168.0.102:8082/admin/users/$id'),
+      Uri.parse('http://192.168.0.100:8082/admin/users/$id'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -164,7 +162,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     if (token == null) return;
 
     final response = await http.patch(
-      Uri.parse('http://192.168.0.102:8082/admin/users/restore/$id'),
+      Uri.parse('http://192.168.0.100:8082/admin/users/restore/$id'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -196,7 +194,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
 
     final response = await http.patch(
-      Uri.parse('http://192.168.0.102:8082/admin/users/$id'),
+      Uri.parse('http://192.168.0.100:8082/admin/users/$id'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',

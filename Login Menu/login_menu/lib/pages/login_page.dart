@@ -28,18 +28,17 @@ class _LoginPageState extends State<LoginPage> {
 
     if (success) {
       String? token = authService.token;
-      print(token);
 
       if (token != null) {
         Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-
-        String role = 'admin';
+        String role = 'user';
 
         if (role == 'admin') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => Adminhomepage(authService: authService,), // Trang riêng cho admin
+              builder: (context) => Adminhomepage(
+                  authService: authService), // Trang riêng cho admin
             ),
           );
         } else {
@@ -70,7 +69,8 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => Adminhomepage(authService: authService,), // truyền token nếu cần
+            builder: (context) =>
+                Adminhomepage(authService: authService), // truyền token nếu cần
           ),
         );
       } else {
