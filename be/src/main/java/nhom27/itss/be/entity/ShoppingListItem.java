@@ -20,17 +20,13 @@ public class ShoppingListItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer listItemId;
 
-    @Column(name = "list_id")
-    Integer listId;
+    @ManyToOne
+    @JoinColumn(name = "list_id")
+    private ShoppingList shoppingList;
 
-    @Column(name = "food_id")
-    Integer foodId;
 
     @Column(name = "food_name")
     String foodName;
-
-    @Column(name = "category_id")
-    Integer categoryId;
 
     @Column(name = "quantity", nullable = false)
     Integer quantity;
@@ -38,14 +34,20 @@ public class ShoppingListItem {
     @Column(name = "status")
     String status;
 
-    @Column(name = "purchased_by")
-    Integer purchasedBy;
-
     @Column(name = "purchased_at")
     Timestamp purchasedAt;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id")
     private Unit unit;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "purchased_by")
+    private User purchasedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "food_id")
+    private FoodCatalog food;
 
 }

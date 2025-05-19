@@ -20,8 +20,7 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer reportId;
 
-    @Column(name = "group_id")
-    Integer groupId;
+
 
     @Column(name = "report_type")
     String reportType;
@@ -37,4 +36,9 @@ public class Report {
 
     @Column(name = "created_at")
     Timestamp createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private FamilyGroup group;
+
 }

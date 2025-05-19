@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.Timestamp;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -20,11 +22,9 @@ public class FoodItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer foodId;
 
-    @Column(name = "group_id")
-    Integer groupId;
-
-    @Column(name = "category_id")
-    Integer categoryId;
+    @JoinColumn(name = "group_id")
+    @ManyToOne
+    FamilyGroup group;
 
     @Column(name = "food_name", nullable = false)
     String foodName;
@@ -48,5 +48,12 @@ public class FoodItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id")
     private Unit unit;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "food_catalog_id")
+    private FoodCatalog foodCatalog;
+
+
 
 }

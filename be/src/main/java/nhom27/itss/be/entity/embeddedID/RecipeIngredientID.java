@@ -1,5 +1,6 @@
 package nhom27.itss.be.entity.embeddedID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -14,6 +15,9 @@ import java.io.Serializable;
 @Embeddable
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RecipeIngredientID implements Serializable {
-    Integer groupId;
+    @Column(name = "recipe_id")
+    Integer recipeId;
+
+    @Column(name = "food_id")
     Integer foodId;
 }

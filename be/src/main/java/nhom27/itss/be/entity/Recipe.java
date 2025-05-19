@@ -5,6 +5,10 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -35,9 +39,21 @@ public class Recipe {
     @Column(name = "cook_time")
     Integer cookTime;
 
-    @Column(name = "created_by")
-    Integer createdBy;
 
     @Column(name = "created_at")
     Timestamp createdAt;
+
+    @OneToMany
+    List<RecipeIngredient> recipeIngredients = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
+    @OneToOne(mappedBy = "recipe")
+    private MealPlanDetail mealplandetails;
+
+    @OneToMany(mappedBy = "recipe")
+    private Set<RecipeIngredient> recipeingredients = new LinkedHashSet<>();
+
 }

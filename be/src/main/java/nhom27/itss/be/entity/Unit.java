@@ -6,6 +6,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @Entity
@@ -24,5 +28,15 @@ public class Unit {
     @Lob
     @Column(name = "description")
     private String description;
+
+
+    @OneToMany(mappedBy = "unit")
+    private Set<FoodItem> fooditems = new LinkedHashSet<>();
+
+    @OneToOne(mappedBy = "unit")
+    private RecipeIngredient recipeingredients;
+
+    @OneToMany(mappedBy = "unit")
+    private Set<ShoppingListItem> shoppinglistitems = new LinkedHashSet<>();
 
 }
