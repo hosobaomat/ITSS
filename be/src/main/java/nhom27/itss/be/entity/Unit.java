@@ -31,8 +31,8 @@ public class Unit {
     @OneToMany(mappedBy = "unit")
     private Set<FoodItem> fooditems = new LinkedHashSet<>();
 
-    @OneToOne(mappedBy = "unit")
-    private RecipeIngredient recipeingredients;
+    @OneToMany(mappedBy = "unit")
+    private Set<RecipeIngredient> recipeIngredients = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "unit")
     private Set<ShoppingListItem> shoppinglistitems = new LinkedHashSet<>();
