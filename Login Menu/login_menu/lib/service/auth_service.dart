@@ -4,10 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const String apiUrl =
-      "http://192.168.100.18:8082/ITSS_BE"; // Đổi IP backend của bạn
+      "http://192.168.100.25:8082/ITSS_BE"; // Đổi IP backend của bạn
   String? _token;
   String? get token => _token;
-  
+
   Future<void> loadToken() async {
   final prefs = await SharedPreferences.getInstance();
   _token = prefs.getString('token');

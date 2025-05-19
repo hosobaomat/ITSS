@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
       if (token != null) {
         Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
 
-        String role = 'admin';
+        String role = 'user';
 
         if (role == 'admin') {
           Navigator.pushReplacement(
