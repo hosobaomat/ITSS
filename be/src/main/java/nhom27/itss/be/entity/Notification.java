@@ -20,11 +20,6 @@ public class Notification {
     @Column(name = "notification_id", nullable = false)
     Integer notificationId;
 
-    @Column(name = "user_id")
-    Integer userId;
-
-    @Column(name = "food_id")
-    Integer foodId;
 
     @Column(name = "message", nullable = false)
     String message;
@@ -37,4 +32,11 @@ public class Notification {
 
     @Column(name = "is_read")
     Boolean read;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+
+
 }

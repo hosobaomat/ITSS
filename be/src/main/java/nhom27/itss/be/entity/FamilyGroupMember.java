@@ -21,6 +21,16 @@ public class FamilyGroupMember {
     @EmbeddedId
     FamilyGroupMemberId id;
 
+    @ManyToOne
+    @MapsId("memberId")
+    @JoinColumn(name="user_id")
+    User user;
+
+    @ManyToOne
+    @MapsId("groupId")
+    @JoinColumn(name = "group_id")
+    FamilyGroup group;
+
     @Column(name = "joined_at")
     Timestamp joinedAt;
 

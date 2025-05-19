@@ -20,15 +20,17 @@ public class MealPlanDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer planDetailId;
 
-    @Column(name = "plan_id")
-    Integer planId;
-
-    @Column(name = "recipe_id")
-    Integer recipeId;
-
     @Column(name = "meal_date")
     Timestamp mealDate;
 
     @Column(name = "meal_type")
     String mealType;
+
+    @ManyToOne
+    @JoinColumn(name = "plan_id")
+    MealPlan mealPlan;
+
+    @OneToOne
+    @JoinColumn(name = "recipe_id")
+    Recipe recipe;
 }

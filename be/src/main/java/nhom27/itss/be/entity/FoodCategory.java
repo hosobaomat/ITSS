@@ -4,6 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 @Entity
 @Getter
 @Setter
@@ -14,7 +19,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FoodCategory {
 
-    //static final long serialVersionUID = 1L;
 
     @Id
     @Column(name = "category_id", nullable = false)
@@ -26,5 +30,8 @@ public class FoodCategory {
 
     @Column(name = "description")
     String description;
+
+    @OneToMany(mappedBy = "foodCategory",cascade = CascadeType.ALL )
+    private Set<FoodCatalog> foodcatalogs = new LinkedHashSet<>();
 
 }

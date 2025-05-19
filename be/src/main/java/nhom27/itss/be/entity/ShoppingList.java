@@ -5,6 +5,10 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -21,14 +25,8 @@ public class ShoppingList {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer listId;
 
-    @Column(name = "group_id")
-    Integer groupId;
-
     @Column(name = "list_name", nullable = false)
     String listName;
-
-    @Column(name = "created_by")
-    Integer createdBy;
 
     @Column(name = "created_at")
     Timestamp createdAt;
@@ -41,4 +39,17 @@ public class ShoppingList {
 
     @Column(name = "Status")
     String status;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private FamilyGroup group;
+
+    @OneToMany(mappedBy = "shoppingList")
+    private Set<ShoppingListItem> shoppinglistitems = new LinkedHashSet<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
 }
