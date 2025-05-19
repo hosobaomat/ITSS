@@ -49,6 +49,7 @@ public class FoodItem {
     @JoinColumn(name = "unit_id")
     private Unit unit;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "food_catalog_id")
     private FoodCatalog foodCatalog;
