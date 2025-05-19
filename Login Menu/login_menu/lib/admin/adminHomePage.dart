@@ -7,14 +7,13 @@ import 'package:login_menu/admin/userManagement.dart';
 import 'package:login_menu/service/auth_service.dart';
 
 class Adminhomepage extends StatefulWidget {
-  const Adminhomepage({super.key});
-
+  const Adminhomepage({super.key, required this.authService});
+  final AuthService authService;
   @override
   State<Adminhomepage> createState() => _AdminhomepageState();
 }
 
 class _AdminhomepageState extends State<Adminhomepage> {
-  final AuthService _authService = AuthService();
   int _selectedIndex = 0;
   void _onItemTapped(int index) {
     setState(() {
@@ -22,7 +21,7 @@ class _AdminhomepageState extends State<Adminhomepage> {
     });
   }
 
-  @override
+  @override 
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -36,7 +35,7 @@ class _AdminhomepageState extends State<Adminhomepage> {
         index: _selectedIndex,
         children: [
           UserManagementScreen(
-            authService: _authService,
+            authService: widget.authService,
           ),
           Productmanage(),
           UnitManagementScreen(),

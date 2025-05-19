@@ -15,6 +15,7 @@ class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
   bool _isDialogShowing = false;
 
   void _showExpiringItemsDialogIfNeeded() { //hien thi dialog khi load inventory
+    if (!mounted) return; //
     if (expiringItems.isNotEmpty&&!_isDialogShowing) {
       _isDialogShowing = true;
       showDialog(
@@ -72,11 +73,10 @@ class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
     filteredItems = List.from(provider.items);
     provider.addListener(_onProviderChanged);
     // Lần đầu cập nhật expiringItems và hiện dialog sau khi frame build xong
-    _updateExpiringItems().then((_) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showExpiringItemsDialogIfNeeded();
-      });
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    await _updateExpiringItems();
+    _showExpiringItemsDialogIfNeeded();
+  });
   }
   @override
   void dispose() {

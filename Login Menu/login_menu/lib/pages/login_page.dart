@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => Adminhomepage(), // Trang riêng cho admin
+              builder: (context) => Adminhomepage(authService: authService,), // Trang riêng cho admin
             ),
           );
         } else {
@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => Adminhomepage(), // truyền token nếu cần
+            builder: (context) => Adminhomepage(authService: authService,), // truyền token nếu cần
           ),
         );
       } else {
