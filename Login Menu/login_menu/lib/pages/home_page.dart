@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:login_menu/service/auth_service.dart';
+import 'package:login_menu/tabs/meal_plan_tab.dart';
 import 'package:login_menu/tabs/recipes_Screen_tab.dart';
 import 'package:login_menu/tabs/shoppinglist_tab.dart';
 import 'package:login_menu/tabs/categories_tab.dart';
@@ -54,10 +55,14 @@ class _HomePageState extends State<HomePage> {
           CategoriesTab(),
 
           // Tab Cart
-          FoodInventoryScreen(inventoryItems: [],),
+          FoodInventoryScreen(
+            inventoryItems: [],
+          ),
 
           //recipes Tab
-          RecipesScreen(inventoryItems: [],),
+          RecipesScreen(
+            inventoryItems: [],
+          ),
 
           // Tab profile
           ProfilTab(),
