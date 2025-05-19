@@ -6,6 +6,10 @@ import lombok.experimental.FieldDefaults;
 import nhom27.itss.be.enums.Role;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -42,5 +46,26 @@ public class User {
 
     @Column(name = "updated_at")
     Timestamp updatedAt;
+
+    @OneToMany(mappedBy = "user")
+    List<FamilyGroupMember> familyGroupMembers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "createdBy")
+    private Set<FamilyGroup> familygroups = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "createdBy")
+    private Set<MealPlan> mealplans = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    private Set<Notification> notifications = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "createdBy")
+    private Set<Recipe> recipes = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "purchasedBy")
+    private Set<ShoppingListItem> shoppinglistitems = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "createdBy")
+    private Set<ShoppingList> shoppinglists = new LinkedHashSet<>();
 
 }
