@@ -54,6 +54,4 @@ public class FoodItem {
     @JoinColumn(name = "food_catalog_id")
     private FoodCatalog foodCatalog;
 
-
-
 }

@@ -34,7 +34,7 @@ public class RecipeIngredient {
     @Column(name = "quantity", nullable = false)
     Integer quantity;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "unit_id")
     private Unit unit;
 
