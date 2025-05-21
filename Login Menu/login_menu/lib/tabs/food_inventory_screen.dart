@@ -5,18 +5,27 @@ import 'package:provider/provider.dart';
 class FoodInventoryScreen extends StatefulWidget {
   const FoodInventoryScreen({super.key, required this.inventoryItems});
   final List<FoodItem> inventoryItems;
+
   @override
   _FoodInventoryScreenState createState() => _FoodInventoryScreenState();
 }
 
 class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
   List<FoodItem> filteredItems = [];
-  List<FoodItem> expiringItems = []; //luu tru mon sap het han
+  List<FoodItem> expiringItems = []; // Lưu trữ món sắp hết hạn
   bool _isDialogShowing = false;
+  FoodInventoryProvider? _provider; // Lưu trữ tham chiếu đến provider
 
-  void _showExpiringItemsDialogIfNeeded() { //hien thi dialog khi load inventory
-    if (!mounted) return; //
-    if (expiringItems.isNotEmpty&&!_isDialogShowing) {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Lưu tham chiếu đến FoodInventoryProvider
+    _provider = Provider.of<FoodInventoryProvider>(context, listen: false);
+  }
+
+  void _showExpiringItemsDialogIfNeeded() {
+    if (!mounted) return;
+    if (expiringItems.isNotEmpty && !_isDialogShowing) {
       _isDialogShowing = true;
       showDialog(
         context: context,
@@ -41,18 +50,16 @@ class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
           actions: [
             TextButton(
               onPressed: () {
-              _isDialogShowing = false;
-              print('[ShowExpiringItemsDialogIfNeeded] Người dùng đóng dialog');
-              Navigator.pop(context);
-            },
-            child: const Text('Đóng'),
+                _isDialogShowing = false;
+                print('[ShowExpiringItemsDialogIfNeeded] Người dùng đóng dialog');
+                Navigator.pop(context);
+              },
+              child: const Text('Đóng'),
             ),
           ],
         ),
       );
-      
-    }
-    else{
+    } else {
       print('[ShowExpiringItemsDialogIfNeeded] Không có món hết hạn hoặc dialog đang hiển thị');
     }
   }
@@ -74,21 +81,24 @@ class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
     provider.addListener(_onProviderChanged);
     // Lần đầu cập nhật expiringItems và hiện dialog sau khi frame build xong
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-    await _updateExpiringItems();
-    _showExpiringItemsDialogIfNeeded();
-  });
+      await _updateExpiringItems();
+      _showExpiringItemsDialogIfNeeded();
+    });
   }
+
   @override
   void dispose() {
-    Provider.of<FoodInventoryProvider>(context, listen: false)
-        .removeListener(_onProviderChanged);
+    // Sử dụng _provider thay vì Provider.of(context)
+    _provider?.removeListener(_onProviderChanged);
     searchController.dispose();
     super.dispose();
   }
+
   void _onProviderChanged() {
     // Khi provider thay đổi, chỉ update expiringItems, không hiện dialog
     _updateExpiringItems();
   }
+
   Future<void> _updateExpiringItems() async {
     final now = DateTime.now();
     final threeDaysLater = now.add(const Duration(days: 3));
@@ -181,7 +191,8 @@ class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold)),
                             trailing: Text('${item.quantity}/${item.location}'),
-                            subtitle: Text('${item.expiry!.day}/${item.expiry!.month}/${item.expiry!.year}'),
+                            subtitle: Text(
+                                '${item.expiry!.day}/${item.expiry!.month}/${item.expiry!.year}'),
                           );
                         },
                       );

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:login_menu/models/fooditem.dart';
+import 'package:login_menu/models/mealPlan.dart';
 import 'package:login_menu/pages/login_page.dart';
 import 'package:login_menu/pages/profile_page.dart';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -57,6 +60,46 @@ class _ProfilTabState extends State<ProfilTab> {
     }
   }
 
+  Future<void> _handleLogout() async {
+    try {
+      // Lấy FoodInventoryProvider
+      final foodProvider = Provider.of<FoodInventoryProvider>(context, listen: false);
+      final mealPlanProvider = Provider.of<MealPlanProvider>(context, listen: false);
+      // // Lưu hồ sơ người dùng vào backend
+      // await ApiService.saveUserProfile(
+      //   name: _name,
+      //   email: _email,
+      //   phone: '', // Thêm số điện thoại nếu có
+      // );
+      // print('Đã lưu hồ sơ người dùng vào backend');
+
+      // // Lưu danh sách FoodItem vào backend
+      // await ApiService.saveFoodItems(foodProvider.items);
+      // print('Đã lưu danh sách FoodItems vào backend');
+
+      // Xóa dữ liệu cục bộ
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('user_name');
+      await prefs.remove('user_email');
+      await prefs.remove('avatar_path');
+      foodProvider.clearItems();
+      mealPlanProvider.clearPlans();
+      print('Đã xóa dữ liệu cục bộ');
+
+      // Điều hướng về màn hình đăng nhập
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+        (route) => false,
+      );
+    } catch (e) {
+      print('Lỗi khi đăng xuất: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi đăng xuất: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -108,13 +151,7 @@ class _ProfilTabState extends State<ProfilTab> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => LoginPage()),
-                    (route) => false,
-                  );
-                },
+                onPressed: _handleLogout,
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.red,
                   backgroundColor: Colors.white,

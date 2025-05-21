@@ -18,7 +18,7 @@ Future<void> main() async {
       InitializationSettings(android: androidInitSettings);
 
   await flutterLocalNotificationsPlugin.initialize(initSettings);
-
+  
   runApp(
     MultiProvider(
       providers: [

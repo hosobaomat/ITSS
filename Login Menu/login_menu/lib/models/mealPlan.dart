@@ -64,4 +64,9 @@ class MealPlanProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void clearPlans() {
+    _dailyPlans.clear();
+    notifyListeners();
+  }
 }

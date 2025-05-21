@@ -25,6 +25,12 @@ class FoodInventoryProvider extends ChangeNotifier {
     _items.remove(item);
     notifyListeners();
   }
+
+  void clearItems() {
+    _items.clear();
+    notifyListeners();
+  }
+
   void updateItem(FoodItem updatedItem) {
     final index = _items.indexWhere((item) => item.name == updatedItem.name);
     if (index != -1) {

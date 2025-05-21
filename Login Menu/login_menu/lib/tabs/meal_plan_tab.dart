@@ -29,6 +29,19 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     'Saturday',
     'Sunday',
   ];
+  @override
+  void initState() {
+    super.initState();
+    // Khôi phục _selectedDates từ MealPlanProvider
+    final mealPlanProvider =
+        Provider.of<MealPlanProvider>(context, listen: false);
+    _selectedDates = mealPlanProvider.dailyPlans.keys.toSet();
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    if (!_selectedDates.contains(today)) {
+      _selectedDates.add(today);
+      mealPlanProvider.initializeMealPlanForDate(today);
+    }
+  }
 
   void _selectDate() async {
     final DateTime? picked = await showDatePicker(
@@ -40,7 +53,15 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     if (picked != null) {
       final normalizedDate = DateTime(picked.year, picked.month, picked.day);
       setState(() {
-        if (!_selectedDates.contains(normalizedDate)) {
+        if (_selectedDates.contains(normalizedDate)) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Trùng ngày'),
+              content: const Text('Ngày này đã có danh sách rồi.'),
+            ),
+          );
+        } else {
           _selectedDates.add(normalizedDate);
           Provider.of<MealPlanProvider>(context, listen: false)
               .initializeMealPlanForDate(normalizedDate);
