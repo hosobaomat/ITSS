@@ -15,7 +15,10 @@ public enum ErrorCode {
     PASSWORD_INVALID(1003,"password must be at least {min} characters",HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1006,"unauthenticated",HttpStatus.UNAUTHORIZED),
     FORBIDDEN(1007,"You do not have permission",HttpStatus.FORBIDDEN),
-    INVALID_AGE(1008,"Your age must be at least {min}",HttpStatus.FORBIDDEN);
+    INVALID_AGE(1008,"Your age must be at least {min}",HttpStatus.FORBIDDEN),
+    GROUP_NOT_FOUND(1009, "Group not found with id ",HttpStatus.NOT_FOUND),
+    RECIPE_NOT_FOUND(10010, "Recipe not found with id ",HttpStatus.NOT_FOUND),
+    MEALPLAN_NOT_FOUND(10011, "Meal plan not found with id ",HttpStatus.NOT_FOUND);
 
 
     ErrorCode(Integer code, String message, HttpStatusCode httpStatusCode) {
