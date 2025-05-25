@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FoodItem {
-  final String name;
+  late final String name;
   final IconData icon;
   bool isSelected;
   int? quantity;

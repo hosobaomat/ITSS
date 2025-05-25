@@ -3,7 +3,7 @@ import 'package:login_menu/models/fooditem.dart';
 import 'package:provider/provider.dart';
 
 class InventoryItemInputWidget extends StatefulWidget {
-  final List<FoodItem> items; // Các item đã chọn từ giỏ hàng
+  final List<FoodItem> items;
 
   const InventoryItemInputWidget({super.key, required this.items});
 
@@ -13,7 +13,6 @@ class InventoryItemInputWidget extends StatefulWidget {
 }
 
 class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
-  final Map<String, TextEditingController> _quantityControllers = {};
   final Map<String, TextEditingController> _locationControllers = {};
   final Map<String, DateTime?> _expiryDates = {};
 
@@ -21,31 +20,29 @@ class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
   void initState() {
     super.initState();
     for (var item in widget.items) {
-      _quantityControllers[item.name] = TextEditingController();
       _locationControllers[item.name] = TextEditingController();
       _expiryDates[item.name] = null;
     }
   }
 
   void _submitData() {
-    final inventoryProvider = Provider.of<FoodInventoryProvider>(context, listen: false);
+    final inventoryProvider =
+        Provider.of<FoodInventoryProvider>(context, listen: false);
     for (var item in widget.items) {
       final name = item.name;
-      final quantity = int.tryParse(_quantityControllers[name]?.text ?? '');
       final location = _locationControllers[name]?.text;
       final expiry = _expiryDates[name];
 
-      if (quantity == null || location == null || expiry == null) {
+      if (location == null || location.isEmpty || expiry == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin')),
         );
         return;
       }
-      item.quantity = quantity;
+
       item.location = location;
       item.expiry = expiry;
       inventoryProvider.updateItem(item);
-      // Ví dụ: In ra console - bạn có thể thay bằng thêm vào provider hoặc database
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -55,9 +52,6 @@ class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
 
   @override
   void dispose() {
-    for (var controller in _quantityControllers.values) {
-      controller.dispose();
-    }
     for (var controller in _locationControllers.values) {
       controller.dispose();
     }
@@ -102,19 +96,12 @@ class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
                         children: [
                           Icon(item.icon, size: 30),
                           const SizedBox(width: 10),
-                          Text(item.name,
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text(
+                            '${item.name} (x${item.quantity})', // Hiển thị số lượng
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
                         ],
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _quantityControllers[item.name],
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Số lượng',
-                          border: OutlineInputBorder(),
-                        ),
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(

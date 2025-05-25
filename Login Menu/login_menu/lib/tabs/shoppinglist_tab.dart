@@ -37,41 +37,43 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
   void initState() {
     super.initState();
     _checkForInvitations();
-    fetchShoppingList(); // Gọi khi mở app
+    fetchShoppingList();
   }
 
   Future<void> fetchShoppingList() async {
     try {
       final listData = await widget.authService.fetchShoppingLists();
-      print('API Response: $listData'); // Debug
+      print('API Response: $listData');
 
-      // Xử lý danh sách shared
       final fetchedSharedLists = (listData['shared'] as List).map((item) {
         return ShoppingListModelShare(
           date: DateTime.parse(item['date']),
           title: item['title'],
           sharedBy: item['sharedBy'],
           items: (item['items'] as List).map((i) {
-            print('Icon name: ${i['icon']}'); // Debug
+            print('Icon name: ${i['icon']}');
             return ShoppingItem(
               i['name'],
               getIconDataFromString(i['icon'] ?? 'help_outline'),
               i['isDone'],
+              quantity: i['quantity'] ?? 1, // Thêm số lượng từ API
+              category: i['category'], // Thêm category từ API nếu có
             );
           }).toList(),
         );
       }).toList();
 
-      // Xử lý danh sách personal
       final fetchedPersonalLists = (listData['personal'] as List).map((item) {
         return ShoppingListModel(
           date: DateTime.parse(item['date']),
           items: (item['items'] as List).map((i) {
-            print('Icon name: ${i['icon']}'); // Debug
+            print('Icon name: ${i['icon']}');
             return ShoppingItem(
               i['name'],
               getIconDataFromString(i['icon'] ?? 'help_outline'),
               i['isDone'],
+              quantity: i['quantity'] ?? 1, // Thêm số lượng từ API
+              category: i['category'], // Thêm category từ API nếu có
             );
           }).toList(),
         );
@@ -99,9 +101,8 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
         return Icons.shopping_cart;
       case 'restaurant':
         return Icons.restaurant;
-      // Thêm các icon khác nếu cần
       default:
-        return Icons.help_outline; // Icon mặc định nếu không tìm thấy
+        return Icons.help_outline;
     }
   }
 
@@ -142,6 +143,10 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                     icon: const Icon(Icons.share, color: Colors.blue),
                   ),
                   IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.edit, color: Colors.blue),
+                  ),
+                  IconButton(
                     onPressed: () {
                       _removeList(index);
                       for (var item in list.items) {
@@ -168,23 +173,24 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           ...list.items.map((item) => buildItem(item, list.date)),
           Align(
             alignment: Alignment.centerRight,
-            child: TextButton(
-                onPressed: () {},
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => InventoryItemInputWidget(
-                                  items: foodInventory,
-                                )));
-                  },
-                  label: const Text('Add Inventory'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => InventoryItemInputWidget(
+                      items: foodInventory,
+                    ),
                   ),
-                )),
+                );
+              },
+              label: const Text('Add Inventory'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              icon: const Icon(Icons.add),
+            ),
           ),
         ],
       ),
@@ -213,7 +219,6 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -231,32 +236,24 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
             ],
           ),
           const SizedBox(height: 8),
-
-          // Title
           Text(
             list.title,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
-
-          // Progress info
           const SizedBox(height: 6),
           Text(
               '${list.completedCount} of ${list.items.length} items completed'),
-
           const SizedBox(height: 12),
-
-          // Item list
           ...list.items.map((item) {
             return Row(
               children: [
                 Checkbox(
                   value: item.checked,
-                  onChanged:
-                      null, // Không cho phép chỉnh sửa nếu là danh sách chia sẻ
+                  onChanged: null,
                 ),
                 Icon(item.icon),
                 const SizedBox(width: 8),
-                Text(item.name),
+                Text('${item.name} (x${item.quantity})'), // Hiển thị số lượng
               ],
             );
           }),
@@ -299,7 +296,6 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           ),
           TextButton(
             onPressed: () {
-              // Giả lập thêm danh sách chia sẻ vào _lists
               setState(() {
                 _sharedLists.add(
                   ShoppingListModelShare(
@@ -307,12 +303,12 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                     title: 'Weekend Grocery',
                     sharedBy: invite['from'],
                     items: [
-                      ShoppingItem("Milk", Icons.local_drink, false),
-                      ShoppingItem("Eggs", Icons.egg, false),
+                      ShoppingItem("Milk", Icons.local_drink, false,
+                          quantity: 2),
+                      ShoppingItem("Eggs", Icons.egg, false, quantity: 12),
                     ],
                   ),
                 );
-
                 _shareInvitations.remove(invite);
                 _hasUnreadInvites = _shareInvitations.isNotEmpty;
               });
@@ -335,7 +331,6 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -390,7 +385,6 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                                 list.date.day == result.date.day);
 
                             if (index != -1) {
-                              // Ngày trùng => hỏi người dùng
                               showDialog(
                                 context: context,
                                 builder: (context) => AlertDialog(
@@ -406,10 +400,8 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                                     ),
                                     TextButton(
                                       onPressed: () {
-                                        // 1. Lấy danh sách item cũ
                                         final oldItems = _lists[index].items;
                                         setState(() {
-                                          // 2. Xóa khỏi foodInventory
                                           for (var oldItem in oldItems) {
                                             Provider.of<FoodInventoryProvider>(
                                                     context,
@@ -443,18 +435,12 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                 ],
               ),
               const SizedBox(height: 24),
-
-              // Card
               Expanded(
                 child: ListView(
                   children: [
-                    // Danh sách chia sẻ hiển thị trước
                     ..._sharedLists
                         .map((shared) => buildSharedListCard(shared)),
-
                     const SizedBox(height: 24),
-
-                    // Danh sách cá nhân người dùng
                     ..._lists.asMap().entries.map(
                           (entry) => _buildListCard(entry.value, entry.key),
                         ),
@@ -482,17 +468,21 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                     bool alreadyExists =
                         foodInventory.any((food) => food.name == item.name);
                     if (item.checked) {
-                      //them vao invetory neu chua co
                       if (!alreadyExists) {
-                        final newItem = FoodItem(item.name, item.icon,
-                            item.checked, 0, '', DateTime.now());
+                        final newItem = FoodItem(
+                          item.name,
+                          item.icon,
+                          item.checked,
+                          item.quantity, // Sử dụng số lượng từ ShoppingItem
+                          '',
+                          DateTime.now(),
+                        );
                         foodInventory.add(newItem);
                         Provider.of<FoodInventoryProvider>(context,
                                 listen: false)
                             .addItem(newItem);
                       }
                     } else {
-                      // Nếu bỏ check: xóa khỏi inventory nếu đang có
                       if (alreadyExists) {
                         Provider.of<FoodInventoryProvider>(context,
                                 listen: false)
@@ -507,7 +497,10 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
         ),
         Icon(item.icon),
         const SizedBox(width: 8),
-        Text(item.name, style: const TextStyle(fontSize: 16)),
+        Text(
+          '${item.name} (x${item.quantity})', // Hiển thị số lượng
+          style: const TextStyle(fontSize: 16),
+        ),
       ],
     );
   }
@@ -517,6 +510,8 @@ class ShoppingItem {
   String name;
   IconData icon;
   bool checked;
-
-  ShoppingItem(this.name, this.icon, this.checked);
+  final int quantity;
+  final String? category; // Thêm category
+  ShoppingItem(this.name, this.icon, this.checked,
+      {this.quantity = 1, this.category});
 }

@@ -16,6 +16,8 @@ class NewListPage extends StatefulWidget {
 class _NewListPageState extends State<NewListPage> {
   DateTime? _selectedDate;
   final Map<String, List<String>> _selectedItemsByCategory = {};
+  final Map<String, Map<String, int>> _quantitiesByCategory =
+      {}; // Thêm để lưu số lượng
 
   void _pickDate() async {
     final now = DateTime.now();
@@ -43,7 +45,7 @@ class _NewListPageState extends State<NewListPage> {
               ? const Icon(Icons.check_circle, color: Colors.green)
               : null,
           onTap: () async {
-            final selectedItems = await Navigator.push(
+            final result = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => CategoryDetailScreen(
@@ -54,9 +56,12 @@ class _NewListPageState extends State<NewListPage> {
               ),
             );
 
-            if (selectedItems != null && selectedItems is List<String>) {
+            if (result != null && result is Map) {
               setState(() {
-                _selectedItemsByCategory[categoryName] = selectedItems;
+                _selectedItemsByCategory[categoryName] =
+                    List<String>.from(result['items']);
+                _quantitiesByCategory[categoryName] =
+                    Map<String, int>.from(result['quantities']);
               });
             }
           },
@@ -151,6 +156,11 @@ class _NewListPageState extends State<NewListPage> {
                               itemName,
                               Icons.shopping_cart,
                               false,
+                              quantity: _quantitiesByCategory[entry.key]
+                                      ?[itemName] ??
+                                  1,
+                              category:
+                                  entry.key, // Thêm category vào ShoppingItem
                             ),
                           ))
                       .toList();

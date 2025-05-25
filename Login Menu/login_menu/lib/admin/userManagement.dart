@@ -13,90 +13,76 @@ class UserManagementScreen extends StatefulWidget {
 }
 
 class _UserManagementScreenState extends State<UserManagementScreen> {
-  List<dynamic> deletedUsers = [];
-  Set<int> selectedUserIds = {};
   List<dynamic> users = [];
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-
-  String? currentUsername;
-  String? currentRole;
+  String searchQuery = ''; // Lưu từ khóa tìm kiếm
+  static const String apiUrl = "http://192.168.0.100:8082/ITSS_BE";
 
   @override
   void initState() {
     super.initState();
-
-    if (widget.authService.token != null) {
-      fetchCurrentUserInfo();
-      fetchUsers();
-    }
+    fetchUsers();
   }
 
   @override
   void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
-    _emailController.dispose();
     super.dispose();
-  }
-
-  Future<void> fetchCurrentUserInfo() async {
-    final token = widget.authService.token;
-    if (token == null) return;
-
-    final response = await http.get(
-      Uri.parse('http://192.168.0.100:8082/user/me'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      setState(() {
-        currentUsername = data['username'];
-        currentRole = data['role'];
-      });
-    }
   }
 
   Future<void> fetchUsers() async {
     final token = widget.authService.token;
-    if (token == null) return;
+    if (token == null) {
+      print('Token is null');
+      return;
+    }
 
     final response = await http.get(
-      Uri.parse('http://192.168.0.100:8082/admin/users'),
+      Uri.parse('$apiUrl/users'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
+    print('Fetch Users - Status Code: ${response.statusCode}');
+    print('Fetch Users - Response Body: ${response.body}');
+
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      setState(() {
-        users = data;
-        deletedUsers = data.where((u) => u['isDeleted'] == true).toList();
-      });
+      if (data is Map && data.containsKey('result') && data['result'] is List) {
+        setState(() {
+          users = data['result'];
+          print('Users updated: $users');
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Dữ liệu không phải danh sách hợp lệ')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi: ${response.statusCode} - ${response.body}'),
+        ),
+      );
     }
   }
 
-  Future<void> createUser() async {
-    final username = _usernameController.text.trim();
-    final password = _passwordController.text.trim();
-    final email = _emailController.text.trim();
+  Future<void> createUser(
+      String username, String password, String email, String fullName) async {
+    final token = widget.authService.token;
+    if (token == null) {
+      print("Token is null");
+      return;
+    }
 
-    if (username.isEmpty || password.isEmpty || email.isEmpty) {
+    if (username.isEmpty ||
+        password.isEmpty ||
+        email.isEmpty ||
+        fullName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin.')),
       );
       return;
     }
 
-    final token = widget.authService.token;
-    print("Token: $token");
-    if (token == null) {
-      print("Token is null");
-      return;
-    }
-
-    final url = Uri.parse('http://192.168.0.100:8082/ITSS_BE/users');
+    final url = Uri.parse('$apiUrl/users');
 
     try {
       final response = await http.post(
@@ -109,92 +95,52 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           'username': username,
           'password': password,
           'email': email,
-          "fullName": 'hien',
+          'fullName': fullName,
           'role': 'user',
         }),
       );
 
+      print('Create User - Status: ${response.statusCode}');
+      print('Create User - Body: ${response.body}');
+
       if (response.statusCode == 201 || response.statusCode == 200) {
         fetchUsers();
-        _usernameController.clear();
-        _passwordController.clear();
-        _emailController.clear();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không thể tạo tài khoản.')),
+          SnackBar(
+            content: Text(
+              'Không thể tạo tài khoản. Mã lỗi: ${response.statusCode}, Nội dung: ${response.body}',
+            ),
+          ),
         );
       }
     } catch (e) {
-      print("Lỗi khi gửi request: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Đã xảy ra lỗi: $e')),
       );
     }
   }
 
-  Future<void> deleteUser(int id) async {
-    final token = widget.authService.token;
-    if (token == null) return;
-
-    final response = await http.delete(
-      Uri.parse('http://192.168.0.100:8082/admin/users/$id'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      fetchUsers();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Xoá tài khoản thất bại: ${response.statusCode} - ${response.body}',
-          ),
-        ),
-      );
-    }
-  }
-
-  Future<void> restoreUser(int id) async {
-    final token = widget.authService.token;
-    if (token == null) return;
-
-    final response = await http.patch(
-      Uri.parse('http://192.168.0.100:8082/admin/users/restore/$id'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      fetchUsers();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Khôi phục thất bại: ${response.statusCode}'),
-        ),
-      );
-    }
-  }
-
   Future<void> updateUser(
-      int id, String username, String password, String email) async {
+      int userId, String newUsername, String password, String email) async {
     final token = widget.authService.token;
     if (token == null) return;
 
     final body = {
-      'username': username,
+      'username': newUsername,
       'email': email,
+      'fullName': users.firstWhere((u) => u['userId'] == userId,
+              orElse: () => {})['fullName'] ??
+          'Unknown',
+      'birthDate': '2000-01-01',
+      'roles': users.firstWhere((u) => u['userId'] == userId,
+              orElse: () => {})['role'] ??
+          'user',
+      if (password.isNotEmpty) 'password': password,
     };
-    if (password.isNotEmpty) {
-      body['password'] = password;
-    }
 
-    final response = await http.patch(
-      Uri.parse('http://192.168.0.100:8082/admin/users/$id'),
+    final response = await http.put(
+      Uri.parse('$apiUrl/users/$userId'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -202,9 +148,120 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       body: json.encode(body),
     );
 
+    print('Update User - Status: ${response.statusCode}');
+    print('Update User - Response Body: ${response.body}');
+
     if (response.statusCode == 200) {
       fetchUsers();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Cập nhật thất bại: ${response.statusCode} - ${response.body}'),
+        ),
+      );
     }
+  }
+
+  Future<void> deleteUser(int userId) async {
+    final token = widget.authService.token;
+    if (token == null) {
+      print("Token is null");
+      return;
+    }
+
+    try {
+      final response = await http.delete(
+        Uri.parse('$apiUrl/users/$userId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print('Delete User - Status: ${response.statusCode}');
+      print('Delete User - Response Body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        fetchUsers(); // Làm mới danh sách sau khi xóa
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Xóa tài khoản thành công')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Xóa thất bại: ${response.statusCode} - ${response.body}',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đã xảy ra lỗi: $e')),
+      );
+    }
+  }
+
+  void showCreateUserDialog() {
+    final TextEditingController usernameController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+    final TextEditingController emailController = TextEditingController();
+    final TextEditingController fullNameController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Tạo tài khoản mới'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: usernameController,
+                decoration: InputDecoration(labelText: 'Username'),
+              ),
+              TextField(
+                controller: passwordController,
+                decoration: InputDecoration(labelText: 'Password'),
+                obscureText: true,
+              ),
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              TextField(
+                controller: fullNameController,
+                decoration: InputDecoration(labelText: 'Full Name'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                createUser(
+                  usernameController.text.trim(),
+                  passwordController.text.trim(),
+                  emailController.text.trim(),
+                  fullNameController.text.trim(),
+                );
+                Navigator.of(context).pop();
+              },
+              child: Text('Tạo'),
+            ),
+          ],
+        );
+      },
+    ).then((_) {
+      usernameController.dispose();
+      passwordController.dispose();
+      emailController.dispose();
+      fullNameController.dispose();
+    });
   }
 
   void showEditDialog(Map<String, dynamic> user) {
@@ -213,6 +270,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final TextEditingController passwordController = TextEditingController();
     final TextEditingController emailController =
         TextEditingController(text: user['email'] ?? '');
+    final TextEditingController fullNameController =
+        TextEditingController(text: user['fullName'] ?? '');
+
+    final userId = user['userId'] ?? user['id'];
+    if (userId == null) {
+      print('Error: userId not found in user data: $user');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không thể chỉnh sửa: userId không hợp lệ')),
+      );
+      return;
+    }
 
     showDialog(
       context: context,
@@ -236,6 +304,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 decoration: InputDecoration(labelText: 'Email'),
                 keyboardType: TextInputType.emailAddress,
               ),
+              TextField(
+                controller: fullNameController,
+                decoration: InputDecoration(labelText: 'Full Name'),
+              ),
             ],
           ),
           actions: [
@@ -246,14 +318,55 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ElevatedButton(
               onPressed: () {
                 updateUser(
-                  user['id'],
-                  usernameController.text,
-                  passwordController.text,
-                  emailController.text,
+                  int.tryParse(userId.toString()) ?? 0,
+                  usernameController.text.trim(),
+                  passwordController.text.trim(),
+                  emailController.text.trim(),
                 );
                 Navigator.of(context).pop();
               },
               child: Text('Lưu'),
+            ),
+          ],
+        );
+      },
+    ).then((_) {
+      usernameController.dispose();
+      passwordController.dispose();
+      emailController.dispose();
+      fullNameController.dispose();
+    });
+  }
+
+  void showDeleteConfirmationDialog(Map<String, dynamic> user) {
+    final userId = user['userId'] ?? user['id'];
+    if (userId == null) {
+      print('Error: userId not found in user data: $user');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không thể xóa: userId không hợp lệ')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Xác nhận xóa'),
+          content: Text(
+              'Bạn có chắc chắn muốn xóa tài khoản "${user['username']}"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                deleteUser(int.tryParse(userId.toString()) ?? 0);
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
+              child: Text('Xóa'),
             ),
           ],
         );
@@ -263,6 +376,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredUsers = users.where((user) {
+      final username = user['username']?.toString().toLowerCase() ?? '';
+      final email = user['email']?.toString().toLowerCase() ?? '';
+      final fullName = user['fullName']?.toString().toLowerCase() ?? '';
+      final query = searchQuery.toLowerCase();
+      return user['role'] == 'user' &&
+          (username.contains(query) ||
+              email.contains(query) ||
+              fullName.contains(query));
+    }).toList();
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -273,39 +396,44 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         child: Column(
           children: [
             TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
+              decoration: InputDecoration(
+                labelText: 'Tìm kiếm',
+                hintText: 'Nhập username, email hoặc full name',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value; // Cập nhật từ khóa tìm kiếm
+                });
+              },
             ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password'),
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: createUser,
-              child: const Text('Tạo tài khoản'),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton(
+                  onPressed: showCreateUserDialog,
+                  child: const Text('Tạo tài khoản'),
+                ),
+              ],
             ),
             const Divider(height: 32),
             Expanded(
               child: ListView.builder(
-                itemCount: users.where((u) => u['isDeleted'] != true).length,
+                itemCount: filteredUsers.length,
                 itemBuilder: (context, index) {
-                  final user = users[index];
-                  if (user['isDeleted'] == true) return SizedBox.shrink();
-
+                  final user = filteredUsers[index];
                   return ListTile(
-                    title: Text(user['username']),
+                    title: Text(user['username'] ?? 'Không có tên'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Email: ${user['email'] ?? 'Không có'}'),
-                        Text('Role: ${user['role']} | Index: ${user['index']}'),
+                        Text('Role: ${user['role'] ?? 'Không có'}'),
+                        Text('Full Name: ${user['fullName'] ?? 'Không có'}'),
                       ],
                     ),
                     trailing: Row(
@@ -316,21 +444,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                           onPressed: () => showEditDialog(user),
                         ),
                         IconButton(
-                          icon: Icon(
-                            user['isDeleted'] == true
-                                ? Icons.restore
-                                : Icons.delete,
-                            color: user['isDeleted'] == true
-                                ? Colors.green
-                                : Colors.red,
-                          ),
-                          onPressed: () {
-                            if (user['isDeleted'] == true) {
-                              restoreUser(user['id']);
-                            } else {
-                              deleteUser(user['id']);
-                            }
-                          },
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => showDeleteConfirmationDialog(user),
                         ),
                       ],
                     ),
@@ -339,78 +454,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: ElevatedButton.icon(
-                onPressed: showRestoreDialog,
-                icon: const Icon(Icons.restore),
-                label: const Text('Khôi phục tài khoản'),
-              ),
-            ),
           ],
         ),
       ),
-    );
-  }
-
-  void showRestoreDialog() {
-    selectedUserIds.clear();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text('Khôi phục tài khoản đã xoá'),
-              content: deletedUsers.isEmpty
-                  ? Text('Không có tài khoản nào bị xoá.')
-                  : SizedBox(
-                      height: 300,
-                      width: double.maxFinite,
-                      child: ListView.builder(
-                        itemCount: deletedUsers.length,
-                        itemBuilder: (context, index) {
-                          final user = deletedUsers[index];
-                          final isSelected =
-                              selectedUserIds.contains(user['id']);
-
-                          return CheckboxListTile(
-                            title: Text(user['username']),
-                            value: isSelected,
-                            activeColor: Colors.green,
-                            onChanged: (bool? selected) {
-                              setState(() {
-                                if (selected == true) {
-                                  selectedUserIds.add(user['id']);
-                                } else {
-                                  selectedUserIds.remove(user['id']);
-                                }
-                              });
-                            },
-                          );
-                        },
-                      ),
-                    ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('Hủy'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    for (var id in selectedUserIds) {
-                      await restoreUser(id);
-                    }
-                    Navigator.pop(context);
-                  },
-                  child: Text('Khôi phục'),
-                ),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 }
