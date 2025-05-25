@@ -1,10 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:login_menu/models/shopping_list_create_request.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const String apiUrl =
+<<<<<<< HEAD
       "http://192.168.0.100:8082/ITSS_BE"; // Đổi IP backend của bạn
+=======
+      "http://192.168.100.14:8082/ITSS_BE"; // Đổi IP backend của bạn
+>>>>>>> 898fbf3be0448210a6a988cf05ee58b1dd345f06
   String? _token;
   String? get token => _token;
 
@@ -67,26 +72,31 @@ class AuthService {
     }
   }
 
-  Future<void> addShoppingList(
-      String title, List<Map<String, dynamic>> items) async {
+  Future<void> addShoppingList(ShoppingListCreateRequest request) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
-
+    print('${request.listName} - ${request.createdBy} - ${request.startDate}-${request.endDate} - ${request.group_id}');
     final response = await http.post(
-      Uri.parse('$apiUrl/shopping-lists'),
+      Uri.parse('$apiUrl/ShoppingList'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
       body: jsonEncode({
-        'title': title,
-        'items': items,
+        'listName': request.listName,
+        'createdBy': request.createdBy,
+        'group_id': request.group_id,
+        'startDate': request.startDate?.toIso8601String(),
+        'endDate': request.endDate?.toIso8601String(),
+        'status': 'new'
       }),
     );
 
-    if (response.statusCode == 201) {
+    if (response.statusCode == 200) {
       print('Tạo giỏ hàng thành công');
     } else {
+      print('Status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
       throw Exception('Không thể tạo giỏ hàng');
     }
   }
