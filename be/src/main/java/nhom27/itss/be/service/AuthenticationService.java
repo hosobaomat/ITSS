@@ -41,8 +41,8 @@ public class AuthenticationService {
     protected String SIGNER_KEY;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request){
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findByEmail(request.getEmail());
+
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
@@ -78,6 +78,8 @@ public class AuthenticationService {
     private String generateToken(String email) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
+        User user = userRepository.findByEmail(email);
+
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(email)
                 .issuer("ducanh81222004.click")
@@ -85,7 +87,7 @@ public class AuthenticationService {
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
-                .claim("userId", "Custom")
+                .claim("userId", user.getUserId())
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());

@@ -61,7 +61,6 @@ public class ShoppingListService {
         return ShoppinglistToResponse(shoppingList);
     }
 
-
     //ERROR Cant delete old item
     @Transactional
     public ShoppingListResponse editShoppinglist(EditShoppingListRequest request) {
@@ -216,9 +215,6 @@ public class ShoppingListService {
 
 
     }
-
-
-
 
     //Ham Mapping
     private ShoppingListResponse ShoppinglistToResponse(ShoppingList shoppingList) {

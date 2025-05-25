@@ -66,16 +66,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    /*
-    public UserResponse getMyInfo(){
-        var context = SecurityContextHolder.getContext();
 
-        String name = context.getAuthentication().getName();
-
-        Users user = userRepository.findByUsername(name).orElseThrow(() -> new AppException(ErrorCode.USERNOTFOUND_EXCEPTION));
-
-        return userMapper.toUserResponse(user);
-    }*/
 
     public UserResponse getUserById(Integer id){
 
@@ -101,10 +92,11 @@ public class UserService {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findByEmail(email);
 
 
         UserResponse userResponse = new UserResponse();
+        userResponse.setUserid(user.getUserId());
         userResponse.setUsername(user.getUsername());
         userResponse.setEmail(user.getEmail());
         userResponse.setRole(user.getRole().toString());
