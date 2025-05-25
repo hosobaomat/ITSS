@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:login_menu/models/selected_item.dart';
+import 'package:login_menu/models/shopping_list_create_request.dart';
 import 'package:login_menu/pages/CategoryDetailScreen.dart';
+import 'package:login_menu/service/auth_service.dart';
 import 'package:login_menu/tabs/shoppinglist_tab.dart';
 
 import '../models/shopping_list_model.dart.dart';
 
 class NewListPage extends StatefulWidget {
-  const NewListPage({super.key, required this.itemsByCategory});
+  NewListPage(
+      {super.key, required this.itemsByCategory, required this.authService});
   final Map<String, List<String>> itemsByCategory;
-
+  AuthService authService;
   @override
   State<NewListPage> createState() => _NewListPageState();
 }
 
 class _NewListPageState extends State<NewListPage> {
   DateTime? _selectedDate;
-  final Map<String, List<String>> _selectedItemsByCategory = {};
+  final Map<String, List<SelectedItem>> _selectedItemsByCategory = {};
+  final TextEditingController _listNameController = TextEditingController();
 
   void _pickDate() async {
     final now = DateTime.now();
@@ -34,12 +39,15 @@ class _NewListPageState extends State<NewListPage> {
   }
 
   Widget _buildCategoryItem(IconData icon, String categoryName) {
+    final isSelected =
+        _selectedItemsByCategory[categoryName]?.isNotEmpty == true;
+
     return Column(
       children: [
         ListTile(
           leading: Icon(icon, size: 28),
           title: Text(categoryName, style: const TextStyle(fontSize: 18)),
-          trailing: _selectedItemsByCategory[categoryName]?.isNotEmpty == true
+          trailing: isSelected
               ? const Icon(Icons.check_circle, color: Colors.green)
               : null,
           onTap: () async {
@@ -54,7 +62,7 @@ class _NewListPageState extends State<NewListPage> {
               ),
             );
 
-            if (selectedItems != null && selectedItems is List<String>) {
+            if (selectedItems != null && selectedItems is List<SelectedItem>) {
               setState(() {
                 _selectedItemsByCategory[categoryName] = selectedItems;
               });
@@ -64,6 +72,53 @@ class _NewListPageState extends State<NewListPage> {
         const Divider(height: 1),
       ],
     );
+  }
+
+  void _handleCreateList() async {
+    if (_selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Vui lòng nhập tên danh sách và chọn ngày')),
+      );
+      return;
+    }
+
+    final request = ShoppingListCreateRequest(
+      'ducanhdeptrai',
+      2, 
+ 2, 
+_selectedDate!,
+ _selectedDate!.add(const Duration(days: 1)),
+    );
+
+    try {
+      await widget.authService.addShoppingList(request);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tạo danh sách thành công')),
+      );
+       final items = _selectedItemsByCategory.entries
+        .expand((entry) => entry.value.map(
+              (selectedItem) => ShoppingItem(
+                selectedItem.name,
+                Icons.shopping_cart,
+                false,
+                selectedItem.quantity as double,
+                selectedItem.unit,
+              ),
+            ))
+        .toList();
+
+    final newList = ShoppingListModel(
+      date: _selectedDate!,
+      items: items,
+    );
+
+    Navigator.pop(context, newList);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: ${e.toString()}')),
+      );
+    }
   }
 
   @override
@@ -89,10 +144,7 @@ class _NewListPageState extends State<NewListPage> {
       appBar: AppBar(
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text(
-            'X',
-            style: TextStyle(fontSize: 20),
-          ),
+          child: const Text('X', style: TextStyle(fontSize: 20)),
         ),
         title: const Text('New List', style: TextStyle(fontSize: 22)),
         centerTitle: true,
@@ -142,32 +194,34 @@ class _NewListPageState extends State<NewListPage> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () {
-                  if (_selectedDate == null) return;
+                onPressed: () async{
+                   _handleCreateList();
+                  // if (_selectedDate == null) return;
 
-                  final items = _selectedItemsByCategory.entries
-                      .expand((entry) => entry.value.map(
-                            (itemName) => ShoppingItem(
-                              itemName,
-                              Icons.shopping_cart,
-                              false,
-                            ),
-                          ))
-                      .toList();
+                  // final items = _selectedItemsByCategory.entries
+                  //     .expand((entry) => entry.value.map(
+                  //           (selectedItem) => ShoppingItem(
+                  //               selectedItem.name,
+                  //               Icons.shopping_cart,
+                  //               false,
+                  //               selectedItem.quantity as double,
+                  //               selectedItem.unit),
+                  //         ))
+                  //     .toList();
 
-                  final newList = ShoppingListModel(
-                    date: _selectedDate!,
-                    items: items,
-                  );
+                  // final newList = ShoppingListModel(
+                  //   date: _selectedDate!,
+                  //   items: items,
+                  // );
 
-                  Navigator.pop(context, newList);
+                  // Navigator.pop(context, newList);
                 },
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 14),
                   child: Text('Create', style: TextStyle(fontSize: 18)),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
