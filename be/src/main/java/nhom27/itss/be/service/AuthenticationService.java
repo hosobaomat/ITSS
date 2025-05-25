@@ -75,11 +75,11 @@ public class AuthenticationService {
                 .build();
     }
 
-    private String generateToken(String username) {
+    private String generateToken(String email) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(username)
+                .subject(email)
                 .issuer("ducanh81222004.click")
                 .issueTime(new Date())
                 .expirationTime(new Date(

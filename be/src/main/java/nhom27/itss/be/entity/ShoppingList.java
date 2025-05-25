@@ -3,11 +3,10 @@ package nhom27.itss.be.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import nhom27.itss.be.enums.ShoppingListStatus;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -37,15 +36,17 @@ public class ShoppingList {
     @Column(name = "end_date")
     Timestamp endDate;
 
+
     @Column(name = "Status")
-    String status;
+    @Enumerated(EnumType.STRING)
+    ShoppingListStatus status;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
     private FamilyGroup group;
 
-    @OneToMany(mappedBy = "shoppingList")
+    @OneToMany(mappedBy = "shoppingList",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private Set<ShoppingListItem> shoppinglistitems = new LinkedHashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

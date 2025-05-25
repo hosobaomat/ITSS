@@ -12,6 +12,7 @@ import nhom27.itss.be.enums.Role;
 import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.exception.ErrorCode;
 import nhom27.itss.be.repository.UsersRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.BeanUtils;
@@ -96,6 +97,23 @@ public class UserService {
                 ;
     }
 
+    public UserResponse getMyInfo() {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+
+        UserResponse userResponse = new UserResponse();
+        userResponse.setUsername(user.getUsername());
+        userResponse.setEmail(user.getEmail());
+        userResponse.setRole(user.getRole().toString());
+        userResponse.setFullName(user.getFullName());
+        userResponse.setCreatedAt(user.getCreatedAt());
+        return userResponse;
+
+    }
+
     public UserResponse updateUser(Integer userId, UpdateUserRequest request){
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USERNOTFOUND_EXCEPTION));
 
@@ -123,6 +141,7 @@ public class UserService {
                 .fullName(user.getFullName())
                 .createdAt(user.getCreatedAt())
                 .role(String.valueOf(user.getRole()))
+                .updatedAt(new Timestamp(System.currentTimeMillis()))
                 .build()
                 ;
     }
