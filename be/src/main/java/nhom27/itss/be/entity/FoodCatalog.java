@@ -40,4 +40,8 @@ public class FoodCatalog {
     @OneToMany(mappedBy = "food")
     private Set<ShoppingListItem> shoppinglistitems = new LinkedHashSet<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_id")
+    private Unit unit;
+
 }

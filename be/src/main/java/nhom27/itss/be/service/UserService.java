@@ -13,6 +13,9 @@ import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.exception.ErrorCode;
 import nhom27.itss.be.repository.UsersRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import nhom27.itss.be.repository.FamilyGroupMembersRepository;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.BeanUtils;
@@ -30,7 +33,7 @@ public class UserService {
     UsersRepository userRepository;
     PasswordEncoder passwordEncoder;
 
-
+    FamilyGroupMembersRepository familyGroupMemberRepository;
 
     public UserResponse createUser(UserCreationRequest request) /*throws Exception*/ {
         if(userRepository.existsByEmail(request.getEmail()) || userRepository.existsByUsername(request.getUsername())){
@@ -142,7 +145,7 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-    public List<UserResponse> getUsers(){
+    public List<UserResponse> getUsers() {
         List<User> users = userRepository.findAll(); // Lấy toàn bộ user từ DB
 
         List<UserResponse> responses = new ArrayList<>();

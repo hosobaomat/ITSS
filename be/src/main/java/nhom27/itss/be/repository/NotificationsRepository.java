@@ -2,8 +2,10 @@ package nhom27.itss.be.repository;
 
 import nhom27.itss.be.entity.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
 
-public interface NotificationsRepository extends JpaRepository<Notification, Integer>, JpaSpecificationExecutor<Notification> {
-
+@Repository
+public interface NotificationsRepository extends JpaRepository<Notification, Integer> {
+    // Kiểm tra để tránh gửi thông báo trùng lặp
+    boolean existsByFoodIdAndNotificationType(Integer foodId, String notificationType);
 }
