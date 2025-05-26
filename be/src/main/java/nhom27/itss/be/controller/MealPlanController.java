@@ -3,9 +3,12 @@ package nhom27.itss.be.controller;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import nhom27.itss.be.dto.request.CreateMealPlanRequest;
 import nhom27.itss.be.dto.response.ApiResponse;
+import nhom27.itss.be.dto.response.MealPlanResponse;
 import nhom27.itss.be.entity.MealPlan;
 import nhom27.itss.be.repository.MealPlansRepository;
+import nhom27.itss.be.service.MealPlanService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +21,7 @@ import java.util.List;
 public class MealPlanController {
 
     MealPlansRepository mealPlanRepository;
+    MealPlanService mealPlanService;
 
     @GetMapping
     public ApiResponse<List<MealPlan>> getAllMealPlans() {
@@ -28,13 +32,12 @@ public class MealPlanController {
                 .build();
     }
 
-    @PostMapping
-    public ApiResponse<MealPlan> createMealPlan(@RequestBody MealPlan mealPlan) {
-        MealPlan savedPlan = mealPlanRepository.save(mealPlan);
-        return ApiResponse.<MealPlan>builder()
-                .result(savedPlan)
-                .code(201)
-                .build();
+    @PostMapping("")
+    public ApiResponse<MealPlanResponse> createMealPlan(@RequestBody CreateMealPlanRequest request) {
+        ApiResponse<MealPlanResponse> response = new ApiResponse<>();
+        response.setResult(mealPlanService.createMealPlan(request));  // gọi instance method
+        response.setCode(201);
+        return response;
     }
 
     @GetMapping("/{id}")
