@@ -3,19 +3,15 @@ package nhom27.itss.be.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponse {
-    Integer userid;
-    String username;
-    String email;
-    String fullName;
-    String role;
-    Timestamp createdAt;
-    Timestamp updatedAt;
+public class FamilyGroupMemberResponse {
+    Set<Integer> userIds = new HashSet<>();
 }

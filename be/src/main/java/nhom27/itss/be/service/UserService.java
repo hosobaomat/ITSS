@@ -12,6 +12,10 @@ import nhom27.itss.be.enums.Role;
 import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.exception.ErrorCode;
 import nhom27.itss.be.repository.UsersRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import nhom27.itss.be.repository.FamilyGroupMembersRepository;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.BeanUtils;
@@ -29,7 +33,7 @@ public class UserService {
     UsersRepository userRepository;
     PasswordEncoder passwordEncoder;
 
-
+    FamilyGroupMembersRepository familyGroupMemberRepository;
 
     public UserResponse createUser(UserCreationRequest request) /*throws Exception*/ {
         if(userRepository.existsByEmail(request.getEmail()) || userRepository.existsByUsername(request.getUsername())){
@@ -65,16 +69,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    /*
-    public UserResponse getMyInfo(){
-        var context = SecurityContextHolder.getContext();
 
-        String name = context.getAuthentication().getName();
-
-        Users user = userRepository.findByUsername(name).orElseThrow(() -> new AppException(ErrorCode.USERNOTFOUND_EXCEPTION));
-
-        return userMapper.toUserResponse(user);
-    }*/
 
     public UserResponse getUserById(Integer id){
 
@@ -94,6 +89,24 @@ public class UserService {
                 .role(String.valueOf(user.getRole()))
                 .build()
                 ;
+    }
+
+    public UserResponse getMyInfo() {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        User user = userRepository.findByEmail(email);
+
+
+        UserResponse userResponse = new UserResponse();
+        userResponse.setUserid(user.getUserId());
+        userResponse.setUsername(user.getUsername());
+        userResponse.setEmail(user.getEmail());
+        userResponse.setRole(user.getRole().toString());
+        userResponse.setFullName(user.getFullName());
+        userResponse.setCreatedAt(user.getCreatedAt());
+        return userResponse;
+
     }
 
     public UserResponse updateUser(Integer userId, UpdateUserRequest request){
@@ -123,6 +136,7 @@ public class UserService {
                 .fullName(user.getFullName())
                 .createdAt(user.getCreatedAt())
                 .role(String.valueOf(user.getRole()))
+                .updatedAt(new Timestamp(System.currentTimeMillis()))
                 .build()
                 ;
     }
@@ -131,7 +145,7 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-    public List<UserResponse> getUsers(){
+    public List<UserResponse> getUsers() {
         List<User> users = userRepository.findAll(); // Lấy toàn bộ user từ DB
 
         List<UserResponse> responses = new ArrayList<>();

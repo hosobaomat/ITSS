@@ -14,10 +14,11 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Embeddable
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@EqualsAndHashCode
 public class RecipeIngredientID implements Serializable {
     @Column(name = "recipe_id")
     Integer recipeId;
 
-    @Column(name = "food_id")
-    Integer foodId;
+    @Column(name = "food_catalog_id")
+    Integer foodCatalogId;
 }

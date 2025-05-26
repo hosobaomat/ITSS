@@ -31,13 +31,7 @@ public class UserController {
 
         return response;
     }
-    /*
-    @GetMapping("/myinfo")
-    ApiResponse<UserResponse> getMyInfo() {
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.getMyInfo())
-                .build();
-    }*/
+
     @GetMapping
     ApiResponse<List<UserResponse>> getUsers(){
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -54,6 +48,13 @@ public class UserController {
     ApiResponse<UserResponse> getUserById(@PathVariable("userId") Integer userId) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getUserById(userId))
+                .code(200).build();
+    }
+
+    @GetMapping("/my-info")
+    ApiResponse<UserResponse> getMyInfo() {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getMyInfo())
                 .code(200).build();
     }
 
