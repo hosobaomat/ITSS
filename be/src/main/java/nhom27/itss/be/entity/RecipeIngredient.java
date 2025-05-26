@@ -27,8 +27,8 @@ public class RecipeIngredient {
     private Recipe recipe;
 
     @ManyToOne
-    @MapsId("foodId") // tên field trong RecipeIngredientId
-    @JoinColumn(name = "food_id")
+    @MapsId("foodCatalogId") // tên field trong RecipeIngredientId
+    @JoinColumn(name = "food_catalog_id")
     private FoodCatalog foodCatalog;
 
     @Column(name = "quantity", nullable = false)

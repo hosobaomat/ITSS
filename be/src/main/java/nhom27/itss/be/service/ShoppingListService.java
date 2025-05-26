@@ -144,7 +144,10 @@ public class ShoppingListService {
         User user = usersRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         List<ShoppingList> lists = shoppingListsRepository.findBycreatedBy(user);
 
-        return lists.stream().map(this::ShoppinglistToResponse).toList();
+        return lists.stream()
+                .filter(list -> list.getStatus() == ShoppingListStatus.DRAFT || list.getStatus() == ShoppingListStatus.PENDING)
+                .map(this::ShoppinglistToResponse) // giả sử bạn có hàm convertToResponse
+                .collect(Collectors.toList());
 
     }
 
