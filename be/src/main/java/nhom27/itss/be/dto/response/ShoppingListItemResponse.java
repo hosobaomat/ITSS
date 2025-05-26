@@ -1,10 +1,7 @@
-
 package nhom27.itss.be.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.sql.Timestamp;
 
 @Data
 @NoArgsConstructor
@@ -12,14 +9,10 @@ import java.sql.Timestamp;
 @Builder
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FoodItemResponse {
+public class ShoppingListItemResponse {
     Integer id;
-    String foodname;
+    String name;
     Integer quantity;
     String unitName;
-    String storageLocation;
-    Timestamp expiryDate;
-    Timestamp addedAt;
-
+    String status;
 }
-

@@ -4,18 +4,16 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.Timestamp;
+
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Setter
+@Builder
+@Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponse {
-    Integer userid;
-    String username;
-    String email;
-    String fullName;
-    String role;
-    Timestamp createdAt;
-    Timestamp updatedAt;
+public class FoodCatalogResponse {
+    Integer foodCatalogId;
+    String foodCatalogName;
+    String foodCatalogDescription;
+
 }

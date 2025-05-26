@@ -43,8 +43,7 @@ public class Recipe {
     @Column(name = "created_at")
     Timestamp createdAt;
 
-    @OneToMany
-    List<RecipeIngredient> recipeIngredients = new ArrayList<>();
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
@@ -53,7 +52,7 @@ public class Recipe {
     @OneToOne(mappedBy = "recipe")
     private MealPlanDetail mealplandetails;
 
-    @OneToMany(mappedBy = "recipe")
+    @OneToMany(mappedBy = "recipe",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private Set<RecipeIngredient> recipeingredients = new LinkedHashSet<>();
 
 }

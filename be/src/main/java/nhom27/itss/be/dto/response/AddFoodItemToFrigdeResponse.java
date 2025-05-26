@@ -1,10 +1,11 @@
-
 package nhom27.itss.be.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -12,14 +13,9 @@ import java.sql.Timestamp;
 @Builder
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FoodItemResponse {
-    Integer id;
-    String foodname;
-    Integer quantity;
-    String unitName;
-    String storageLocation;
-    Timestamp expiryDate;
-    Timestamp addedAt;
-
+public class AddFoodItemToFrigdeResponse {
+    Integer groupId;
+    String groupName;
+    String addedBy;
+    Set<FoodItemResponse> foodItemResponses = new HashSet<>();
 }
-
