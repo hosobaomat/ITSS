@@ -23,12 +23,14 @@ import nhom27.itss.be.exception.ErrorCode;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -81,11 +83,29 @@ public class MealPlanService {
         return mapToResponse(plan);
     }
 
-    public MealPlanResponse getMealPlanById(Integer planId) {
-        MealPlan plan = mealPlansRepository.findById(planId)
+    public MealPlanResponse getMealPlanById(Integer id) {
+        MealPlan plan = mealPlansRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.MEALPLAN_NOT_FOUND));
-
         return mapToResponse(plan);
+    }
+    public List<MealPlanResponse> getMealPlansByGroupId(Integer groupId) {
+        FamilyGroup group  = familyGroupsRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.FAMILYGROUP_NOT_EXISTED));
+        List<MealPlan> plans = mealPlansRepository.findByGroup(group);
+        return plans.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<MealPlanResponse> getMealPlansByUserId(Integer userId) {
+        User user = usersRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        List<MealPlan> plans = mealPlansRepository.findByCreatedBy(user);
+        return plans.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+    public void deleteMealPlan(Integer id) {
+
+        mealPlansRepository.deleteById(id);
     }
 
     private MealPlanResponse mapToResponse(MealPlan plan) {

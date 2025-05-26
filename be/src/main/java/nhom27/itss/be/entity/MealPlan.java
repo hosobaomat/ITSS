@@ -49,4 +49,7 @@ public class MealPlan {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
+    @Column(name = "is_deleted", nullable = false)
+    Boolean isDeleted = false;
+
 }

@@ -134,11 +134,11 @@ public class ShoppingListService {
         return ShoppinglistToResponse(shoppingList);
     }
 
-    public List<ShoppingListResponse> getAllShoppingLists() {
-        List<ShoppingList> shoppingLists = shoppingListsRepository.findAll();
+        public List<ShoppingListResponse> getAllShoppingLists() {
+            List<ShoppingList> shoppingLists = shoppingListsRepository.findAll();
 
-        return shoppingLists.stream().map(this::ShoppinglistToResponse).toList();
-    }
+            return shoppingLists.stream().map(this::ShoppinglistToResponse).toList();
+        }
 
     public List<ShoppingListResponse> getShoppingListByUserId(Integer userId) {
         User user = usersRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));

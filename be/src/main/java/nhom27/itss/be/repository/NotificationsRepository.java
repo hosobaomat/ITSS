@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface NotificationsRepository extends JpaRepository<Notification, Integer> {
-    // Kiểm tra để tránh gửi thông báo trùng lặp
-    boolean existsByFoodIdAndNotificationType(Integer foodId, String notificationType);
+//    // Kiểm tra để tránh gửi thông báo trùng lặp
+//    boolean existsByFoodIdAndNotificationType(Integer foodId, String notificationType);
 }
