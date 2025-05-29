@@ -6,7 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.relational.core.sql.In;
+
 
 import java.io.Serializable;
 @Getter
