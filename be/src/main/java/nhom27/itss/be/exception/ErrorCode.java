@@ -16,12 +16,17 @@ public enum ErrorCode {
     PASSWORD_INVALID(1003,"password must be at least {min} characters",HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1006,"unauthenticated",HttpStatus.UNAUTHORIZED),
     FORBIDDEN(1007,"You do not have permission",HttpStatus.FORBIDDEN),
+
     MEMBER_ALREADY_EXISTS(1010,"Member already exist",HttpStatus.BAD_REQUEST),
     SHOPPINGLIST_NOT_EXISTS(1010,"SHOPPINGLIST not exist",HttpStatus.BAD_REQUEST),
     RECIPE_NOT_EXISTS(1010,"RECIPE not exist",HttpStatus.BAD_REQUEST),
     FOOD_NOT_EXISTS(1010,"FOOD not exist",HttpStatus.BAD_REQUEST),
     UNIT_NOT_EXISTS(1010,"UNIT not exist",HttpStatus.BAD_REQUEST),
     INVALID_AGE(1008,"Your age must be at least {min}",HttpStatus.FORBIDDEN);
+    GROUP_NOT_FOUND(1009, "Group not found with id ",HttpStatus.NOT_FOUND),
+    RECIPE_NOT_FOUND(10010, "Recipe not found with id ",HttpStatus.NOT_FOUND),
+    MEALPLAN_NOT_FOUND(10011, "Meal plan not found with id ",HttpStatus.NOT_FOUND);
+
 
 
     ErrorCode(Integer code, String message, HttpStatusCode httpStatusCode) {

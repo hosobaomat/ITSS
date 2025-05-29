@@ -27,4 +27,6 @@ public interface FamilyGroupMembersRepository extends JpaRepository<FamilyGroupM
     @Query("SELECT fgm.user FROM FamilyGroupMember fgm WHERE fgm.id.groupId = :groupId")
     List<User> findAllUsersByGroupId(@Param("groupId") Integer groupId);
 
+
+
 }

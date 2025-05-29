@@ -12,8 +12,10 @@ jwt:
   #refreshable-duration : 36000 #in seconds
 
 springdoc:
+
    swagger-ui:
      path : /swagger-ui/index.html
+
 
 server:
   port : 8082
