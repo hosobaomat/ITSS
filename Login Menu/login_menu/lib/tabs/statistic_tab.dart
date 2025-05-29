@@ -13,15 +13,17 @@ class StatisticTab extends StatelessWidget {
         quantity: item.quantity ?? 0,
         date: now,
         time: TimeOfDay.fromDateTime(now),
+        category: item.category, // Lưu category nếu có
       );
     }).toList();
   }
 
-  /// Phân tích xu hướng tiêu thụ thực phẩm (không lọc theo tháng do không có trường ngày mua)
-  Map<String, int> _analyzeTrends(List<FoodItem> inventory) {
+  /// Phân tích xu hướng tiêu thụ thực phẩm (theo category)
+  Map<String, int> _analyzeTrendsByCategory(List<FoodItem> inventory) {
     final Map<String, int> trendMap = {};
     for (var item in inventory) {
-      trendMap[item.name] = (trendMap[item.name] ?? 0) + (item.quantity ?? 0);
+      final cat = item.category ?? 'Khác';
+      trendMap[cat] = (trendMap[cat] ?? 0) + item.quantity.toInt();
     }
     return trendMap;
   }
@@ -30,7 +32,18 @@ class StatisticTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final inventory = context.watch<FoodInventoryProvider>().items;
     final allRows = _collectAllItems(inventory);
+    // Sửa lỗi: Định nghĩa lại _analyzeTrends cho xu hướng theo sản phẩm
+    Map<String, int> _analyzeTrends(List<FoodItem> inventory) {
+      final Map<String, int> trendMap = {};
+      for (var item in inventory) {
+        trendMap[item.name] =
+            (trendMap[item.name] ?? 0) + item.quantity.toInt();
+      }
+      return trendMap;
+    }
+
     final trends = _analyzeTrends(inventory);
+    final trendsByCategory = _analyzeTrendsByCategory(inventory);
 
     return Scaffold(
       appBar: AppBar(
@@ -93,7 +106,7 @@ class StatisticTab extends StatelessWidget {
                     child: Column(
                       children: [
                         const Text(
-                          'Xu hướng tiêu thụ tháng này',
+                          'Xu hướng tiêu thụ theo sản phẩm',
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -103,6 +116,32 @@ class StatisticTab extends StatelessWidget {
                         SizedBox(
                           height: 200,
                           child: _TrendBarChart(trends: trends),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 24),
+              if (trendsByCategory.isNotEmpty)
+                Card(
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Xu hướng tiêu thụ theo nhóm (category)',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.deepPurple),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 200,
+                          child: _TrendBarChart(trends: trendsByCategory),
                         ),
                       ],
                     ),
@@ -164,11 +203,13 @@ class _StatRow {
   final int quantity;
   final DateTime date;
   final TimeOfDay time;
+  final String? category; // Thêm category
 
   _StatRow({
     required this.name,
     required this.quantity,
     required this.date,
     required this.time,
+    this.category,
   });
 }

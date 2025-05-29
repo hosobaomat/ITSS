@@ -15,6 +15,8 @@ class InventoryItemInputWidget extends StatefulWidget {
 
 class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
   final Map<String, TextEditingController> _locationControllers = {};
+  final Map<String, TextEditingController> _quantityControllers =
+      {}; // Thêm dòng này
   final Map<String, DateTime?> _expiryDates = {};
   final Set<String> _confirmedItems = {}; // Theo dõi các item đã xác nhận
   @override
@@ -39,31 +41,6 @@ class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
 
     // Khởi tạo controller mới dựa trên widget.items
     for (var item in widget.items) {
-<<<<<<< HEAD
-      _locationControllers[item.name] = TextEditingController();
-      _expiryDates[item.name] = null;
-    }
-  }
-
-  void _submitData() {
-    final inventoryProvider =
-        Provider.of<FoodInventoryProvider>(context, listen: false);
-    for (var item in widget.items) {
-      final name = item.name;
-      final location = _locationControllers[name]?.text;
-      final expiry = _expiryDates[name];
-
-      if (location == null || location.isEmpty || expiry == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin')),
-        );
-        return;
-      }
-
-      item.location = location;
-      item.expiry = expiry;
-      inventoryProvider.updateItem(item);
-=======
       if (item.name.isNotEmpty) {
         _quantityControllers[item.name] = TextEditingController(
           text: item.quantity > 0 ? item.quantity.toString() : '',
@@ -73,6 +50,41 @@ class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
         );
         _expiryDates[item.name] = item.expiry;
       }
+    }
+  }
+
+  void _submitData() {
+    final inventoryProvider =
+        Provider.of<FoodInventoryProvider>(context, listen: false);
+    bool hasError = false;
+    for (var item in widget.items) {
+      final name = item.name;
+      final location = _locationControllers[name]?.text;
+      final expiry = _expiryDates[name];
+      final quantity = int.tryParse(_quantityControllers[name]?.text ?? '');
+
+      if (location == null ||
+          location.isEmpty ||
+          expiry == null ||
+          quantity == null) {
+        hasError = true;
+        break;
+      }
+
+      item.location = location;
+      item.expiry = expiry;
+      item.quantity = quantity;
+      inventoryProvider.updateItem(item);
+    }
+
+    if (hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã xác nhận tất cả sản phẩm')),
+      );
     }
   }
 
@@ -262,7 +274,6 @@ class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
       updatedItems.add(newItem);
       _confirmedItems.add(name);
       setState(() {});
->>>>>>> 898fbf3be0448210a6a988cf05ee58b1dd345f06
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -273,6 +284,9 @@ class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
   @override
   void dispose() {
     for (var controller in _locationControllers.values) {
+      controller.dispose();
+    }
+    for (var controller in _quantityControllers.values) {
       controller.dispose();
     }
     super.dispose();
@@ -294,66 +308,6 @@ class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
-    return Scaffold(
-      appBar: AppBar(),
-      body: Column(children: [
-        Expanded(
-          child: ListView.builder(
-            itemCount: widget.items.length,
-            itemBuilder: (_, index) {
-              final item = widget.items[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(item.icon, size: 30),
-                          const SizedBox(width: 10),
-                          Text(
-                            '${item.name} (x${item.quantity})', // Hiển thị số lượng
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        value: _locationControllers[item.name]!.text.isNotEmpty
-                            ? _locationControllers[item.name]!.text
-                            : null,
-                        items: ['Ngăn mát', 'Ngăn đá']
-                            .map((location) => DropdownMenuItem(
-                                  value: location,
-                                  child: Text(location),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _locationControllers[item.name]!.text = value!;
-                          });
-                        },
-                        decoration: const InputDecoration(
-                          labelText: 'Vị trí lưu trữ',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          const Text('Ngày hết hạn: '),
-                          Text(
-                            _expiryDates[item.name] != null
-                                ? '${_expiryDates[item.name]!.day}/${_expiryDates[item.name]!.month}/${_expiryDates[item.name]!.year}'
-                                : 'Chưa chọn',
-=======
     return WillPopScope(
       onWillPop: () async {
         Navigator.pop(context);
@@ -394,7 +348,6 @@ class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
                           decoration: const InputDecoration(
                             labelText: 'Số lượng',
                             border: OutlineInputBorder(),
->>>>>>> 898fbf3be0448210a6a988cf05ee58b1dd345f06
                           ),
                         ),
                         const SizedBox(height: 12),

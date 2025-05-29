@@ -1,16 +1,27 @@
 import 'package:flutter/material.dart';
 
 class FoodItem {
-  late final String name;
-  final IconData icon;
+  String name;
+  IconData icon;
   bool isSelected;
   int quantity;
-  String? location;
-  DateTime? expiry;
-  bool? isDeleted;
-  bool? isUpdate;
-  FoodItem(this.name, this.icon, this.isSelected, this.quantity, this.location,
-      this.expiry, this.isDeleted, this.isUpdate);
+  String location;
+  DateTime expiry;
+  bool isDeleted;
+  bool isUpdate;
+  String? category; // Thêm dòng này
+
+  FoodItem(
+    this.name,
+    this.icon,
+    this.isSelected,
+    this.quantity,
+    this.location,
+    this.expiry, [
+    this.isDeleted = false,
+    this.isUpdate = false,
+    this.category, // Thêm dòng này
+  ]);
 
   FoodItem copy() {
     return FoodItem(
@@ -19,11 +30,10 @@ class FoodItem {
       isSelected,
       quantity,
       location,
-      expiry != null
-          ? DateTime.fromMillisecondsSinceEpoch(expiry!.millisecondsSinceEpoch)
-          : null,
+      expiry, // expiry luôn là DateTime, không cần kiểm tra null
       isDeleted,
       isUpdate,
+      category, // truyền category khi copy
     );
   }
 }

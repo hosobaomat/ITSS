@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/fooditem.dart';
-import 'package:login_menu/models/shopping_list_create_request.dart';
+import 'package:login_menu/models/shoppinglist_request.dart';
 import 'package:login_menu/models/shopping_list_model.dart.dart';
 import 'package:login_menu/models/ShoppingListModelShare.dart';
 import 'package:login_menu/models/update_item.dart';
 import 'package:login_menu/pages/inventory_ipput.dart';
-import 'package:login_menu/pages/new_list_page.dart';
+import 'package:login_menu/pages/new_list_info_page.dart';
 import 'package:login_menu/pages/share_member_page.dart';
 import 'package:login_menu/service/auth_service.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +13,7 @@ import 'package:provider/provider.dart';
 class ShoppingListTab extends StatefulWidget {
   const ShoppingListTab({super.key, required this.authService});
   final AuthService authService;
+
   @override
   State<ShoppingListTab> createState() => _ShoppingListTabState();
 }
@@ -25,6 +25,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
   bool _hasUnreadInvites = false;
   List<FoodItem> foodInventory = [];
   List<FoodItem> deletedInventory = [];
+  bool _isLoading = true;
   final List<String> _weekdayNames = [
     'Monday',
     'Tuesday',
@@ -41,58 +42,48 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
     _checkForInvitations();
     fetchShoppingList();
   }
-  
+
   Future<void> fetchShoppingList() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       final listData = await widget.authService.fetchShoppingLists();
       print('API Response: $listData');
 
-      final fetchedSharedLists = (listData['shared'] as List).map((item) {
+      final fetchedSharedLists =
+          (listData['shared'] as List? ?? []).map((item) {
         return ShoppingListModelShare(
-          date: DateTime.parse(item['date']),
-          title: item['title'],
-          sharedBy: item['sharedBy'],
-          items: (item['items'] as List).map((i) {
-            print('Icon name: ${i['icon']}');
+          date: DateTime.parse(item['date'] ?? DateTime.now().toString()),
+          title: item['title']?.toString() ?? 'Untitled',
+          sharedBy: item['sharedBy']?.toString() ?? 'Unknown',
+          items: (item['items'] as List? ?? []).map((i) {
             return ShoppingItem(
-<<<<<<< HEAD
-              i['name'],
-              getIconDataFromString(i['icon'] ?? 'help_outline'),
-              i['isDone'],
-              quantity: i['quantity'] ?? 1, // Thêm số lượng từ API
-              category: i['category'], // Thêm category từ API nếu có
+              i['name']?.toString() ?? 'Unknown',
+              getIconDataFromString(i['icon']?.toString() ?? 'help_outline'),
+              i['isDone'] ?? false,
+              (i['quantity'] as num?)?.toDouble() ?? 1.0,
+              i['unit']?.toString() ?? '',
+              category: i['category']?.toString(),
             );
-=======
-                i['name'],
-                getIconDataFromString(i['icon'] ?? 'help_outline'),
-                i['isDone'],
-                0,
-                '');
->>>>>>> 898fbf3be0448210a6a988cf05ee58b1dd345f06
           }).toList(),
         );
       }).toList();
 
-      final fetchedPersonalLists = (listData['personal'] as List).map((item) {
+      final fetchedPersonalLists =
+          (listData['personal'] as List? ?? []).map((item) {
         return ShoppingListModel(
-          date: DateTime.parse(item['date']),
-          items: (item['items'] as List).map((i) {
-            print('Icon name: ${i['icon']}');
+          date: DateTime.parse(item['date'] ?? DateTime.now().toString()),
+          items: (item['items'] as List? ?? []).map((i) {
             return ShoppingItem(
-<<<<<<< HEAD
-              i['name'],
-              getIconDataFromString(i['icon'] ?? 'help_outline'),
-              i['isDone'],
-              quantity: i['quantity'] ?? 1, // Thêm số lượng từ API
-              category: i['category'], // Thêm category từ API nếu có
+              i['name']?.toString() ?? 'Unknown',
+              getIconDataFromString(i['icon']?.toString() ?? 'help_outline'),
+              i['isDone'] ?? false,
+              (i['quantity'] as num?)?.toDouble() ?? 1.0,
+              i['unit']?.toString() ?? '',
+              category: i['category']?.toString(),
             );
-=======
-                i['name'],
-                getIconDataFromString(i['icon'] ?? 'help_outline'),
-                i['isDone'],
-                0,
-                '');
->>>>>>> 898fbf3be0448210a6a988cf05ee58b1dd345f06
           }).toList(),
         );
       }).toList();
@@ -100,9 +91,13 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
       setState(() {
         _sharedLists = List<ShoppingListModelShare>.from(fetchedSharedLists);
         _lists = List<ShoppingListModel>.from(fetchedPersonalLists);
+        _isLoading = false;
       });
     } catch (e) {
       print('Lỗi khi lấy danh sách: $e');
+      setState(() {
+        _isLoading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi khi lấy danh sách: $e')),
       );
@@ -125,9 +120,52 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
   }
 
   void _removeList(int index) {
+    final list = _lists[index];
     setState(() {
       _lists.removeAt(index);
     });
+
+    // Cập nhật inventory khi xóa danh sách
+    for (var item in list.items) {
+      _updateInventoryOnRemove(item);
+    }
+  }
+
+  void _updateInventoryOnRemove(ShoppingItem item) {
+    final inventoryProvider =
+        Provider.of<FoodInventoryProvider>(context, listen: false);
+    final matchingItems =
+        foodInventory.where((food) => food.name == item.name).toList();
+
+    if (matchingItems.isEmpty) return;
+
+    for (var inventoryItem in matchingItems) {
+      final providerItems = inventoryProvider.items
+          .where((food) => food.name == item.name)
+          .toList();
+      for (var providerItem in providerItems) {
+        if (providerItem.quantity <= 0 || providerItem.location == '') {
+          inventoryProvider.removeItem(providerItem);
+        } else if (providerItem.location == inventoryItem.location &&
+            providerItem.expiry == inventoryItem.expiry) {
+          if (providerItem.quantity > inventoryItem.quantity) {
+            providerItem.quantity -= inventoryItem.quantity;
+            inventoryProvider.updateItem(providerItem);
+            print(
+                'Đã cập nhật số lượng: ${providerItem.name} - ${providerItem.quantity}');
+          } else if (providerItem.quantity == inventoryItem.quantity) {
+            inventoryProvider.removeItem(providerItem);
+            print('Đã xóa: ${providerItem.name}');
+          }
+        }
+      }
+
+      final foodItem = getFoodItemByName(item.name);
+      if (foodItem != null) {
+        ItemisDeleted(foodItem);
+        foodInventory.removeWhere((food) => food.name == item.name);
+      }
+    }
   }
 
   Widget _buildListCard(ShoppingListModel list, int index) {
@@ -153,83 +191,21 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                 children: [
                   IconButton(
                     onPressed: () {
-                      // Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(
-                      //         builder: (_) => SharingMembersPage()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SharingMembersPage(),
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.edit, color: Colors.blue),
                   ),
-                  // IconButton(
-                  //   onPressed: () {
-                  //     Navigator.push(
-                  //         context,
-                  //         MaterialPageRoute(
-                  //             builder: (_) => SharingMembersPage()));
-                  //   },
-                  //   icon: const Icon(Icons.share, color: Colors.blue),
-                  // ),
                   IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.edit, color: Colors.blue),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      _removeList(index);
-                      for (var item in list.items) {
-                        bool alreadyExists =
-                            foodInventory.any((food) => food.name == item.name);
-                        if (alreadyExists) {
-                          final inventoryProvider =
-                              Provider.of<FoodInventoryProvider>(context,
-                                  listen: false);
-                          final originalList = inventoryProvider.originalItems;
-                          // Lấy danh sách tất cả các mục trùng tên
-                          final matchingItems = inventoryProvider.items
-                              .where((food) => food.name == item.name)
-                              .toList();
-                          final quantity = foodInventory
-                              .where((food) => food.name == item.name)
-                              .toList();
-                          for (int i = 0; i < matchingItems.length; i++) {
-                            final currenItem = matchingItems[i];
-                            if (currenItem.quantity <= 0 ||
-                                currenItem.location == '') {
-                              inventoryProvider.removeItem(currenItem);
-                            } else {
-                              for (int j = 0; j < quantity.length; j++) {
-                                if (currenItem.location ==
-                                        quantity[j].location &&
-                                    currenItem.expiry == quantity[j].expiry &&
-                                    currenItem.quantity >
-                                        quantity[j].quantity) {
-                                  //neu trung vi tri va ngay het han va so luong lon hon thi sua quantity
-                                  currenItem.quantity -= quantity[j].quantity;
-                                  inventoryProvider.updateItem(currenItem);
-                                  print('da cap nhat');
-                                } else if (currenItem.location ==
-                                        quantity[j].location &&
-                                    currenItem.expiry == quantity[j].expiry &&
-                                    currenItem.quantity ==
-                                        quantity[j].quantity) {
-                                  //neu trung vi tri va ngay het han tuy nhien thuc pham bang
-                                  inventoryProvider.removeItem(currenItem);
-                                  print('da xoa');
-                                }
-                              }
-                            }
-                          }
-                          final newItem = getFoodItemByName(item.name);
-                          ItemisDeleted(newItem!);
-                          foodInventory
-                              .removeWhere((food) => food.name == item.name);
-                        }
-                      }
-                    },
+                    onPressed: () => _removeList(index),
                     icon: const Icon(Icons.delete_outline, color: Colors.red),
                   ),
                 ],
-              )
+              ),
             ],
           ),
           Text('${list.completedCount} of ${list.items.length} items'),
@@ -237,7 +213,6 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           ...list.items.map((item) => buildItem(item, list.date)),
           Align(
             alignment: Alignment.centerRight,
-<<<<<<< HEAD
             child: ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(
@@ -246,40 +221,20 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                     builder: (_) => InventoryItemInputWidget(
                       items: foodInventory,
                     ),
-=======
-            child: TextButton(
-                onPressed: () {},
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => InventoryItemInputWidget(
-                                  items: foodInventory,
-                                ))).then((result) {
-                      if (result == null) {
-                        
-                        final updateItemProvider =
-                            Provider.of<UpdateItemProvider>(context,
-                                listen: false);
-                        for (var updateItem in updateItemProvider.updateItems) {
-                          final index = foodInventory.indexWhere(
-                              (item) => item.name == updateItem.name);
-                          if (index != -1) {
-                            foodInventory[index] = updateItem;
-                          }
-                        }
-                        
-                      }
-                    });
-                  },
-                  label: const Text('Add Inventory'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
->>>>>>> 898fbf3be0448210a6a988cf05ee58b1dd345f06
                   ),
-                );
+                ).then((result) {
+                  if (result == null) {
+                    final updateItemProvider =
+                        Provider.of<UpdateItemProvider>(context, listen: false);
+                    for (var updateItem in updateItemProvider.updateItems) {
+                      final index = foodInventory
+                          .indexWhere((item) => item.name == updateItem.name);
+                      if (index != -1) {
+                        foodInventory[index] = updateItem;
+                      }
+                    }
+                  }
+                });
               },
               label: const Text('Add Inventory'),
               style: ElevatedButton.styleFrom(
@@ -295,16 +250,6 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
   }
 
   Widget buildSharedListCard(ShoppingListModelShare list) {
-    final weekdayNames = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday'
-    ];
-
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -320,7 +265,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${weekdayNames[list.date.weekday - 1]}, '
+                '${_weekdayNames[list.date.weekday - 1]}, '
                 '${list.date.day.toString().padLeft(2, '0')}/${list.date.month.toString().padLeft(2, '0')}',
                 style:
                     const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -350,7 +295,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                 ),
                 Icon(item.icon),
                 const SizedBox(width: 8),
-                Text('${item.name} (x${item.quantity})'), // Hiển thị số lượng
+                Text('${item.name} (x${item.quantity})'),
               ],
             );
           }),
@@ -400,14 +345,8 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                     title: 'Weekend Grocery',
                     sharedBy: invite['from'],
                     items: [
-<<<<<<< HEAD
-                      ShoppingItem("Milk", Icons.local_drink, false,
-                          quantity: 2),
-                      ShoppingItem("Eggs", Icons.egg, false, quantity: 12),
-=======
-                      ShoppingItem("Milk", Icons.local_drink, false, 0, ''),
-                      ShoppingItem("Eggs", Icons.egg, false, 0, ''),
->>>>>>> 898fbf3be0448210a6a988cf05ee58b1dd345f06
+                      ShoppingItem("Milk", Icons.local_drink, false, 1, ''),
+                      ShoppingItem("Eggs", Icons.egg, false, 1, ''),
                     ],
                   ),
                 );
@@ -437,15 +376,13 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
 
   FoodItem? getFoodItemByName(String name) {
     if (name.isEmpty) {
-      return null; // Trả về null nếu name rỗng
+      return null;
     }
     try {
-      return foodInventory.firstWhere(
-        (food) => food.name == name,
-      );
+      return foodInventory.firstWhere((food) => food.name == name);
     } catch (e) {
       print('Lỗi khi tìm FoodItem với name "$name": $e');
-      return null; // Trả về null nếu có lỗi
+      return null;
     }
   }
 
@@ -500,8 +437,8 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                           final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => NewListPage(
-                                itemsByCategory: DataStore.itemsByCategory, authService: widget.authService,
+                              builder: (_) => NewListInfoPage(
+                                authService: widget.authService,
                               ),
                             ),
                           );
@@ -528,83 +465,11 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                                     ),
                                     TextButton(
                                       onPressed: () {
-<<<<<<< HEAD
-=======
-                                        final updateItemProvider =
-                                            Provider.of<UpdateItemProvider>(
-                                                context,
-                                                listen: false);
-                                        // 1. Lấy danh sách item cũ
->>>>>>> 898fbf3be0448210a6a988cf05ee58b1dd345f06
-                                        final oldItems = _lists[index].items;
+                                        final oldList = _lists[index];
+                                        for (var oldItem in oldList.items) {
+                                          _updateInventoryOnRemove(oldItem);
+                                        }
                                         setState(() {
-                                          for (var oldItem in oldItems) {
-                                            final inventoryProvider = Provider
-                                                .of<FoodInventoryProvider>(
-                                                    context,
-                                                    listen: false);
-                                            final originalList =
-                                                inventoryProvider.originalItems;
-                                            // Lấy danh sách tất cả các mục trùng tên
-                                            final matchingItems =
-                                                inventoryProvider.items
-                                                    .where((food) =>
-                                                        food.name ==
-                                                        oldItem.name)
-                                                    .toList();
-                                            final quantity = foodInventory
-                                                .where((food) =>
-                                                    food.name == oldItem.name)
-                                                .toList();
-                                            for (int i = 0;
-                                                i < matchingItems.length;
-                                                i++) {
-                                              final currenItem =
-                                                  matchingItems[i];
-                                              if (currenItem.quantity <= 0 ||
-                                                  currenItem.location == '') {
-                                                inventoryProvider
-                                                    .removeItem(currenItem);
-                                              } else {
-                                                for (int j = 0;
-                                                    j < quantity.length;
-                                                    j++) {
-                                                  if (currenItem.location ==
-                                                          quantity[j]
-                                                              .location &&
-                                                      currenItem.expiry ==
-                                                          quantity[j].expiry &&
-                                                      currenItem.quantity >
-                                                          quantity[j]
-                                                              .quantity) {
-                                                    //neu trung vi tri va ngay het han va so luong lon hon thi sua quantity
-                                                    currenItem.quantity -=
-                                                        quantity[j].quantity;
-                                                    inventoryProvider
-                                                        .updateItem(currenItem);
-                                                    print('da cap nhat');
-                                                  } else if (currenItem
-                                                              .location ==
-                                                          quantity[j]
-                                                              .location &&
-                                                      currenItem.expiry ==
-                                                          quantity[j].expiry &&
-                                                      currenItem.quantity ==
-                                                          quantity[j]
-                                                              .quantity) {
-                                                    //neu trung vi tri va ngay het han tuy nhien thuc pham bang
-                                                    inventoryProvider
-                                                        .removeItem(currenItem);
-                                                    print('da xoa');
-                                                  }
-                                                }
-                                              }
-                                            }
-                                            updateItemProvider
-                                                .remove(oldItem.name);
-                                            foodInventory.removeWhere((food) =>
-                                                food.name == oldItem.name);
-                                          }
                                           _lists[index] = result;
                                         });
                                         Navigator.pop(context);
@@ -628,16 +493,22 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
               ),
               const SizedBox(height: 24),
               Expanded(
-                child: ListView(
-                  children: [
-                    ..._sharedLists
-                        .map((shared) => buildSharedListCard(shared)),
-                    const SizedBox(height: 24),
-                    ..._lists.asMap().entries.map(
-                          (entry) => _buildListCard(entry.value, entry.key),
-                        ),
-                  ],
-                ),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : (_lists.isEmpty && _sharedLists.isEmpty)
+                        ? const Center(
+                            child: Text('No shopping lists available'))
+                        : ListView(
+                            children: [
+                              ..._sharedLists
+                                  .map((shared) => buildSharedListCard(shared)),
+                              const SizedBox(height: 24),
+                              ..._lists.asMap().entries.map(
+                                    (entry) =>
+                                        _buildListCard(entry.value, entry.key),
+                                  ),
+                            ],
+                          ),
               ),
             ],
           ),
@@ -657,95 +528,32 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
               : (val) {
                   setState(() {
                     item.checked = val ?? false;
-                    bool alreadyExists =
+                    final alreadyExists =
                         foodInventory.any((food) => food.name == item.name);
-                    bool alreadyExistsinDeletedItem =
+                    final alreadyExistsInDeleted =
                         deletedInventory.any((food) => food.name == item.name);
+
                     if (item.checked) {
-<<<<<<< HEAD
-                      if (!alreadyExists) {
+                      if (!alreadyExists && !alreadyExistsInDeleted) {
                         final newItem = FoodItem(
                           item.name,
                           item.icon,
                           item.checked,
-                          item.quantity, // Sử dụng số lượng từ ShoppingItem
+                          0,
                           '',
                           DateTime.now(),
+                          false,
+                          false,
                         );
-=======
-                      //them vao invetory neu chua co
-                      if (!alreadyExists && !alreadyExistsinDeletedItem) {
-                        final newItem = FoodItem(item.name, item.icon,
-                            item.checked, 0, '', DateTime.now(), false, false);
->>>>>>> 898fbf3be0448210a6a988cf05ee58b1dd345f06
                         foodInventory.add(newItem);
-                      } else if (!alreadyExists && alreadyExistsinDeletedItem) {
+                      } else if (!alreadyExists && alreadyExistsInDeleted) {
                         final newItem = deletedInventory
                             .firstWhere((food) => food.name == item.name);
                         ItemnotDeleted(newItem);
                       }
                     } else {
                       if (alreadyExists) {
-                        final inventoryProvider =
-                            Provider.of<FoodInventoryProvider>(context,
-                                listen: false);
-                        final originalList = inventoryProvider.originalItems;
-                        // Lấy danh sách tất cả các mục trùng tên
-                        final matchingItems = inventoryProvider.items
-                            .where((food) => food.name == item.name)
-                            .toList();
-                        final quantity = foodInventory
-                            .where((food) => food.name == item.name)
-                            .toList();
-                        for (int i = 0; i < matchingItems.length; i++) {
-                          final currenItem = matchingItems[i];
-                          if (currenItem.quantity <= 0 ||
-                              currenItem.location == '') {
-                            inventoryProvider.removeItem(currenItem);
-                          } else {
-                            for (int j = 0; j < quantity.length; j++) {
-                              if (currenItem.location == quantity[j].location &&
-                                  currenItem.expiry == quantity[j].expiry &&
-                                  currenItem.quantity > quantity[j].quantity) {
-                                //neu trung vi tri va ngay het han va so luong lon hon thi sua quantity
-                                currenItem.quantity -= quantity[j].quantity;
-                                inventoryProvider.updateItem(currenItem);
-                                print('da cap nhat');
-                              } else if (currenItem.location ==
-                                      quantity[j].location &&
-                                  currenItem.expiry == quantity[j].expiry &&
-                                  currenItem.quantity == quantity[j].quantity) {
-                                //neu trung vi tri va ngay het han tuy nhien thuc pham bang
-                                inventoryProvider.removeItem(currenItem);
-                                print('da xoa');
-                              }
-                            }
-                          }
-                        }
-                        // Provider.of<FoodInventoryProvider>(context,
-                        //         listen: false)
-                        //     .removeItem(foodInventory
-                        //         .firstWhere((food) => food.name == item.name));
-                        final newItem = getFoodItemByName(item.name);
-                        ItemisDeleted(newItem!);
-                        // for (var i in foodInventory) {
-                        //   print(
-                        //       '${i.name} - ${i.isDeleted}-${i.location}-${i.quantity}-${i.expiry}');
-                        // }
-                        // for (var i in deletedInventory) {
-                        //   print(
-                        //       '${i.name} - ${i.isDeleted}-${i.location}-${i.quantity}-${i.expiry}');
-                        // }
-                        foodInventory
-                            .removeWhere((food) => food.name == item.name);
-                        for (var i in foodInventory) {
-                          print(
-                              '${i.name} - ${i.isDeleted}-${i.location}-${i.quantity}-${i.expiry}');
-                        }
-                        for (var i in deletedInventory) {
-                          print(
-                              '${i.name} - ${i.isDeleted}-${i.location}-${i.quantity}-${i.expiry}');
-                        }
+                        _updateInventoryOnRemove(item);
                       }
                     }
                   });
@@ -753,15 +561,10 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
         ),
         Icon(item.icon),
         const SizedBox(width: 8),
-<<<<<<< HEAD
         Text(
-          '${item.name} (x${item.quantity})', // Hiển thị số lượng
+          '${item.name} - ${item.quantity} - ${item.unit}',
           style: const TextStyle(fontSize: 16),
         ),
-=======
-        Text('${item.name}-${item.quantity}-${item.unit}',
-            style: const TextStyle(fontSize: 16)),
->>>>>>> 898fbf3be0448210a6a988cf05ee58b1dd345f06
       ],
     );
   }
@@ -771,14 +574,10 @@ class ShoppingItem {
   String name;
   IconData icon;
   bool checked;
-<<<<<<< HEAD
-  final int quantity;
-  final String? category; // Thêm category
-  ShoppingItem(this.name, this.icon, this.checked,
-      {this.quantity = 1, this.category});
-=======
   double quantity;
   String unit;
-  ShoppingItem(this.name, this.icon, this.checked, this.quantity, this.unit);
->>>>>>> 898fbf3be0448210a6a988cf05ee58b1dd345f06
+  String? category;
+
+  ShoppingItem(this.name, this.icon, this.checked, this.quantity, this.unit,
+      {this.category});
 }
