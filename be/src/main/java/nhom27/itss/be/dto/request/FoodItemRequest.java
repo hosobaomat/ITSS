@@ -2,18 +2,20 @@ package nhom27.itss.be.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
 import java.sql.Timestamp;
-
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class FoodItemRequest {
-    @NotNull
-    private Integer foodCatalogId;
-
-    @NotNull
-    @Min(1)
-    private Integer quantity;
-
-    private Timestamp expiryDate;
-    private String storageLocation;
+    Integer foodCatalogId;
+    String foodName;
+    Integer quantity;
+    Integer unitId;
+    Timestamp expiryDate;
+    String storageLocation;
 }
