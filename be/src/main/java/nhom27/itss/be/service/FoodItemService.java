@@ -135,6 +135,7 @@ public class FoodItemService {
     }
 
 
+
 //    public List<FoodItemResponse> searchFoodItems(String name, Integer categoryId) {
 //        Integer groupId = getCurrentUserGroup().getGroup_id();
 //        List<FoodItem> foodItems;
@@ -158,4 +159,5 @@ public class FoodItemService {
 //    }
 
 }
+
 

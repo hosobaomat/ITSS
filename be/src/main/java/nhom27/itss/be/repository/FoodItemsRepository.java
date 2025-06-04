@@ -14,6 +14,7 @@ public interface FoodItemsRepository extends JpaRepository<FoodItem, Integer> {
 
     // Tìm kiếm
     List<FoodItem> findByGroup(FamilyGroup group);
+
 //    List<FoodItem> findByGroup_IdAndFoodNameContainingIgnoreCase(Integer groupId, String foodName);
 //    List<FoodItem> findByGroup_IdAndFoodCatalog_Category_Id(Integer groupId, Integer categoryId);
 //    List<FoodItem> findByGroup_IdAndFoodNameContainingIgnoreCaseAndFoodCatalog_Category_Id(Integer groupId, String foodName, Integer categoryId);
@@ -28,4 +29,5 @@ public interface FoodItemsRepository extends JpaRepository<FoodItem, Integer> {
     List<FoodItem> findByExpiryDateBetween(Date startDate, Date endDate);
 
     List<FoodItem> findByGroupAndExpiryDateAfter(FamilyGroup group, Date date);
+
 }

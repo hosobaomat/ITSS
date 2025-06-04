@@ -55,6 +55,8 @@ public class FoodItemController {
 
     }
 
+
+
 //    @GetMapping("/search")
 //    public ResponseEntity<ApiResponse<List<FoodItemResponse>>> searchFoodItems(
 //            @RequestParam(required = false) String name,
@@ -67,4 +69,6 @@ public class FoodItemController {
 //                        .code(200)
 //                        .build());
 //    }
+
 }
+

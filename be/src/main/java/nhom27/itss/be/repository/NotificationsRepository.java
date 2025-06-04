@@ -9,4 +9,5 @@ public interface NotificationsRepository extends JpaRepository<Notification, Int
     // Kiểm tra để tránh gửi thông báo trùng lặp
 //    boolean existsByFoodIdAndNotificationType(Integer foodId, String notificationType);
 //      boolean existsByFoodIdAndNotificationTypeAndUserId(Integer foodId, String notificationType, Integer userId);
+
 }
