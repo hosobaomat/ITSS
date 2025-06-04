@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class Userapi {
   static const String apiUrl =
-      "http://192.168.1.18:8082/ITSS_BE"; // Đổi IP backend của bạn
+      "http://10.134.158.47:8082/ITSS_BE"; // Đổi IP backend của bạn
   String? _token;
   String? get token => _token;
 

@@ -26,7 +26,7 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
   @override
   void initState() {
     super.initState();
-    _loadUserId(); // Lấy user_id khi khởi tạo
+    _loadUserId();
   }
 
   Future<void> _loadUserId() async {
@@ -34,15 +34,14 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
       _isLoading = true;
     });
     try {
-      final userInfo = await UserAPI.Userapi
-          .getMyInfo(); // Gọi API để lấy thông tin người dùng
+      final userInfo = await UserAPI.Userapi.getMyInfo();
       setState(() {
-        _userId = userInfo['userid'] as int?; // Kiểm tra 'userid'
+        _userId = userInfo['userid'] as int?;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _userId = null; // Nếu lỗi, đặt null để hiển thị thông báo
+        _userId = null;
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -68,6 +67,11 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
     }
   }
 
+  DateTime _combineDateOnly(DateTime date) {
+    final now = DateTime.now();
+    return DateTime(date.year, date.month, date.day);
+  }
+
   void _navigateToItemsPage() async {
     if (_listNameController.text.isEmpty || _selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -90,17 +94,16 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
 
     final request = ShoppingListCreateRequest(
       _listNameController.text,
-      _userId!, // createdBy
-      2, // group_id (giả định group_id bằng user_id, có thể thay đổi nếu cần)
-      _selectedDate,
-      _selectedDate!.add(const Duration(days: 1)),
+      _userId!,
+      2,
+      _combineDateOnly(_selectedDate!),
+      _combineDateOnly(_selectedDate!.add(const Duration(days: 1))),
       'DRAFT',
     );
 
     try {
-      // Gọi API để lưu danh sách và lấy listId
       final listResponse = await widget.authService.addShoppingList(request);
-      final listId = 1;
+      final listId = listResponse['result']?['id'] as int?;
 
       if (listId == null) {
         throw Exception('Không thể lấy list_id từ phản hồi');
@@ -110,7 +113,6 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
         const SnackBar(content: Text('List saved successfully')),
       );
 
-      // Chuyển sang NewListItemsPage với userId và listId
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -119,7 +121,7 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
             listName: _listNameController.text,
             selectedDate: _selectedDate!,
             userId: _userId,
-            listId: 1,
+            listId: listId,
           ),
         ),
       );
@@ -143,7 +145,7 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
     return Scaffold(
       appBar: AppBar(
         leading: TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context, true),
           child: const Text('X', style: TextStyle(fontSize: 20)),
         ),
         title: const Text('Create new list', style: TextStyle(fontSize: 22)),

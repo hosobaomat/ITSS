@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:login_menu/models/fooditem.dart';
-import 'package:login_menu/models/shoppinglist_request.dart';
 import 'package:login_menu/models/shopping_list_model.dart.dart';
 import 'package:login_menu/models/ShoppingListModelShare.dart';
 import 'package:login_menu/models/update_item.dart';
@@ -43,54 +42,91 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
     fetchShoppingList();
   }
 
+  DateTime _parseDate(dynamic rawDate) {
+    if (rawDate == null) return DateTime.now();
+    if (rawDate is int) {
+      return DateTime.fromMillisecondsSinceEpoch(rawDate).toLocal();
+    } else if (rawDate is String) {
+      try {
+        // Lấy đúng phần yyyy-MM-dd, bỏ giờ phút giây và timezone để tránh lệch ngày
+        String dateOnly =
+            rawDate.length >= 10 ? rawDate.substring(0, 10) : rawDate;
+        final parts = dateOnly.split('-');
+        if (parts.length == 3) {
+          return DateTime(
+            int.parse(parts[0]),
+            int.parse(parts[1]),
+            int.parse(parts[2]),
+          );
+        }
+        // Nếu không thể tách, fallback parse bình thường rồi convert về local
+        return DateTime.parse(rawDate).toLocal();
+      } catch (_) {
+        return DateTime.now();
+      }
+    }
+    return DateTime.now();
+  }
+
   Future<void> fetchShoppingList() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final listData = await widget.authService.fetchShoppingLists();
-      print('API Response: $listData');
+      final userId = await widget.authService.getUserId();
+      final groupId = 2;
 
-      final fetchedSharedLists =
-          (listData['shared'] as List? ?? []).map((item) {
-        return ShoppingListModelShare(
-          date: DateTime.parse(item['date'] ?? DateTime.now().toString()),
-          title: item['title']?.toString() ?? 'Untitled',
-          sharedBy: item['sharedBy']?.toString() ?? 'Unknown',
-          items: (item['items'] as List? ?? []).map((i) {
-            return ShoppingItem(
-              i['name']?.toString() ?? 'Unknown',
-              getIconDataFromString(i['icon']?.toString() ?? 'help_outline'),
-              i['isDone'] ?? false,
-              (i['quantity'] as num?)?.toDouble() ?? 1.0,
-              i['unit']?.toString() ?? '',
-              category: i['category']?.toString(),
-            );
-          }).toList(),
+      final userLists =
+          await widget.authService.fetchShoppingListsByUserId(userId);
+      final sharedLists =
+          await widget.authService.fetchShoppingListsByGroupId(groupId);
+      print('Fetched User Lists: $userLists');
+      // Danh sách cá nhân
+      final fetchedPersonalLists = userLists.map((item) {
+        final items = (item['items'] as List? ?? []).map((i) {
+          return ShoppingItem(
+            i['name']?.toString() ?? 'Unknown',
+            getIconDataFromString(i['icon']?.toString() ?? 'help_outline'),
+            i['status'] == 'PURCHASED',
+            (i['quantity'] as num?)?.toDouble() ?? 1.0,
+            i['unitName']?.toString() ?? '',
+            category: null,
+          );
+        }).toList();
+
+        return ShoppingListModel(
+          listName: item['listName']?.toString() ?? 'Untitled',
+          date: _parseDate(item['startDate']),
+          items: items,
+          listId: item['id'] as int?,
         );
       }).toList();
 
-      final fetchedPersonalLists =
-          (listData['personal'] as List? ?? []).map((item) {
-        return ShoppingListModel(
-          date: DateTime.parse(item['date'] ?? DateTime.now().toString()),
-          items: (item['items'] as List? ?? []).map((i) {
-            return ShoppingItem(
-              i['name']?.toString() ?? 'Unknown',
-              getIconDataFromString(i['icon']?.toString() ?? 'help_outline'),
-              i['isDone'] ?? false,
-              (i['quantity'] as num?)?.toDouble() ?? 1.0,
-              i['unit']?.toString() ?? '',
-              category: i['category']?.toString(),
-            );
-          }).toList(),
+      // Danh sách chia sẻ theo group
+      final fetchedSharedLists = sharedLists.map((item) {
+        final items = (item['items'] as List? ?? []).map((i) {
+          return ShoppingItem(
+            i['name']?.toString() ?? 'Unknown',
+            getIconDataFromString(i['icon']?.toString() ?? 'help_outline'),
+            i['isDone'] ?? false,
+            (i['quantity'] as num?)?.toDouble() ?? 1.0,
+            i['unit']?.toString() ?? '',
+            category: i['category']?.toString(),
+          );
+        }).toList();
+
+        return ShoppingListModelShare(
+          date: _parseDate(item['startDate']),
+          title: item['listName'] ?? 'Untitled',
+          sharedBy: item['sharedBy'] ?? 'Unknown',
+          items: items,
         );
       }).toList();
 
       setState(() {
-        _sharedLists = List<ShoppingListModelShare>.from(fetchedSharedLists);
         _lists = List<ShoppingListModel>.from(fetchedPersonalLists);
+        _sharedLists = List<ShoppingListModelShare>.from(fetchedSharedLists);
         _isLoading = false;
       });
     } catch (e) {
@@ -115,19 +151,32 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
       case 'restaurant':
         return Icons.restaurant;
       default:
-        return Icons.help_outline;
+        return Icons.shopping_cart_outlined; // Mặc định nếu không tìm thấy
     }
   }
 
-  void _removeList(int index) {
+  void _removeList(int index) async {
     final list = _lists[index];
-    setState(() {
-      _lists.removeAt(index);
-    });
 
-    // Cập nhật inventory khi xóa danh sách
-    for (var item in list.items) {
-      _updateInventoryOnRemove(item);
+    try {
+      // Gọi phương thức deleteShoppingList để xóa danh sách khỏi MySQL qua API
+      await widget.authService.deleteShoppingList(list.listId!);
+
+      // Sau khi xóa thành công, cập nhật lại giao diện người dùng
+      setState(() {
+        _lists.removeAt(index); // Xóa danh sách khỏi _lists trong UI
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content:
+                Text('Danh sách "${list.listName}" đã được xóa thành công')),
+      );
+    } catch (e) {
+      print('Lỗi khi xóa danh sách: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi xóa danh sách: $e')),
+      );
     }
   }
 
@@ -182,10 +231,13 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '${_weekdayNames[list.date.weekday - 1]}, ${list.date.day.toString().padLeft(2, '0')}/${list.date.month.toString().padLeft(2, '0')}',
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Expanded(
+                child: Text(
+                  list.listName,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               Row(
                 children: [
@@ -250,6 +302,8 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
   }
 
   Widget buildSharedListCard(ShoppingListModelShare list) {
+    final dateOnly = DateTime(list.date.year, list.date.month, list.date.day);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -265,8 +319,8 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${_weekdayNames[list.date.weekday - 1]}, '
-                '${list.date.day.toString().padLeft(2, '0')}/${list.date.month.toString().padLeft(2, '0')}',
+                '${_weekdayNames[dateOnly.weekday - 1]}, '
+                '${dateOnly.day.toString().padLeft(2, '0')}/${dateOnly.month.toString().padLeft(2, '0')}',
                 style:
                     const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
@@ -283,8 +337,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 6),
-          Text(
-              '${list.completedCount} of ${list.items.length} items completed'),
+          Text('${list.completedCount} of ${list.items.length} items'),
           const SizedBox(height: 12),
           ...list.items.map((item) {
             return Row(
@@ -443,47 +496,8 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                             ),
                           );
 
-                          if (result is ShoppingListModel) {
-                            final index = _lists.indexWhere((list) =>
-                                list.date.year == result.date.year &&
-                                list.date.month == result.date.month &&
-                                list.date.day == result.date.day);
-
-                            if (index != -1) {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Trùng ngày'),
-                                  content: const Text(
-                                      'Ngày này đã có danh sách rồi. Bạn có muốn thay thế không?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text('Không'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        final oldList = _lists[index];
-                                        for (var oldItem in oldList.items) {
-                                          _updateInventoryOnRemove(oldItem);
-                                        }
-                                        setState(() {
-                                          _lists[index] = result;
-                                        });
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text('Có'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            } else {
-                              setState(() {
-                                _lists.add(result);
-                              });
-                            }
+                          if (result == true) {
+                            fetchShoppingList();
                           }
                         },
                       ),

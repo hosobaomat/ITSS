@@ -342,14 +342,14 @@ class _InventoryItemInputWidgetState extends State<InventoryItemInputWidget> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        TextField(
-                          controller: _quantityControllers[item.name],
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Số lượng',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
+                        // TextField(
+                        //   controller: _quantityControllers[item.name],
+                        //   keyboardType: TextInputType.number,
+                        //   decoration: const InputDecoration(
+                        //     labelText: 'Số lượng',
+                        //     border: OutlineInputBorder(),
+                        //   ),
+                        // ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
                           value:

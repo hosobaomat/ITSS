@@ -43,6 +43,8 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
   @override
   void initState() {
     super.initState();
+    print(
+        'DEBUG: selectedDate received = ${widget.selectedDate}'); // Log ngày nhận
     _userId = widget.userId;
     _listId = widget.listId;
     if (_userId == null) {
@@ -201,7 +203,8 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
         widget.selectedDate.add(const Duration(days: 1)),
         'DRAFT',
       );
-
+      print(
+          'DEBUG: Creating ShoppingList with startDate=${request.startDate} endDate=${request.endDate}');
       try {
         final listResponse = await widget.authService.addShoppingList(request);
         _listId = listResponse['listid'] as int?;
@@ -273,6 +276,7 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
             'quantity': selectedItem.quantity.toDouble(),
             'unitId': unit.unidId,
             'foodCatalogId': foodCatalog.foodCatalogId,
+            'purchasedBy': _userId,
           });
         }
       }
@@ -306,11 +310,22 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
           .toList();
 
       final newList = ShoppingListModel(
+        listName: widget.listName,
         date: widget.selectedDate,
         items: items,
+        listId: _listId,
       );
-
-      Navigator.pop(context, newList);
+      print('DEBUG: Navigating to ShoppingListTab with date: ${newList.date}');
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ShoppingListTab(
+            authService: widget.authService,
+          ),
+        ),
+        (route) =>
+            false, // Xoá hết các màn hình trước và về lại ShoppingListTab
+      );
     } catch (e) {
       print('Error in _handleCreateList: $e');
       ScaffoldMessenger.of(context).showSnackBar(

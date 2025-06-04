@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:login_menu/service/auth_service.dart';
 import 'package:login_menu/tabs/meal_plan_tab.dart';
 import 'package:login_menu/tabs/recipes_Screen_tab.dart';
@@ -11,12 +12,29 @@ import 'package:login_menu/tabs/statistic_tab.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.authService});
   final AuthService authService;
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  int? _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserId();
+  }
+
+  Future<void> _loadUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId'); // 🔁 Đảm bảo đã lưu userId khi login
+    setState(() {
+      _userId = userId;
+    });
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -30,44 +48,17 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: Colors.green,
-        // actions: _selectedIndex == 2
-        //     ? [
-        //         // chỉ tab Cart mới có nút share
-        //         IconButton(
-        //           icon: const Icon(Icons.share),
-        //           onPressed: () {
-        //             ScaffoldMessenger.of(context).showSnackBar(
-        //               const SnackBar(content: Text('Đã chia sẻ danh sách!')),
-        //             );
-        //           },
-        //         ),
-        //       ]
-        //     : null,
       ),
-
-      // Các tab ở bottom bar
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          //tab shopping
-          ShoppingListTab(authService: widget.authService),
-
-          // Tab Categories
+          ShoppingListTab(
+            authService: widget.authService,
+          ),
           CategoriesTab(),
-
-          // Tab Cart
-          FoodInventoryScreen(
-            inventoryItems: [],
-          ),
-
-          //recipes Tab
-          RecipesScreen(
-            inventoryItems: [],
-          ),
-          // Tab Statistic
+          FoodInventoryScreen(inventoryItems: []),
+          RecipesScreen(inventoryItems: []),
           StatisticTab(),
-
-          // Tab profile
           ProfilTab(),
         ],
       ),
@@ -80,21 +71,12 @@ class _HomePageState extends State<HomePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.category),
-            label: 'Categories',
-          ),
+              icon: Icon(Icons.category), label: 'Categories'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_bag),
-            label: 'Food Inventory',
-          ),
+              icon: Icon(Icons.shopping_bag), label: 'Food Inventory'),
+          BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Recipes'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.receipt),
-            label: 'Recipes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt),
-            label: 'Statistic',
-          ),
+              icon: Icon(Icons.receipt), label: 'Statistic'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),

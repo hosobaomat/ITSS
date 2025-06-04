@@ -1,5 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:login_menu/models/foodCategoryResponse.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/selected_item.dart';
+
+const String apiUrl = 'http://10.134.158.47:8082/ITSS_BE'; // Thay URL thật
 
 class CategoryDetailScreen extends StatefulWidget {
   final String categoryName;
@@ -21,7 +29,8 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   late List<String> _items;
   final Map<String, SelectedItem> _selectedItems = {};
   final Map<String, TextEditingController> quantityControllers = {};
-  final Map<String, TextEditingController> unitControllers = {};
+  Map<String, String> selectedUnits = {}; // quản lý đơn vị cho từng item
+  List<String> units = [];
 
   @override
   void initState() {
@@ -32,8 +41,10 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       _selectedItems[item.name] = item;
       quantityControllers[item.name] =
           TextEditingController(text: item.quantity.toString());
-      unitControllers[item.name] = TextEditingController(text: item.unit);
+      selectedUnits[item.name] = item.unit;
     }
+
+    loadUnitsFromApi();
   }
 
   @override
@@ -41,10 +52,57 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     for (var controller in quantityControllers.values) {
       controller.dispose();
     }
-    for (var controller in unitControllers.values) {
-      controller.dispose();
-    }
     super.dispose();
+  }
+
+  Future<void> loadUnitsFromApi() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      if (token == null) {
+        throw Exception('Token không tồn tại');
+      }
+      final response = await http.get(
+        Uri.parse("$apiUrl/ShoppingList/FoodCatalog"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = jsonDecode(decodedBody);
+
+        if (data['result'] is List) {
+          final categories = (data['result'] as List)
+              .map((json) => FoodCategoryResponse.fromJson(json))
+              .toList();
+
+          final unitSet = <String>{};
+          for (var cat in categories) {
+            if (cat.unitResponses != null) {
+              for (var unitResp in cat.unitResponses!) {
+                final unitName = unitResp.unitName;
+                if (unitName != null && unitName.isNotEmpty) {
+                  unitSet.add(unitName);
+                }
+              }
+            }
+          }
+
+          setState(() {
+            units = unitSet.toList();
+          });
+        } else {
+          throw Exception('Dữ liệu result không phải là danh sách');
+        }
+      } else {
+        throw Exception('Không thể lấy dữ liệu FoodCatalog: ${response.body}');
+      }
+    } catch (e) {
+      print("Lỗi kết nối hoặc ánh xạ: $e");
+    }
   }
 
   @override
@@ -80,13 +138,12 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                       _selectedItems[item] = newItem;
                       quantityControllers[item] =
                           TextEditingController(text: '1');
-                      unitControllers[item] = TextEditingController();
+                      selectedUnits[item] = '';
                     } else {
                       _selectedItems.remove(item);
                       quantityControllers[item]?.dispose();
-                      unitControllers[item]?.dispose();
                       quantityControllers.remove(item);
-                      unitControllers.remove(item);
+                      selectedUnits.remove(item);
                     }
                   });
                 },
@@ -114,13 +171,24 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: TextField(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedUnits[item]?.isNotEmpty == true
+                              ? selectedUnits[item]
+                              : null,
                           decoration:
                               const InputDecoration(labelText: 'Đơn vị'),
-                          controller: unitControllers[item],
+                          items: units.map((unit) {
+                            return DropdownMenuItem(
+                              value: unit,
+                              child: Text(unit),
+                            );
+                          }).toList(),
                           onChanged: (val) {
                             setState(() {
-                              selectedItem?.unit = val;
+                              if (val != null) {
+                                selectedUnits[item] = val;
+                                selectedItem?.unit = val;
+                              }
                             });
                           },
                         ),
