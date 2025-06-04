@@ -1,10 +1,8 @@
 package nhom27.itss.be.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 
 import java.util.LinkedHashSet;
@@ -13,30 +11,37 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "units", schema = "DichoTienloi")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Table(name = "units")
 public class Unit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "unit_id", nullable = false)
-    private Integer id;
+    Integer id;
 
-    @Size(max = 50)
-    @NotNull
+
     @Column(name = "unit_name", nullable = false, length = 50)
-    private String unitName;
+    String unitName;
 
     @Lob
     @Column(name = "description")
-    private String description;
+    String description;
 
 
     @OneToMany(mappedBy = "unit")
-    private Set<FoodItem> fooditems = new LinkedHashSet<>();
+    Set<FoodItem> fooditems = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "unit")
-    private Set<RecipeIngredient> recipeIngredients = new LinkedHashSet<>();
+    Set<RecipeIngredient> recipeIngredients = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "unit")
-    private Set<ShoppingListItem> shoppinglistitems = new LinkedHashSet<>();
+    Set<ShoppingListItem> shoppinglistitems = new LinkedHashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "food_category_id")
+    FoodCategory foodCategory;
 
 }

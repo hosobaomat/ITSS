@@ -21,8 +21,8 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FamilyGroup {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "group_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer group_id;
 
     @Column(name = "group_name", nullable = false)
@@ -31,23 +31,23 @@ public class FamilyGroup {
     @Column(name = "created_at")
     Timestamp createdAt;
 
-    @OneToMany(mappedBy = "group")
-    List<FamilyGroupMember> members = new ArrayList<>();
+    @OneToMany(mappedBy = "group",cascade = CascadeType.ALL )
+    Set<FamilyGroupMember> members = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "group")
-    List<FoodItem> foodItems = new ArrayList<>();
+    Set<FoodItem> foodItems = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "group")
-    private Set<MealPlan> mealplans = new LinkedHashSet<>();
+    Set<MealPlan> mealplans = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "group")
-    private Set<Report> reports = new LinkedHashSet<>();
+    Set<Report> reports = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "group")
-    private Set<ShoppingList> shoppinglists = new LinkedHashSet<>();
+    Set<ShoppingList> shoppinglists = new LinkedHashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
-    private User createdBy;
+    User createdBy;
 
 }

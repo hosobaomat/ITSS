@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserResponse {
-
+    Integer userid;
     String username;
     String email;
     String fullName;

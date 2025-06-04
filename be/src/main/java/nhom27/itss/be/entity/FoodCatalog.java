@@ -40,4 +40,6 @@ public class FoodCatalog {
     @OneToMany(mappedBy = "food")
     private Set<ShoppingListItem> shoppinglistitems = new LinkedHashSet<>();
 
+
+
 }

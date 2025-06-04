@@ -19,7 +19,6 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FoodCategory {
 
-
     @Id
     @Column(name = "category_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,4 +33,7 @@ public class FoodCategory {
     @OneToMany(mappedBy = "foodCategory",cascade = CascadeType.ALL )
     private Set<FoodCatalog> foodcatalogs = new LinkedHashSet<>();
 
+
+    @OneToMany(mappedBy = "foodCategory",fetch = FetchType.EAGER)
+    private Set<Unit> units = new LinkedHashSet<>();
 }

@@ -53,5 +53,4 @@ public class FoodItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "food_catalog_id")
     private FoodCatalog foodCatalog;
-
 }
