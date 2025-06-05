@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:login_menu/models/ShoppingListEditRequest.dart';
 import 'package:login_menu/models/foodCategoryResponse.dart';
 import 'package:login_menu/models/shoppinglist_request.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
-  static const String apiUrl = "http://10.134.158.47:8082/ITSS_BE";
+  static const String apiUrl = "http://192.168.100.25:8082/ITSS_BE";
   String? _token;
   String? get token => _token;
 
@@ -271,5 +272,36 @@ class AuthService {
     }
 
     print('Danh sách với listId $listId đã được xóa khỏi MySQL');
+  }
+
+  Future<void> ediShoppingList(Shoppinglisteditrequest list) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token'); // Lấy token từ SharedPreferences
+
+    if (token == null || token.isEmpty) {
+      throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
+    }
+
+    final response = await http.patch(
+      Uri.parse('$apiUrl/ShoppingList/1'), // API DELETE với listId
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token', // Thêm token vào header
+      },
+      body: jsonEncode({
+        'shoppingListId': list.ShoppingListID,
+        'shoppingListName': list.name,
+        'startDate': list.date?.toIso8601String(),
+        'shoppingListItemRequests':
+            list.shoppinglistitem.map((item) => item.toJson()).toList(),
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Không thể cập nhật danh sách. Lỗi: ${response.body}');
+      print('Không thể cập nhật danh sách. Lỗi: ${response.body}');
+    }
+
+    print('Danh sách đã được chỉnh sửa');
   }
 }

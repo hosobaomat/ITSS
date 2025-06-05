@@ -3,6 +3,7 @@ import 'package:login_menu/models/fooditem.dart';
 import 'package:login_menu/models/shopping_list_model.dart.dart';
 import 'package:login_menu/models/ShoppingListModelShare.dart';
 import 'package:login_menu/models/update_item.dart';
+import 'package:login_menu/pages/editShoppingItem.dart';
 import 'package:login_menu/pages/inventory_ipput.dart';
 import 'package:login_menu/pages/new_list_info_page.dart';
 import 'package:login_menu/pages/share_member_page.dart';
@@ -242,13 +243,18 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      final list = _lists[index];
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const SharingMembersPage(),
+                          builder: (_) => Editshoppingitem(
+                              list: list, authService: widget.authService),
                         ),
                       );
+                      if (result == true) {
+                        fetchShoppingList();
+                      }
                     },
                     icon: const Icon(Icons.edit, color: Colors.blue),
                   ),
@@ -594,4 +600,13 @@ class ShoppingItem {
 
   ShoppingItem(this.name, this.icon, this.checked, this.quantity, this.unit,
       {this.category});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'quantity': quantity.toInt(),
+      'unitId': 1,
+      'foodCatalogId': 9
+    };
+  }
 }

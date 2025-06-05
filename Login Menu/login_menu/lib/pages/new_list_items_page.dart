@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/selected_item.dart';
 import 'package:login_menu/models/shoppinglist_request.dart';
 import 'package:login_menu/pages/CategoryDetailScreen.dart';
@@ -87,56 +88,69 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
   }
 
   Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Gọi API FoodCatalog để lấy danh sách danh mục
-      final categories = await widget.authService.getCatalog();
-      print('Raw categories from getCatalog: $categories');
-
-      // Gán _categories ngay lập tức để đảm bảo danh mục hiển thị
+    if (DataStore().categories.isEmpty ||
+        DataStore().foodCatalogs.isEmpty ||
+        DataStore().units.isEmpty) {
       setState(() {
-        _categories = categories;
+        _isLoading = true;
       });
 
-      // Kiểm tra và debug từng category
-      for (var category in categories) {
-        print('Category: ${category.categoryName}');
+      try {
+        // Gọi API FoodCatalog để lấy danh sách danh mục
+        final categories = await widget.authService.getCatalog();
+        print('Raw categories from getCatalog: $categories');
+
+        // Gán _categories ngay lập tức để đảm bảo danh mục hiển thị
+        setState(() {
+          _categories = categories;
+        });
+
+        // Kiểm tra và debug từng category
+        for (var category in categories) {
+          print('Category: ${category.categoryName}');
+          print(
+              'FoodCatalogResponses: ${category.foodCatalogResponses?.map((f) => f.foodCatalogName).toList()}');
+          print(
+              'UnitResponses: ${category.unitResponses?.map((u) => u.toString()).toList()}');
+        }
+
+        // Tạo danh sách phẳng cho foodCatalogs và units
+        final foodCatalogs = categories
+            .expand((category) => category.foodCatalogResponses ?? [])
+            .map((e) => e as FoodCatalogResponse)
+            .toList();
         print(
-            'FoodCatalogResponses: ${category.foodCatalogResponses?.map((f) => f.foodCatalogName).toList()}');
-        print(
-            'UnitResponses: ${category.unitResponses?.map((u) => u.toString()).toList()}');
+            'FoodCatalogs: ${foodCatalogs.map((f) => f.foodCatalogName).toList()}');
+
+        final units = categories
+            .expand((category) => category.unitResponses ?? [])
+            .map((e) => e as UnitResponse)
+            .toList();
+        print('Units: ${units.map((u) => u.unitName).toList()}');
+        final dataStore = DataStore();
+        setState(() {
+          _foodCatalogs = foodCatalogs;
+          _units = units;
+          _isLoading = false;
+          // Lưu vào DataStore để dùng toàn app
+          dataStore.categories = categories;
+          dataStore.foodCatalogs = foodCatalogs;
+          dataStore.units = units;
+        });
+      } catch (e) {
+        print('Error loading data: $e');
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không thể tải dữ liệu: $e')),
+        );
       }
-
-      // Tạo danh sách phẳng cho foodCatalogs và units
-      final foodCatalogs = categories
-          .expand((category) => category.foodCatalogResponses ?? [])
-          .map((e) => e as FoodCatalogResponse)
-          .toList();
-      print(
-          'FoodCatalogs: ${foodCatalogs.map((f) => f.foodCatalogName).toList()}');
-
-      final units = categories
-          .expand((category) => category.unitResponses ?? [])
-          .map((e) => e as UnitResponse)
-          .toList();
-      print('Units: ${units.map((u) => u.unitName).toList()}');
-
-      setState(() {
-        _foodCatalogs = foodCatalogs;
-        _units = units;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Error loading data: $e');
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không thể tải dữ liệu: $e')),
-      );
+    } else {
+      _categories = DataStore().categories;
+      _foodCatalogs = DataStore().foodCatalogs;
+      _units = DataStore().units;
+      _isLoading = false;
     }
   }
 

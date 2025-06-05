@@ -3,11 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:login_menu/models/foodCategoryResponse.dart';
+import 'package:login_menu/service/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/selected_item.dart';
 
-const String apiUrl = 'http://10.134.158.47:8082/ITSS_BE'; // Thay URL thật
+const String apiUrl = AuthService.apiUrl; // Thay URL thật
 
 class CategoryDetailScreen extends StatefulWidget {
   final String categoryName;
@@ -84,6 +85,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
             if (cat.unitResponses != null) {
               for (var unitResp in cat.unitResponses!) {
                 final unitName = unitResp.unitName;
+                print("Unit name lấy được: $unitName");
                 if (unitName != null && unitName.isNotEmpty) {
                   unitSet.add(unitName);
                 }
@@ -93,6 +95,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
 
           setState(() {
             units = unitSet.toList();
+            
           });
         } else {
           throw Exception('Dữ liệu result không phải là danh sách');

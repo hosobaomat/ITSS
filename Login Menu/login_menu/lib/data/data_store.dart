@@ -1,3 +1,7 @@
+import 'package:login_menu/models/foodCatalogResponse.dart';
+import 'package:login_menu/models/foodCategoryResponse.dart';
+import 'package:login_menu/models/unitResponse.dart';
+
 class Recipe {
   String name;
   List<String> ingredients;
@@ -10,6 +14,23 @@ class Recipe {
 }
 
 class DataStore {
+  //
+  // Singleton pattern
+  static final DataStore _instance = DataStore._internal();
+  factory DataStore() => _instance;
+  DataStore._internal();
+  // Các biến lưu trữ dữ liệu dùng chung
+  List<FoodCategoryResponse> categories = [];
+  List<FoodCatalogResponse> foodCatalogs = [];
+  List<UnitResponse> units = [];
+  // Hàm clear nếu cần reset
+  void clearAll() {
+    categories = [];
+    foodCatalogs = [];
+    units = [];
+  }
+
+  //
   static final Map<String, List<String>> itemsByCategory = {
     'Vegetables': ['Carrot', 'Broccoli', 'Lettuce', 'Spinach'],
     'Fruits': ['Apple', 'Banana', 'Orange', 'Grape'],
