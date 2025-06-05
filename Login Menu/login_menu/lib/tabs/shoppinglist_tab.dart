@@ -597,16 +597,17 @@ class ShoppingItem {
   double quantity;
   String unit;
   String? category;
-
+  int? unitId; // Thêm trường unitId
+  int? foodCatalogId; // Thêm trường foodCatalogId
   ShoppingItem(this.name, this.icon, this.checked, this.quantity, this.unit,
-      {this.category});
+      {this.unitId, this.foodCatalogId,   this.category});
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
       'quantity': quantity.toInt(),
-      'unitId': 1,
-      'foodCatalogId': 9
+      'unitId': unitId ?? 1,
+      'foodCatalogId': foodCatalogId ?? 1
     };
   }
 }
