@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
-  static const String apiUrl = "http://192.168.100.25:8082/ITSS_BE";
+  static const String apiUrl = "http://192.168.100.27:8082/ITSS_BE";
   String? _token;
   String? get token => _token;
 
