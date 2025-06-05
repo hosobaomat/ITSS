@@ -73,6 +73,14 @@ public class RecipeController {
         return response;
     }
 
+    @GetMapping("/suggestRecipe/{groupId}")
+    public ApiResponse<List<RecipeResponse>> getSuggestedMealPlan(@PathVariable Integer groupId) {
+        ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
+        response.setResult(recipeService.recommendRecipes(groupId));
+        response.setCode(200);
+        return response;
+    }
+
 
 
 

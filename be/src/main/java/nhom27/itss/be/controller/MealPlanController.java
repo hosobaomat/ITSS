@@ -1,25 +1,18 @@
 package nhom27.itss.be.controller;
 
-import io.swagger.annotations.Api;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import nhom27.itss.be.dto.request.CreateMealPlanRequest;
 import nhom27.itss.be.dto.response.ApiResponse;
+import nhom27.itss.be.dto.response.MealDetailResponse;
 import nhom27.itss.be.dto.response.MealPlanResponse;
-import nhom27.itss.be.dto.response.ShoppingListResponse;
-import nhom27.itss.be.entity.FamilyGroup;
 import nhom27.itss.be.entity.MealPlan;
-import nhom27.itss.be.entity.User;
-import nhom27.itss.be.exception.AppException;
-import nhom27.itss.be.exception.ErrorCode;
 import nhom27.itss.be.repository.MealPlansRepository;
 import nhom27.itss.be.service.MealPlanService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/mealplans")
@@ -31,10 +24,11 @@ public class MealPlanController {
     MealPlanService mealPlanService;
 
     @GetMapping
-    public ApiResponse<List<MealPlan>> getAllMealPlans() {
+    public ApiResponse<List<MealPlanResponse>> getAllMealPlans() {
         List<MealPlan> result = mealPlanRepository.findAll();
-        return ApiResponse.<List<MealPlan>>builder()
-                .result(result)
+
+        return ApiResponse.<List<MealPlanResponse>>builder()
+                .result(result.stream().map(mealPlanService::mapPlanToResponse).toList())
                 .code(200)
                 .build();
     }
@@ -70,6 +64,8 @@ public class MealPlanController {
         response.setCode(200);
         return response;
     }
+
+
     @DeleteMapping("/{id}")
     ApiResponse<String> deleteShoppingList(@PathVariable Integer id){
         mealPlanService.deleteMealPlan(id);

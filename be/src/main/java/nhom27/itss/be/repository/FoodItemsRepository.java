@@ -4,6 +4,7 @@ import nhom27.itss.be.entity.FamilyGroup;
 import nhom27.itss.be.entity.FoodItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
@@ -25,9 +26,11 @@ public interface FoodItemsRepository extends JpaRepository<FoodItem, Integer> {
 //    // Tìm item sắp hết hạn
 //    List<FoodItem> findByExpiryDateBetween(Timestamp startDate, Timestamp endDate);
 
-    @Query("SELECT f FROM FoodItem f WHERE f.expiryDate BETWEEN :startDate AND :endDate")
-    List<FoodItem> findByExpiryDateBetween(Date startDate, Date endDate);
+    @Query("SELECT f FROM FoodItem f WHERE f.group.group_id= :groupId AND f.expiryDate >= CURRENT_DATE")
+    List<FoodItem> findValidFoodItemsByGroupId(@Param("groupId") Integer groupId);
 
-    List<FoodItem> findByGroupAndExpiryDateAfter(FamilyGroup group, Date date);
+
+
+
 
 }

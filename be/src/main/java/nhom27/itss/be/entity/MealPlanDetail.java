@@ -26,11 +26,11 @@ public class MealPlanDetail {
     @Column(name = "meal_type")
     String mealType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "plan_id")
     MealPlan mealPlan;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "recipe_id")
     Recipe recipe;
 }

@@ -42,14 +42,13 @@ public class MealPlan {
     @JoinColumn(name = "group_id")
     private FamilyGroup group;
 
-    @OneToMany(mappedBy = "mealPlan")
+    @OneToMany(mappedBy = "mealPlan",cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MealPlanDetail> mealplandetails = new LinkedHashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    @Column(name = "is_deleted", nullable = false)
-    Boolean isDeleted = false;
+
 
 }

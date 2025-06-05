@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="HttpClientEndpointsTabState">
-    <option name="requestToText" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;8507e266a77624c8fb5c75b1bf11bd7355983d94&quot; value=&quot;###&amp;#10;GET http://localhost:8082/ITSS_BE/FoodItems/group/{{groupId}}&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
+    <option name="requestToText" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;469c6ab0d9fd870ba0cfdcf4a201669c28ab7f59&quot; value=&quot;###&amp;#10;POST http://localhost:8082/ITSS_BE/FoodItems/&amp;#10;Content-Type: application/json&amp;#10;&amp;#10;{&amp;#10;  &amp;quot;userId&amp;quot;: 0,&amp;#10;  &amp;quot;groupId&amp;quot;: 0,&amp;#10;  &amp;quot;foodItems&amp;quot;: []&amp;#10;}&quot; /&gt;&#10;  &lt;entry key=&quot;c55f4537f52d028f96ce701d5e3a8d653868e651&quot; value=&quot;###&amp;#10;GET http://localhost:8082/ITSS_BE/mealplans/suggestMealPlan/{{groupId}}&quot; /&gt;&#10;  &lt;entry key=&quot;d4ae2004f91b545e219d8c31444c3d68400d42af&quot; value=&quot;###&amp;#10;GET http://localhost:8082/ITSS_BE/Recipe/suggestRecipe/{{groupId}}&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
   </component>
 </project>

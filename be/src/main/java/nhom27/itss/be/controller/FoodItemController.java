@@ -55,6 +55,14 @@ public class FoodItemController {
 
     }
 
+    @GetMapping("/group1/{groupId}")
+    public ApiResponse<List<FoodItemResponse>> getAllFoodItem(@PathVariable Integer groupId) {
+        return ApiResponse.<List<FoodItemResponse>>builder()
+                .result(foodItemService.getAllFoodItems(groupId))
+                .code(200).build();
+
+    }
+
 
 
 //    @GetMapping("/search")

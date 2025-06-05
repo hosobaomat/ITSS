@@ -49,10 +49,12 @@ public class Recipe {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    @OneToOne(mappedBy = "recipe")
-    private MealPlanDetail mealplandetails;
+
 
     @OneToMany(mappedBy = "recipe",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private Set<RecipeIngredient> recipeingredients = new LinkedHashSet<>();
+
+//    @OneToMany(mappedBy = "recipe")
+//    List<MealPlanDetail> planMealDetail;
 
 }

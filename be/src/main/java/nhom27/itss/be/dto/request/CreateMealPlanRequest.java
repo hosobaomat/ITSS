@@ -1,23 +1,24 @@
 package nhom27.itss.be.dto.request;
 
-import lombok.Data;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateMealPlanRequest {
-    private String planName;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private Integer groupId;
-    private Integer createdBy;
-    private List<MealDetailRequest> details;
+    String planName;
+    Timestamp startDate;
+    Timestamp endDate;
+    Integer groupId;
+    Integer createdBy;
+    List<MealPlanDetailRequest> details;
 
-    @Data
-    public static class MealDetailRequest {
-        private Integer recipeId;
-        private LocalDate mealDate;
-        private String mealType; // breakfast, lunch, dinner
-    }
+
 }

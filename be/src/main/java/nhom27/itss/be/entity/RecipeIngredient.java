@@ -19,24 +19,24 @@ import java.math.BigDecimal;
 public class RecipeIngredient {
 
     @EmbeddedId
-    private RecipeIngredientID id;
+    RecipeIngredientID id;
 
     @ManyToOne
     @MapsId("recipeId") // tên field trong RecipeIngredientId
     @JoinColumn(name = "recipe_id")
-    private Recipe recipe;
+    Recipe recipe;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("foodCatalogId") // tên field trong RecipeIngredientId
     @JoinColumn(name = "food_catalog_id")
-    private FoodCatalog foodCatalog;
+    FoodCatalog foodCatalog;
 
     @Column(name = "quantity", nullable = false)
     Integer quantity;
 
     @ManyToOne
     @JoinColumn(name = "unit_id")
-    private Unit unit;
+    Unit unit;
 
 
 

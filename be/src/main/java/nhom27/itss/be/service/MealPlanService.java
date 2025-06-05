@@ -5,31 +5,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import nhom27.itss.be.dto.request.CreateMealPlanRequest;
+import nhom27.itss.be.dto.response.MealDetailResponse;
 import nhom27.itss.be.dto.response.MealPlanResponse;
-import nhom27.itss.be.entity.FamilyGroup;
-import nhom27.itss.be.entity.MealPlan;
-import nhom27.itss.be.entity.MealPlanDetail;
-import nhom27.itss.be.entity.Recipe;
-import nhom27.itss.be.entity.User;
+import nhom27.itss.be.entity.*;
 import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.exception.ErrorCode;
-import nhom27.itss.be.repository.FamilyGroupsRepository;
-import nhom27.itss.be.repository.MealPlanDetailsRepository;
-import nhom27.itss.be.repository.MealPlansRepository;
-import nhom27.itss.be.repository.RecipesRepository;
-import nhom27.itss.be.repository.UsersRepository;
+import nhom27.itss.be.repository.*;
 import org.springframework.stereotype.Service;
-import nhom27.itss.be.exception.ErrorCode;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -43,6 +33,10 @@ public class MealPlanService {
     UsersRepository usersRepository;
     FamilyGroupsRepository familyGroupsRepository;
     RecipesRepository recipesRepository;
+    RecipeIngredientsRepository recipeIngredientsRepository;
+    private final FoodItemsRepository foodItemsRepository;
+    private final FoodCatalogRepository foodCatalogRepository;
+    private final UnitsRepository unitsRepository;
 
     public MealPlanResponse createMealPlan(CreateMealPlanRequest request) {
 
@@ -56,8 +50,8 @@ public class MealPlanService {
 
         MealPlan plan = MealPlan.builder()
                 .planName(request.getPlanName())
-                .startDate(Timestamp.valueOf(request.getStartDate().atStartOfDay()))
-                .endDate(Timestamp.valueOf(request.getEndDate().atStartOfDay()))
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
                 .group(group)
                 .createdBy(createdBy)
                 .createdAt(new Timestamp(System.currentTimeMillis()))
@@ -66,33 +60,32 @@ public class MealPlanService {
         mealPlansRepository.save(plan);
 
         // Xử lý danh sách meal details
-        List<MealPlanDetail> detailEntities = request.getDetails().stream().map(d -> {
-            Recipe recipe = recipesRepository.findById(d.getRecipeId())
-                    .orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_FOUND));
+        Set<MealPlanDetail> detailEntities = request.getDetails().stream()
+                .map(d -> MealPlanDetail.builder()
+                        .mealDate(d.getMealDate())
+                        .mealType(d.getMealType())
+                        .mealPlan(plan)
+                        .recipe(recipesRepository.findById(d.getRecipeId())
+                                .orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_FOUND)))
+                        .build())
+                .collect(Collectors.toSet());
 
-            return MealPlanDetail.builder()
-                    .mealDate(Timestamp.valueOf(d.getMealDate().atStartOfDay()))
-                    .mealType(d.getMealType())
-                    .mealPlan(plan)
-                    .recipe(recipe)
-                    .build();
-        }).collect(Collectors.toList());
 
-        mealPlanDetailsRepository.saveAll(detailEntities);
-
-        return mapToResponse(plan);
+        plan.setMealplandetails(detailEntities);
+        mealPlansRepository.save(plan);
+        return mapPlanToResponse(plan);
     }
 
     public MealPlanResponse getMealPlanById(Integer id) {
         MealPlan plan = mealPlansRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.MEALPLAN_NOT_FOUND));
-        return mapToResponse(plan);
+        return mapPlanToResponse(plan);
     }
     public List<MealPlanResponse> getMealPlansByGroupId(Integer groupId) {
         FamilyGroup group  = familyGroupsRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.FAMILYGROUP_NOT_EXISTED));
         List<MealPlan> plans = mealPlansRepository.findByGroup(group);
         return plans.stream()
-                .map(this::mapToResponse)
+                .map(this::mapPlanToResponse)
                 .toList();
     }
 
@@ -100,22 +93,38 @@ public class MealPlanService {
         User user = usersRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         List<MealPlan> plans = mealPlansRepository.findByCreatedBy(user);
         return plans.stream()
-                .map(this::mapToResponse)
+                .map(this::mapPlanToResponse)
                 .toList();
     }
+
     public void deleteMealPlan(Integer id) {
 
         mealPlansRepository.deleteById(id);
     }
 
-    private MealPlanResponse mapToResponse(MealPlan plan) {
+
+
+    public MealPlanResponse mapPlanToResponse(MealPlan plan) {
         return MealPlanResponse.builder()
                 .planId(plan.getPlanId())
+                .groupId(plan.getGroup().getGroup_id())
                 .planName(plan.getPlanName())
                 .startDate(plan.getStartDate())
                 .endDate(plan.getEndDate())
                 .createdAt(plan.getCreatedAt())
                 .createdBy(plan.getCreatedBy().getUserId())
+                .details(plan.getMealplandetails().stream().map(this::mapMealDetailToResponse).collect(Collectors.toList()))
                 .build();
     }
+
+    public MealDetailResponse mapMealDetailToResponse(MealPlanDetail detail) {
+        MealDetailResponse detailResponse = new MealDetailResponse();
+        detailResponse.setPlanDetailId(detail.getPlanDetailId());
+        detailResponse.setMealDate(detail.getMealDate());
+        detailResponse.setRecipeName(detail.getRecipe().getRecipeName());
+        detailResponse.setMealType(detail.getMealType());
+        detailResponse.setRecipeId(detail.getRecipe().getRecipeId());
+        return  detailResponse;
+    }
+
 }

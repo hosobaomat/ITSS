@@ -15,7 +15,9 @@ import nhom27.itss.be.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,10 @@ public class RecipeService {
     RecipesRepository recipesRepository;
     UnitsRepository unitsRepository;
     FoodcatalogsRepository foodcatalogsRepository;
+    FamilyGroupsRepository familyGroupsRepository;
+    FoodItemsRepository foodItemsRepository;
+    FoodCatalogRepository foodCatalogRepository;
+    RecipeIngredientsRepository recipeIngredientsRepository;
 
 
     public RecipeResponse createRecipe(RecipeCreationRequest request) {
@@ -114,6 +120,55 @@ public class RecipeService {
         return  recipes.stream().map(this::RecipeToResponse).toList() ;
     }
 
+
+    public List<RecipeResponse> recommendRecipes(Integer groupId){
+        FamilyGroup group = familyGroupsRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.FAMILYGROUP_NOT_EXISTED));
+        List<FoodItem> itemsInFridge = foodItemsRepository.findValidFoodItemsByGroupId(groupId);
+
+        List<Recipe> recipes = recipesRepository.findAll();
+        List<Recipe> recipeMatches = new ArrayList<>();
+
+        for (Recipe recipe : recipes) {
+            List<RecipeIngredient> ingredients = recipeIngredientsRepository.findByRecipe(recipe);
+            int matchedIngredients = 0;
+            List<RecipeIngredient> available = new ArrayList<>();
+            List<RecipeIngredient> missing = new ArrayList<>();
+
+            for (RecipeIngredient ingredient : ingredients) {
+                Optional<FoodItem> matchingItem = itemsInFridge.stream()
+                        .filter(item -> item.getFoodCatalog().getFoodCatalogId().equals(ingredient.getFoodCatalog().getFoodCatalogId())
+                                && item.getUnit().getId().equals(ingredient.getUnit().getId())
+                                && item.getQuantity() >= ingredient.getQuantity())
+                        .findFirst();
+                FoodCatalog foodCatalog = foodCatalogRepository.findById(ingredient.getFoodCatalog().getFoodCatalogId())
+                        .orElseThrow(() -> new AppException(ErrorCode.FOOD_NOT_EXISTS));
+                Unit unit = unitsRepository.findById(ingredient.getUnit().getId())
+                        .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_EXISTS));
+                RecipeIngredient ingredientResponse = RecipeIngredient.builder()
+                        .id(ingredient.getId())
+                        .foodCatalog(foodCatalog)
+                        .quantity(ingredient.getQuantity())
+                        .unit(ingredient.getUnit())
+                        .build();
+                if (matchingItem.isPresent()) {
+                    matchedIngredients++;
+                    available.add(ingredientResponse);
+                } else {
+                    missing.add(ingredientResponse);
+                }
+            }
+            double matchPercentage = (double) matchedIngredients / ingredients.size();
+            if (matchPercentage >=  0.7) {
+                recipeMatches.add(recipe);
+            }
+        }
+
+        return recipeMatches.stream().map(
+                this::RecipeToResponse
+                ).toList();
+
+
+    }
 
 //    Ham Mapping
     private RecipeResponse RecipeToResponse(Recipe recipe) {

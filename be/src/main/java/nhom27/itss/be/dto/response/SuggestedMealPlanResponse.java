@@ -7,19 +7,11 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MealPlanResponse {
-    Integer planId;
-    String planName;
-    Timestamp startDate;
-    Timestamp endDate;
-    Integer groupId;
-    Integer createdBy;
-    Timestamp createdAt;
+public class SuggestedMealPlanResponse {
     List<MealDetailResponse> details;
-
-
 }

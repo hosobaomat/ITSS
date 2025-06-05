@@ -85,7 +85,7 @@ public class FoodItemService {
 
     public List<FamilyFoodItemResponse> getFoodItems(Integer groupId) {
         FamilyGroup currentGroup = familyGroupsRepository.findById(groupId).orElseThrow(() -> new ResourceNotFoundException("Group not found"));
-        List<FoodItem> items =foodItemRepository.findByGroup(currentGroup);
+        List<FoodItem> items =foodItemRepository.findValidFoodItemsByGroupId(groupId);
 
 
         Map<FoodCategory, List<FoodItem>> groupedItems = items.stream()
@@ -132,6 +132,17 @@ public class FoodItemService {
 
     public void DeleteFoodItem(Integer id) {
         foodItemRepository.deleteById(id);
+    }
+
+    public List<FoodItemResponse> getAllFoodItems(Integer groupId) {
+
+        FamilyGroup currentGroup = familyGroupsRepository.findById(groupId).orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+        List<FoodItem> items =foodItemRepository.findValidFoodItemsByGroupId(groupId);
+
+        return items.stream()
+                .map(this::mapToFoodItemResponse)
+                .collect(Collectors.toList());
+
     }
 
 
