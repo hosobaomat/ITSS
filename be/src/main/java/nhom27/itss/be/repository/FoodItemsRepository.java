@@ -29,6 +29,10 @@ public interface FoodItemsRepository extends JpaRepository<FoodItem, Integer> {
     @Query("SELECT f FROM FoodItem f WHERE f.group.group_id= :groupId AND f.expiryDate >= CURRENT_DATE")
     List<FoodItem> findValidFoodItemsByGroupId(@Param("groupId") Integer groupId);
 
+    @Query("SELECT DISTINCT f.storageLocation FROM FoodItem f")
+    List<String> findDistinctStorageLocations();
+
+
 
 
 

@@ -146,12 +146,9 @@ public class FoodItemService {
     }
 
     public List<String> getAllStorageLocation() {
-
-        List<String> Storages =foodItemRepository.findAll().stream().map(FoodItem::getStorageLocation).toList();
-
-        return Storages;
-
+        return foodItemRepository.findDistinctStorageLocations();
     }
+
 
 
 
