@@ -211,6 +211,7 @@ public class FamilyGroupService {
 
     public FamilyGroupResponse toFamilyGroupResponse(FamilyGroup familyGroup) {
         FamilyGroupResponse familyGroupResponse = new FamilyGroupResponse();
+        familyGroupResponse.setId(familyGroup.getGroup_id());
         familyGroupResponse.setGroupName(familyGroup.getGroupName());
         familyGroupResponse.setCreatedBy(familyGroup.getCreatedBy().getUsername());
         familyGroupResponse.setCreatedAt(familyGroup.getCreatedAt());
