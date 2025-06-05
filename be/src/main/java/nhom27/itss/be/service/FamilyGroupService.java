@@ -198,6 +198,7 @@ public class FamilyGroupService {
 
     public UserResponse UserToUserResponse(User user) {
         UserResponse userResponse = new UserResponse();
+        userResponse.setUserid(user.getUserId());
         userResponse.setUsername(user.getUsername());
         userResponse.setEmail(user.getEmail());
         userResponse.setFullName(user.getFullName());
