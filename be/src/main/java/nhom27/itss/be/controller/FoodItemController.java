@@ -55,6 +55,14 @@ public class FoodItemController {
 
     }
 
+    @GetMapping("/Storage")
+    public ApiResponse<List<String>> getStorageLocation() {
+        return ApiResponse.<List<String>>builder()
+                .result(foodItemService.getAllStorageLocation())
+                .code(200).build();
+
+    }
+
     @GetMapping("/group1/{groupId}")
     public ApiResponse<List<FoodItemResponse>> getAllFoodItem(@PathVariable Integer groupId) {
         return ApiResponse.<List<FoodItemResponse>>builder()

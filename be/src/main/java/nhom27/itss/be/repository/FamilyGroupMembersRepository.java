@@ -1,5 +1,6 @@
 package nhom27.itss.be.repository;
 
+import nhom27.itss.be.entity.FamilyGroup;
 import nhom27.itss.be.entity.FamilyGroupMember;
 
 import nhom27.itss.be.entity.User;
@@ -26,6 +27,8 @@ public interface FamilyGroupMembersRepository extends JpaRepository<FamilyGroupM
 
     @Query("SELECT fgm.user FROM FamilyGroupMember fgm WHERE fgm.id.groupId = :groupId")
     List<User> findAllUsersByGroupId(@Param("groupId") Integer groupId);
+
+    FamilyGroup
 
 
 

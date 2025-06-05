@@ -71,6 +71,12 @@ public class FamilyGroupService {
         return  toFamilyGroupResponse(group);
     }
 
+    public FamilyGroupResponse getFamilyGroupByUserId(Integer id){
+        User user = usersRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        return  toFamilyGroupResponse(user.getFamilyGroupMembers().getFirst().getGroup());
+    }
+
     public FamilyGroupResponse updateFamilyGroup(FamilyGroupRequest request,Integer id){
         FamilyGroup group = getFamilyGroup(id);
         if (request.getGroupName() != null) {
