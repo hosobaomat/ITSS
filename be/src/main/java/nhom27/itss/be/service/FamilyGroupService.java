@@ -51,6 +51,7 @@ public class FamilyGroupService {
 
 
         return FamilyGroupResponse.builder()
+                .id(group.getGroup_id())
                 .createdBy(user.getEmail())
                 .groupName(group.getGroupName())
                 .createdAt(group.getCreatedAt())
@@ -131,6 +132,7 @@ public class FamilyGroupService {
 
 
         return FamilyGroupResponse.builder()
+                .id(group.getGroup_id())
                 .groupName(group.getGroupName())
                 .createdBy(group.getCreatedBy().getUsername())
                 .members(
@@ -182,6 +184,7 @@ public class FamilyGroupService {
         familyGroupsRepository.save(group);
 
         return FamilyGroupResponse.builder()
+                .id(group.getGroup_id())
                 .groupName(group.getGroupName())
                 .createdBy(group.getCreatedBy().getUsername())
                 .members(

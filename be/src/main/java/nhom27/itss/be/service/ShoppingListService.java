@@ -32,7 +32,7 @@ public class ShoppingListService {
     ShoppingListsRepository shoppingListsRepository;
     UsersRepository usersRepository;
     FamilyGroupsRepository familyGroupsRepository;
-    FoodcatalogsRepository foodcatalogsRepository;
+    FoodCatalogRepository foodcatalogsRepository;
     UnitsRepository unitsRepository;
     ShoppingListItemsRepository shoppingListItemsRepository;
     FoodItemsRepository foodItemsRepository;
@@ -116,7 +116,7 @@ public class ShoppingListService {
                         .quantity(Item.getQuantity())
                         .unit(Item.getUnit())
                         .foodCatalog(Item.getFood())
-                        .build()
+                        .status(false).build()
         ).toList();
 
         foodItemsRepository.saveAll(ItemToFrigde);

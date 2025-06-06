@@ -47,15 +47,15 @@ public class UserService {
         user.setFullName(request.getFullName());
         user.setUsername(request.getUsername());
         user.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-
+        userRepository.save(user);
         UserResponse userResponse = new UserResponse();
+        userResponse.setUserid(user.getUserId());
         userResponse.setEmail(user.getEmail());
         userResponse.setRole(user.getRole().toString());
         userResponse.setFullName(user.getFullName());
         userResponse.setUsername(user.getUsername());
         userResponse.setCreatedAt(user.getCreatedAt());
 
-        userRepository.save(user);
 
         return userResponse;
 
@@ -82,6 +82,7 @@ public class UserService {
          UserResponse userResponse = new UserResponse();
 
         return  UserResponse.builder()
+                .userid(user.getUserId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
@@ -132,6 +133,7 @@ public class UserService {
 
         return UserResponse.builder()
                 .username(user.getUsername())
+                .userid(user.getUserId())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .createdAt(user.getCreatedAt())
@@ -152,6 +154,7 @@ public class UserService {
         for (User user : users) {
             UserResponse response = new UserResponse();
             response.setUsername(user.getUsername());
+            response.setUserid(user.getUserId());
             response.setEmail(user.getEmail());
             response.setFullName(user.getFullName());
             response.setRole(String.valueOf(user.getRole()));

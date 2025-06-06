@@ -44,6 +44,8 @@ public class FoodItem {
     @Column(name = "updated_at")
     Timestamp updatedAt;
 
+    @Column(name= "status")
+    boolean status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id")
@@ -53,4 +55,7 @@ public class FoodItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "food_catalog_id")
     private FoodCatalog foodCatalog;
+
+
+
 }

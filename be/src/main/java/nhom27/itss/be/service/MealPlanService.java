@@ -1,6 +1,7 @@
 package nhom27.itss.be.service;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +15,7 @@ import nhom27.itss.be.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -34,9 +32,10 @@ public class MealPlanService {
     FamilyGroupsRepository familyGroupsRepository;
     RecipesRepository recipesRepository;
     RecipeIngredientsRepository recipeIngredientsRepository;
-    private final FoodItemsRepository foodItemsRepository;
-    private final FoodCatalogRepository foodCatalogRepository;
-    private final UnitsRepository unitsRepository;
+    FoodItemsRepository foodItemsRepository;
+    FoodCatalogRepository foodCatalogRepository;
+    UnitsRepository unitsRepository;
+    private final FoodHistoryRepository foodHistoryRepository;
 
     public MealPlanResponse createMealPlan(CreateMealPlanRequest request) {
 
@@ -102,6 +101,46 @@ public class MealPlanService {
         mealPlansRepository.deleteById(id);
     }
 
+    public MealPlanResponse finishedMealPlan(Integer id) {
+        MealPlan plan = mealPlansRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.MEALPLAN_NOT_FOUND));
+
+        plan.setStatus(true);
+
+        // 3. Lấy danh sách MealPlanDetail liên quan
+        List<MealPlanDetail> planDetails = mealPlanDetailsRepository.findByMealPlan(plan);
+        List<FoodItem> foodItems = foodItemsRepository.findByGroup(plan.getGroup());
+        List<RecipeIngredient> usedIngredients = new ArrayList<>();
+
+        for (MealPlanDetail detail : planDetails) {
+            Recipe recipe = detail.getRecipe();
+            usedIngredients.addAll(recipe.getRecipeingredients());
+        }
+
+        for (RecipeIngredient ingredient : usedIngredients) {
+            Optional<FoodItem> itemOptional = findSuitableFoodItem(foodItems, ingredient);
+
+            if (itemOptional.isPresent()) {
+                FoodItem item = itemOptional.get();
+                item.setQuantity(item.getQuantity() - ingredient.getQuantity());
+                item.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+                foodItemsRepository.save(item);
+                foodHistoryRepository.save(
+                        FoodHistory.builder()
+                                .action("used")
+                                .unit(ingredient.getUnit())
+                                .actionDate(item.getUpdatedAt().toInstant())
+                                .group(plan.getGroup())
+                                .quantity(ingredient.getQuantity())
+                                .food(item)
+                                .build()
+                );
+            }
+        }
+        // 5. Trả về kết quả (tuỳ bạn cần gì trong response)
+        return mapPlanToResponse(plan);
+    }
+
+
 
 
     public MealPlanResponse mapPlanToResponse(MealPlan plan) {
@@ -125,6 +164,16 @@ public class MealPlanService {
         detailResponse.setMealType(detail.getMealType());
         detailResponse.setRecipeId(detail.getRecipe().getRecipeId());
         return  detailResponse;
+    }
+
+    private Optional<FoodItem> findSuitableFoodItem(List<FoodItem> foodItems, RecipeIngredient ingredient) {
+        return foodItems.stream()
+                .filter(item ->
+                        item.getFoodCatalog().getFoodCatalogId().equals(ingredient.getFoodCatalog().getFoodCatalogId()) &&
+                                item.getExpiryDate().after(new Date()) &&
+                                item.getQuantity() >= ingredient.getQuantity()
+                )
+                .findFirst(); // hoặc sorted() nếu bạn muốn lấy item gần hết hạn nhất
     }
 
 }

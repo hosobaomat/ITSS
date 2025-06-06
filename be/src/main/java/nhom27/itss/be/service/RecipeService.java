@@ -32,7 +32,7 @@ public class RecipeService {
     UsersRepository usersRepository;
     RecipesRepository recipesRepository;
     UnitsRepository unitsRepository;
-    FoodcatalogsRepository foodcatalogsRepository;
+    FoodCatalogRepository foodcatalogsRepository;
     FamilyGroupsRepository familyGroupsRepository;
     FoodItemsRepository foodItemsRepository;
     FoodCatalogRepository foodCatalogRepository;

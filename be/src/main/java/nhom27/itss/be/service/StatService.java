@@ -1,52 +1,43 @@
-//package nhom27.itss.be.service;
-//
-//import lombok.AccessLevel;
-//import lombok.RequiredArgsConstructor;
-//import lombok.experimental.FieldDefaults;
-//import lombok.extern.slf4j.Slf4j;
-//import nhom27.itss.be.dto.request.CreateMealPlanRequest;
-//import nhom27.itss.be.dto.response.*;
-//import nhom27.itss.be.entity.*;
-//import nhom27.itss.be.enums.ShoppingListItemStatus;
-//import nhom27.itss.be.exception.AppException;
-//import nhom27.itss.be.exception.ErrorCode;
-//import nhom27.itss.be.repository.*;
-//import org.springframework.stereotype.Service;
-//
-//import java.sql.Timestamp;
-//import java.util.List;
-//import java.util.Set;
-//import java.util.stream.Collectors;
-//
-//
-//@Slf4j
-//@Service
-//@RequiredArgsConstructor
-//@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-//public class StatService {
-//
-//    MealPlansRepository mealPlansRepository;
-//    MealPlanDetailsRepository mealPlanDetailsRepository;
-//    UsersRepository usersRepository;
-//    FamilyGroupsRepository familyGroupsRepository;
-//    RecipesRepository recipesRepository;
-//    RecipeIngredientsRepository recipeIngredientsRepository;
-//    FoodItemsRepository foodItemsRepository;
-//    FoodCatalogRepository foodCatalogRepository;
-//    UnitsRepository unitsRepository;
-//    ShoppingListItemsRepository shoppingListItemsRepository;
-//    ShoppingListsRepository shoppingListsRepository;
-//
-//
-//
-//    public
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//}
+package nhom27.itss.be.service;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import nhom27.itss.be.dto.request.CreateMealPlanRequest;
+import nhom27.itss.be.dto.response.*;
+import nhom27.itss.be.entity.*;
+import nhom27.itss.be.enums.ShoppingListItemStatus;
+import nhom27.itss.be.exception.AppException;
+import nhom27.itss.be.exception.ErrorCode;
+import nhom27.itss.be.repository.*;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class StatService {
+
+    MealPlansRepository mealPlansRepository;
+    MealPlanDetailsRepository mealPlanDetailsRepository;
+    UsersRepository usersRepository;
+    FamilyGroupsRepository familyGroupsRepository;
+    RecipesRepository recipesRepository;
+    RecipeIngredientsRepository recipeIngredientsRepository;
+    FoodItemsRepository foodItemsRepository;
+    FoodCatalogRepository foodCatalogRepository;
+    UnitsRepository unitsRepository;
+    ShoppingListItemsRepository shoppingListItemsRepository;
+    ShoppingListsRepository shoppingListsRepository;
+
+
+
+
+}

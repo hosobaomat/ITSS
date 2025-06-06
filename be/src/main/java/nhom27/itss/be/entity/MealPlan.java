@@ -38,6 +38,9 @@ public class MealPlan {
     Timestamp createdAt;
 
 
+    @Column(name = "status")
+    Boolean status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
     private FamilyGroup group;
