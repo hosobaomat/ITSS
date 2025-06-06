@@ -106,6 +106,8 @@ public class ShoppingListService {
         shoppingList.setStatus(ShoppingListStatus.DONE);
         shoppingList.setEndDate(new Timestamp(System.currentTimeMillis()));
 
+        shoppingListsRepository.save(shoppingList);
+
         List<FoodItem> ItemToFrigde = shoppingList.getShoppinglistitems().stream().filter(item -> item.getStatus().equals(ShoppingListItemStatus.PURCHASED)).map(
                 Item -> FoodItem.builder()
                         .addedAt(new Timestamp(System.currentTimeMillis()))
@@ -134,7 +136,7 @@ public class ShoppingListService {
         return ShoppinglistToResponse(shoppingList);
     }
 
-        public List<ShoppingListResponse> getAllShoppingLists() {
+    public List<ShoppingListResponse> getAllShoppingLists() {
             List<ShoppingList> shoppingLists = shoppingListsRepository.findAll();
 
             return shoppingLists.stream().map(this::ShoppinglistToResponse).toList();
@@ -219,6 +221,18 @@ public class ShoppingListService {
 
     }
 
+    //FOR STATSERVICE
+    public List<ShoppingListItemResponse> getPurchasedListItemByGroup(Integer groupId) {
+        FamilyGroup familyGroup = familyGroupsRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.FAMILYGROUP_NOT_EXISTED));
+        ShoppingList list = shoppingListsRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.SHOPPINGLIST_NOT_EXISTS));
+        List<ShoppingListItem> items = shoppingListItemsRepository.findByShoppingList(list).stream().filter(item -> item.getStatus().equals(ShoppingListItemStatus.PURCHASED)).toList();
+
+        return items.stream().map(this::ToItemResponse).toList();
+    }
+
+
+
+
     //Ham Mapping
     private ShoppingListResponse ShoppinglistToResponse(ShoppingList shoppingList) {
         ShoppingListResponse shoppingListResponse = new ShoppingListResponse();
@@ -235,7 +249,7 @@ public class ShoppingListService {
         return shoppingListResponse;
     }
 
-    private ShoppingListItemResponse ToItemResponse(ShoppingListItem item) {
+    public ShoppingListItemResponse ToItemResponse(ShoppingListItem item) {
         ShoppingListItemResponse shoppingListItemResponse = new ShoppingListItemResponse();
         shoppingListItemResponse.setId(item.getListItemId());
         shoppingListItemResponse.setName(item.getFoodName());
