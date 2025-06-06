@@ -72,7 +72,7 @@ public class FamilyGroupController {
     @GetMapping("/user/{userId}")
     ApiResponse<FamilyGroupResponse> getFamilyGroupByUserId(@PathVariable("userId") Integer userId) {
         return ApiResponse.<FamilyGroupResponse>builder()
-                .result(familyGroupService.getFamilyGroupById(userId))
+                .result(familyGroupService.getFamilyGroupByUserId(userId))
                 .code(200).build();
     }
 
