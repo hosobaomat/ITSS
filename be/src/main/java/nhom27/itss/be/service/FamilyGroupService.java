@@ -121,20 +121,17 @@ public class FamilyGroupService {
                         .joinedAt(new Timestamp(System.currentTimeMillis()))
                         .build())
                 .toList();
-        familyGroupMembersRepository.saveAll(newMembers);
-
 
         Set<FamilyGroupMember> members = group.getMembers();
         members.addAll(newMembers);
         group.setMembers(members);
         familyGroupsRepository.save(group);
 
-
-
         return FamilyGroupResponse.builder()
                 .id(group.getGroup_id())
                 .groupName(group.getGroupName())
                 .createdBy(group.getCreatedBy().getUsername())
+                .createdAt(group.getCreatedAt())
                 .members(
                         group.getMembers().stream()
                                 .map(member -> UserToUserResponse(member.getUser()))
