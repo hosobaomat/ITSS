@@ -1,6 +1,9 @@
 import 'package:login_menu/models/foodCatalogResponse.dart';
 import 'package:login_menu/models/foodCategoryResponse.dart';
+import 'package:login_menu/models/getMealPlan.dart';
+import 'package:login_menu/models/recipesResponse.dart';
 import 'package:login_menu/models/unitResponse.dart';
+import 'package:login_menu/service/auth_service.dart';
 
 class Recipe {
   String name;
@@ -23,11 +26,18 @@ class DataStore {
   List<FoodCategoryResponse> categories = [];
   List<FoodCatalogResponse> foodCatalogs = [];
   List<UnitResponse> units = [];
+  List<Recipesresponse> recipesresponse = [];
+  late AuthService authService;
+  late int GroupID;
+  late int UserID;
+  List<MealPlanResponse> mealPlanResponse = [];
   // Hàm clear nếu cần reset
   void clearAll() {
     categories = [];
     foodCatalogs = [];
     units = [];
+    recipesresponse = [];
+    mealPlanResponse = [];
   }
 
   //

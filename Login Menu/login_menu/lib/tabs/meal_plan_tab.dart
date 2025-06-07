@@ -1,22 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:login_menu/models/fooditem.dart';
-import 'package:login_menu/models/recipes.dart';
+import 'package:login_menu/data/data_store.dart';
+import 'package:login_menu/models/createMealPlan.dart';
+import 'package:login_menu/models/recipesResponse.dart'; // Sử dụng Recipesresponse
 import 'package:login_menu/models/mealPlan.dart';
-
 import 'package:provider/provider.dart';
+import '../pages/RecipeListPage.dart';
 
 class MealPlanScreen extends StatefulWidget {
-  final List<FoodItem> inventory;
-  final List<Recipe> recipes;
+  final List<Recipesresponse> recipes; // Chỉ cần recipes, không cần inventory
 
-  const MealPlanScreen(
-      {super.key, required this.inventory, required this.recipes});
+  const MealPlanScreen({
+    super.key,
+    required this.recipes,
+  });
 
   @override
   _MealPlanScreenState createState() => _MealPlanScreenState();
 }
 
 class _MealPlanScreenState extends State<MealPlanScreen> {
+  final createmealplan = Createmealplan(
+    createdBy: DataStore().UserID,
+    planName: 'an com tron keo kerra',
+    startDate: DateTime.now(),
+    endDate: DateTime.now(),
+    groupId: DataStore().GroupID,
+    details: [],
+  );
   Set<DateTime> _selectedDates = {
     DateTime.now()
   }; // Lưu tất cả các ngày đã chọn
@@ -29,6 +39,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     'Saturday',
     'Sunday',
   ];
+
   @override
   void initState() {
     super.initState();
@@ -36,10 +47,37 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     final mealPlanProvider =
         Provider.of<MealPlanProvider>(context, listen: false);
     _selectedDates = mealPlanProvider.dailyPlans.keys.toSet();
-    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final today =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     if (!_selectedDates.contains(today)) {
       _selectedDates.add(today);
       mealPlanProvider.initializeMealPlanForDate(today);
+    }
+  }
+
+  void _handleDone(MealPlan mealPlan) {
+    createmealplan.startDate = mealPlan.date;
+    createmealplan.endDate = mealPlan.date;
+    final meals = mealPlan.meals;
+    meals.forEach((mealType, recipe) {
+      for (var item in recipe) {
+        createmealplan.details.add(CreateMealPlanDetail(
+            recipeId: item.id, mealDate: mealPlan.date, mealType: mealType));
+      }
+    });
+    createMealPlan();
+  }
+
+  Future<void> createMealPlan() async {
+    try {
+      bool result = await DataStore().authService.addMealPlan(createmealplan);
+      if (result == true) {
+        print("thanh cong");
+      } else {
+        print("that bai");
+      }
+    } catch (e) {
+      print("loi : $e");
     }
   }
 
@@ -70,15 +108,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     }
   }
 
-  void _assignMeal(DateTime date, String mealType) {
-    if (widget.inventory.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Kho thực phẩm trống! Vui lòng thêm nguyên liệu.')),
-      );
-      return;
-    }
-
+  void _assignMeal(DateTime date, String mealType) async {
     if (widget.recipes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Không có công thức nào khả thi!')),
@@ -86,52 +116,35 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
       return;
     }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-            'Chọn công thức cho $mealType - ${date.toString().split(' ')[0]}'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: widget.recipes.map((recipe) {
-              final isAvailable =
-                  Provider.of<MealPlanProvider>(context, listen: false)
-                      .checkIngredients(recipe, widget.inventory);
-              final missingIngredients = recipe.ingredients
-                  .where((ingredient) => !widget.inventory.any((item) =>
-                      item.name.trim().toLowerCase() ==
-                          ingredient.trim().toLowerCase() &&
-                      item.quantity! > 0))
-                  .join(', ');
-              return ListTile(
-                title: Text(recipe.name),
-                subtitle:
-                    Text(isAvailable ? 'Có sẵn' : 'Thiếu: $missingIngredients'),
-                onTap: isAvailable
-                    ? () {
-                        Provider.of<MealPlanProvider>(context, listen: false)
-                            .addMealPlan(date, mealType.toLowerCase(), recipe);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text('Đã thêm ${recipe.name} vào $mealType')),
-                        );
-                        Navigator.pop(context);
-                      }
-                    : null,
-              );
-            }).toList(),
-          ),
+    final selectedRecipes = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RecipeListPage(
+          authService: DataStore().authService,
+          isSelectionMode: true,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
-          ),
-        ],
       ),
     );
+
+    if (selectedRecipes != null && selectedRecipes.isNotEmpty) {
+      print(
+          'Selected Recipes: ${selectedRecipes.map((r) => r.recipeName).toList()}');
+      final mealPlanProvider =
+          Provider.of<MealPlanProvider>(context, listen: false);
+      final typeMapping = {
+        'Bữa sáng': 'breakfast',
+        'Bữa trưa': 'lunch',
+        'Bữa tối': 'dinner',
+      };
+      final normalizedType = typeMapping[mealType] ?? mealType.toLowerCase();
+      for (var recipe in selectedRecipes) {
+        mealPlanProvider.addMealPlan(date, normalizedType, recipe);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã thêm ${recipe.recipeName} vào $mealType')),
+        );
+      }
+    }
+    setState(() {});
   }
 
   Widget _buildMealPlanCard(MealPlan mealPlan) {
@@ -154,53 +167,80 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                 style:
                     const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              IconButton(
-                onPressed: () {
-                  Provider.of<MealPlanProvider>(context, listen: false)
-                      .removeMealPlanForDate(mealPlan.date);
-                  setState(() {
-                    _selectedDates.remove(mealPlan.date);
-                  });
-                },
-                icon: const Icon(Icons.delete_outline, color: Colors.red),
-              ),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      _handleDone(mealPlan);
+                    },
+                    icon: const Icon(Icons.done, color: Colors.blue),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Provider.of<MealPlanProvider>(context, listen: false)
+                          .removeMealPlanForDate(mealPlan.date);
+                      setState(() {
+                        _selectedDates.remove(mealPlan.date);
+                      });
+                    },
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                  ),
+                ],
+              )
             ],
           ),
           const SizedBox(height: 12),
           _buildMealSection(
-              'Bữa sáng', mealPlan.meals['bữa sáng'], mealPlan.date),
+              'Bữa sáng', mealPlan.meals['breakfast'] ?? [], mealPlan.date),
           _buildMealSection(
-              'Bữa trưa', mealPlan.meals['bữa trưa'], mealPlan.date),
+              'Bữa trưa', mealPlan.meals['lunch'] ?? [], mealPlan.date),
           _buildMealSection(
-              'Bữa tối', mealPlan.meals['bữa tối'], mealPlan.date),
+              'Bữa tối', mealPlan.meals['dinner'] ?? [], mealPlan.date),
         ],
       ),
     );
   }
 
-  Widget _buildMealSection(String mealType, Recipe? recipe, DateTime date) {
+  Widget _buildMealSection(
+      String mealType, List<Recipesresponse> recipes, DateTime date) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
+      child: ExpansionTile(
         title: Text(mealType),
-        subtitle: Text(recipe?.name ?? 'Chưa chọn'),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => _assignMeal(date, mealType),
-            ),
-            if (recipe != null)
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  Provider.of<MealPlanProvider>(context, listen: false)
-                      .removeMealPlan(date, mealType.toLowerCase());
-                },
-              ),
-          ],
+        subtitle: Text('(${recipes.length} món)'),
+        trailing: IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () =>
+              _assignMeal(date, mealType), // Mở RecipeListPage khi nhấn add
         ),
+        children: [
+          if (recipes.isEmpty)
+            const ListTile(title: Text('Chưa có món ăn nào.')),
+          for (var recipe in recipes)
+            ListTile(
+              title: Text(recipe.recipeName),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      final typeMapping = {
+                        'Bữa sáng': 'breakfast',
+                        'Bữa trưa': 'lunch',
+                        'Bữa tối': 'dinner',
+                      };
+                      final normalizedType =
+                          typeMapping[mealType] ?? mealType.toLowerCase();
+                      Provider.of<MealPlanProvider>(context, listen: false)
+                          .removeMealPlan(date, normalizedType, recipe);
+                      setState(() {});
+                    },
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -221,7 +261,8 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
             .map((entry) => entry.value)
             .toList()
           ..sort((a, b) => a.date.compareTo(b.date)); // Sắp xếp theo ngày
-
+        print(
+            'Meal Plans: ${mealPlans.map((plan) => "${plan.date}: ${plan.meals}").toList()}'); // Debug log
         return Scaffold(
           appBar: AppBar(
             title: const Text('Lập thực đơn theo ngày'),
@@ -230,6 +271,12 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
               IconButton(
                 icon: const Icon(Icons.calendar_today),
                 onPressed: _selectDate,
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () {
+                  setState(() {}); // Làm mới giao diện
+                },
               ),
             ],
           ),

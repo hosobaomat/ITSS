@@ -4,6 +4,7 @@ import 'package:login_menu/models/fooditem.dart';
 import 'package:login_menu/models/mealPlan.dart';
 import 'package:login_menu/models/update_item.dart';
 import 'package:login_menu/pages/login_page.dart';
+import 'package:login_menu/providers/inventory_provider.dart';
 import 'package:provider/provider.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -26,6 +27,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => FoodInventoryProvider()),
         ChangeNotifierProvider(create: (_) => MealPlanProvider()),
         ChangeNotifierProvider(create: (_) => UpdateItemProvider()),
+        ChangeNotifierProvider(create: (_) => InventoryProvider()),
       ],
       child: MainApp(),
     ),

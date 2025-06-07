@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:login_menu/data/data_store.dart';
+import 'package:login_menu/models/recipesResponse.dart';
+import 'package:login_menu/tabs/meal_plan.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:login_menu/service/auth_service.dart';
 import 'package:login_menu/tabs/meal_plan_tab.dart';
@@ -20,10 +23,18 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   int? _userId;
-
+  late Future<List<Recipesresponse>> _recipeFuture;
   @override
   void initState() {
     super.initState();
+    if (DataStore().recipesresponse.isNotEmpty) {
+      _recipeFuture = Future.value(DataStore().recipesresponse);
+    } else {
+      _recipeFuture = widget.authService.fetchRecipesByUser().then((recipes) {
+        DataStore().recipesresponse = recipes;
+        return recipes;
+      });
+    }
     _loadUserId();
   }
 
@@ -57,7 +68,11 @@ class _HomePageState extends State<HomePage> {
           ),
           CategoriesTab(),
           FoodInventoryScreen(inventoryItems: []),
-          RecipesScreen(inventoryItems: []),
+          // RecipesScreen(inventoryItems: [], authService: widget.authService,),
+          MealPlanScreen(
+            recipes: DataStore().recipesresponse,
+          ),
+          MealPlanScreenGet(authService: widget.authService),
           StatisticTab(),
           ProfilTab(),
         ],
@@ -74,7 +89,10 @@ class _HomePageState extends State<HomePage> {
               icon: Icon(Icons.category), label: 'Categories'),
           BottomNavigationBarItem(
               icon: Icon(Icons.shopping_bag), label: 'Food Inventory'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Recipes'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.play_lesson_outlined), label: 'Meal Plan'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.play_lesson_outlined), label: 'Meal Plan get'),
           BottomNavigationBarItem(
               icon: Icon(Icons.receipt), label: 'Statistic'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),

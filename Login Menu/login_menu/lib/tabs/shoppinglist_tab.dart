@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/fooditem.dart';
 import 'package:login_menu/models/shopping_list_model.dart.dart';
 import 'package:login_menu/models/ShoppingListModelShare.dart';
@@ -76,8 +77,9 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
 
     try {
       final userId = await widget.authService.getUserId();
-      final groupId = 2;
-
+      DataStore().UserID = userId;
+      final groupId = await widget.authService.getGroupIdByUserId(DataStore().UserID);
+      DataStore().GroupID = groupId;
       final userLists =
           await widget.authService.fetchShoppingListsByUserId(userId);
       final sharedLists =
@@ -600,7 +602,7 @@ class ShoppingItem {
   int? unitId; // Thêm trường unitId
   int? foodCatalogId; // Thêm trường foodCatalogId
   ShoppingItem(this.name, this.icon, this.checked, this.quantity, this.unit,
-      {this.unitId, this.foodCatalogId,   this.category});
+      {this.unitId, this.foodCatalogId, this.category});
 
   Map<String, dynamic> toJson() {
     return {
