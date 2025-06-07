@@ -3,6 +3,9 @@ package nhom27.itss.be.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,5 +20,6 @@ public class RecipeResponse {
     Integer cookTime;
     String description;
     String createdBy;
+    List<RecipeIngredientResponse> ingredients = new ArrayList<>();
 
 }

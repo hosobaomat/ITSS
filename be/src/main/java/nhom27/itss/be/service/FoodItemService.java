@@ -103,6 +103,9 @@ public class FoodItemService {
                                         .unitName(item.getUnit().getUnitName())
                                         .storageLocation(item.getStorageLocation())
                                         .expiryDate(item.getExpiryDate())
+                                        .addedAt(item.getAddedAt())
+                                        .updatedAt(item.getUpdatedAt())
+                                        .storageSuggestion(item.getFoodCatalog().getDescription())
                                         .build();
                             })
                             .collect(Collectors.toList());

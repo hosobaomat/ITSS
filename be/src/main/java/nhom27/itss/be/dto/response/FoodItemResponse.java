@@ -20,7 +20,6 @@ public class FoodItemResponse {
     String storageLocation;
     Timestamp expiryDate;
     Timestamp addedAt;
-    String categoryName;
     String storageSuggestion;
     Timestamp updatedAt;
 

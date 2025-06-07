@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import nhom27.itss.be.dto.request.MissingIngredientRequest;
 import nhom27.itss.be.dto.request.RecipeCreationRequest;
 import nhom27.itss.be.dto.request.RecipeEditRequest;
 import nhom27.itss.be.dto.response.*;
@@ -171,10 +172,32 @@ public class RecipeService {
     }
 
 
-    public List<RecipeIngredient> getMissingIngredient(Integer recipeId){
-           Recipe recipe = recipesRepository.findById(recipeId).orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_EXISTS));
+    public List<RecipeIngredientResponse> getMissingIngredient(MissingIngredientRequest request){
+           Recipe recipe = recipesRepository.findById(request.getRecipeId()).orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_EXISTS));
 
-           
+           List<FoodItem> itemsInFridge = foodItemsRepository.findValidFoodItemsByGroupId(request.getGroupId());
+           List<RecipeIngredient> ingredients = recipeIngredientsRepository.findByRecipe(recipe);
+
+           List<RecipeIngredient> missingIngredients = new ArrayList<>();
+
+           for (RecipeIngredient ingredient : ingredients) {
+               Optional<FoodItem> matchingItem = itemsInFridge.stream()
+                       .filter(item -> item.getFoodCatalog().getFoodCatalogId().equals(ingredient.getFoodCatalog().getFoodCatalogId())
+                               && item.getUnit().getId().equals(ingredient.getUnit().getId())
+                               && item.getQuantity() >= ingredient.getQuantity())
+                       .findFirst();
+
+               if (matchingItem.isEmpty()) {
+                   // Nếu không tìm thấy nguyên liệu phù hợp trong tủ lạnh, thêm vào danh sách thiếu
+                   missingIngredients.add(ingredient);
+               }
+
+           }
+
+
+           return missingIngredients.stream().map(
+                   this::RecipeIngredientToResponse
+           ).toList();
 
     }
 
@@ -188,8 +211,22 @@ public class RecipeService {
         recipeResponse.setCookTime(recipe.getCookTime()) ;
         recipeResponse.setPrepTime(recipe.getPrepTime()) ;
         recipeResponse.setCreatedBy(recipe.getCreatedBy().getEmail());
+        recipeResponse.setIngredients(recipe.getRecipeingredients().stream().map(
+                this::RecipeIngredientToResponse
+        ).toList());
 
         return recipeResponse;
+    }
+
+    private RecipeIngredientResponse RecipeIngredientToResponse(RecipeIngredient recipeIngredient) {
+        RecipeIngredientResponse recipeIngredientResponse = new RecipeIngredientResponse();
+        recipeIngredientResponse.setRecipeid(recipeIngredient.getRecipe().getRecipeId());
+        recipeIngredientResponse.setFoodId(recipeIngredient.getFoodCatalog().getFoodCatalogId());
+        recipeIngredientResponse.setQuantity(recipeIngredient.getQuantity());
+        recipeIngredientResponse.setUnitId(recipeIngredient.getUnit().getId());
+        recipeIngredientResponse.setUnitName(recipeIngredient.getUnit().getUnitName());
+        recipeIngredientResponse.setFoodname(recipeIngredient.getFoodCatalog().getFoodName());
+        return recipeIngredientResponse;
     }
 
 

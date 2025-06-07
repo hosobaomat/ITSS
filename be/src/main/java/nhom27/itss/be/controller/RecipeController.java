@@ -4,10 +4,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import nhom27.itss.be.dto.request.AddShopingListItemRequest;
-import nhom27.itss.be.dto.request.EditShoppingListRequest;
-import nhom27.itss.be.dto.request.RecipeCreationRequest;
-import nhom27.itss.be.dto.request.RecipeEditRequest;
+import nhom27.itss.be.dto.request.*;
 import nhom27.itss.be.dto.response.*;
 import nhom27.itss.be.service.RecipeService;
 import org.springframework.web.bind.annotation.*;
@@ -74,6 +71,14 @@ public class RecipeController {
     public ApiResponse<List<RecipeResponse>> getSuggestedMealPlan(@PathVariable Integer groupId) {
         ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
         response.setResult(recipeService.recommendRecipes(groupId));
+        response.setCode(200);
+        return response;
+    }
+
+    @GetMapping("/missingIngredient")
+    public ApiResponse<List<RecipeIngredientResponse>> getMissingIngredient(@RequestBody MissingIngredientRequest request ) {
+        ApiResponse<List<RecipeIngredientResponse>> response = new ApiResponse<>();
+        response.setResult(recipeService.getMissingIngredient(request));
         response.setCode(200);
         return response;
     }

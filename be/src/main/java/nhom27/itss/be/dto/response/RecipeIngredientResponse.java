@@ -14,13 +14,10 @@ import java.util.Set;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RecipeIngredientResponse {
-    String recipeName;
-    String instructions;
-    Integer prepTime;
-    Integer cookTime;
-    String description;
-    Timestamp createdAt;
-    String createBy;
-    Set<RecipeIngredientResponse> ingredients = new HashSet<>();
-
+    Integer recipeid;
+    Integer foodId;
+    String foodname;
+    String unitName;
+    Integer unitId;
+    Integer quantity;
 }
