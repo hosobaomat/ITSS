@@ -23,7 +23,7 @@ public class FamilyGroup {
     @Id
     @Column(name = "group_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer group_id;
+    Integer groupId;
 
     @Column(name = "group_name", nullable = false)
     String groupName;

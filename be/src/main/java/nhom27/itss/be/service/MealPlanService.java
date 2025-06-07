@@ -147,7 +147,7 @@ public class MealPlanService {
     public MealPlanResponse mapPlanToResponse(MealPlan plan) {
         return MealPlanResponse.builder()
                 .planId(plan.getPlanId())
-                .groupId(plan.getGroup().getGroup_id())
+                .groupId(plan.getGroup().getGroupId())
                 .planName(plan.getPlanName())
                 .startDate(plan.getStartDate())
                 .endDate(plan.getEndDate())

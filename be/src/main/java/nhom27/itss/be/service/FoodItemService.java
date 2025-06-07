@@ -45,7 +45,6 @@ public class FoodItemService {
         return FoodItemResponse.builder()
                 .id(foodItem.getFoodId())
                 .foodname(foodItem.getFoodName())
-                .categoryName(foodItem.getFoodCatalog().getFoodCategory().getCategoryName())
                 .quantity(foodItem.getQuantity())
                 .unitName(foodItem.getUnit().getUnitName())
                 .expiryDate(foodItem.getExpiryDate())
@@ -78,7 +77,7 @@ public class FoodItemService {
         return AddFoodItemToFrigdeResponse.builder()
                 .foodItemResponses(ItemToFrigde.stream().map(this::mapToFoodItemResponse).collect(Collectors.toSet()))
                 .addedBy(user.getUsername())
-                .groupId(currentGroup.getGroup_id())
+                .groupId(currentGroup.getGroupId())
                 .groupName(currentGroup.getGroupName())
                 .build();
     }

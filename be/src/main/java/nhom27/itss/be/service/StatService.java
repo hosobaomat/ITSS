@@ -4,19 +4,14 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import nhom27.itss.be.dto.request.CreateMealPlanRequest;
 import nhom27.itss.be.dto.response.*;
 import nhom27.itss.be.entity.*;
-import nhom27.itss.be.enums.ShoppingListItemStatus;
-import nhom27.itss.be.exception.AppException;
-import nhom27.itss.be.exception.ErrorCode;
 import nhom27.itss.be.repository.*;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 
 @Slf4j
@@ -36,8 +31,31 @@ public class StatService {
     UnitsRepository unitsRepository;
     ShoppingListItemsRepository shoppingListItemsRepository;
     ShoppingListsRepository shoppingListsRepository;
+    FoodHistoryRepository foodHistoryRepository;
+
+    public List<FoodUsedResponse> getFoodUsed(Integer groupId){
+        Optional<List<FoodHistory>> foodUsed = foodHistoryRepository.findByGroup_GroupIdAndAction(groupId,"used");
+        List<FoodHistory> foodUsedList = foodUsed.orElse(new ArrayList<>());
+
+        return foodUsedList.stream().map(
+                this::toFoodUsedResponse
+        ).toList();
+
+    }
 
 
+    private FoodUsedResponse toFoodUsedResponse(FoodHistory foodUsed){
+        FoodUsedResponse foodUsedResponse = new FoodUsedResponse();
+        foodUsedResponse.setId(foodUsed.getId());
+        foodUsedResponse.setFoodname(foodUsed.getFood().getFoodName());
+        foodUsedResponse.setFoodId(foodUsed.getFood().getFoodId());
+        foodUsedResponse.setQuantity(foodUsed.getQuantity());
+        foodUsedResponse.setActionDate(foodUsed.getActionDate());
+        foodUsedResponse.setUnitName(foodUsed.getUnit().getUnitName());
+        foodUsedResponse.setUnitId(foodUsed.getUnit().getId());
+        return foodUsedResponse;
+
+    }
 
 
 

@@ -130,7 +130,7 @@ public class ShoppingListService {
 
         return AddFoodItemToFrigdeResponse.builder()
                 .addedBy(shoppingList.getCreatedBy().getUsername())
-                .groupId(shoppingList.getGroup().getGroup_id())
+                .groupId(shoppingList.getGroup().getGroupId())
                 .groupName(shoppingList.getGroup().getGroupName())
                 .foodItemResponses(ItemToFrigde.stream().map(this::ToFoodItemResponse).collect(Collectors.toSet()))
                 .build();
@@ -276,8 +276,7 @@ public class ShoppingListService {
         foodItemResponse.setExpiryDate(item.getExpiryDate());
         foodItemResponse.setAddedAt(item.getAddedAt());
         foodItemResponse.setStorageLocation(item.getStorageLocation());
-        foodItemResponse.setCategoryName(item.getFoodCatalog().getFoodCategory().getCategoryName());
-        foodItemResponse.setCategoryName(item.getFoodCatalog().getFoodCategory().getDescription());
+        foodItemResponse.setStorageSuggestion(item.getFoodCatalog().getFoodCategory().getDescription());
         return foodItemResponse;
 
     }
