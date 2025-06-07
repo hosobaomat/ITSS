@@ -25,6 +25,7 @@ public enum ErrorCode {
     INVALID_AGE(1008,"Your age must be at least {min}",HttpStatus.FORBIDDEN),
     GROUP_NOT_FOUND(1009, "Group not found with id ",HttpStatus.NOT_FOUND),
     RECIPE_NOT_FOUND(10010, "Recipe not found with id ",HttpStatus.NOT_FOUND),
+    USER_NOT_IN_GROUP(888, "USER not in with group ",HttpStatus.NOT_FOUND),
     MEALPLAN_NOT_FOUND(10011, "Meal plan not found with id ",HttpStatus.NOT_FOUND);
 
 

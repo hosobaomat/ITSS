@@ -47,8 +47,6 @@ public class RecipeController {
     }
 
 
-
-
     @DeleteMapping("/{recipeId}")
     ApiResponse<String> deleteShoppingList(@PathVariable Integer recipeId){
         recipeService.deleteIngredientFromRecipe(recipeId);
@@ -58,10 +56,9 @@ public class RecipeController {
     }
 
     @GetMapping("/{recipeId}")
-    ApiResponse<String> getShoppingListById(@PathVariable Integer recipeId){
-        recipeService.getRecipesById(recipeId);
-        return ApiResponse.<String>builder()
-                .result("Recipe has been deleted")
+    ApiResponse<RecipeResponse> getShoppingListById(@PathVariable Integer recipeId){
+        return ApiResponse.<RecipeResponse>builder()
+                .result(recipeService.getRecipesById(recipeId))
                 .code(200).build();
     }
 

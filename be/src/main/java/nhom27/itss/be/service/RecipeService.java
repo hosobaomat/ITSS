@@ -170,6 +170,14 @@ public class RecipeService {
 
     }
 
+
+    public List<RecipeIngredient> getMissingIngredient(Integer recipeId){
+           Recipe recipe = recipesRepository.findById(recipeId).orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_EXISTS));
+
+           
+
+    }
+
 //    Ham Mapping
     private RecipeResponse RecipeToResponse(Recipe recipe) {
         RecipeResponse recipeResponse = new RecipeResponse();

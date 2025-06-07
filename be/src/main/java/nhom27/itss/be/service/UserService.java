@@ -69,8 +69,6 @@ public class UserService {
         return userRepository.findAll();
     }
 
-
-
     public UserResponse getUserById(Integer id){
 
         log.info("In method getUserById");

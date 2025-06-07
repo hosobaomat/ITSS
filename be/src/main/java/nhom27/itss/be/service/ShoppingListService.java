@@ -37,10 +37,13 @@ public class ShoppingListService {
     ShoppingListItemsRepository shoppingListItemsRepository;
     FoodItemsRepository foodItemsRepository;
     FoodCategoriesRepository foodCategoriesRepository;
+    FamilyGroupMembersRepository familyGroupMembersRepository;
 
 
     public ShoppingListResponse createShoppingList(ShoppingListCreationRequest request) {
         ShoppingList shoppingList = new ShoppingList();
+
+
 
         shoppingList.setListName(request.getListName());
 
@@ -50,8 +53,11 @@ public class ShoppingListService {
 
         FamilyGroup familyGroup = familyGroupsRepository.findById(request.getGroup_id())
                 .orElseThrow(() -> new AppException(ErrorCode.FAMILYGROUP_NOT_EXISTED));
-        shoppingList.setGroup(familyGroup);
 
+        boolean isMember = familyGroupMembersRepository.existsByGroupAndUser(familyGroup, user);
+        if (!isMember) {
+            throw new AppException(ErrorCode.USER_NOT_IN_GROUP); // Bạn có thể định nghĩa thêm mã lỗi này
+        }
         shoppingList.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         shoppingList.setStartDate(request.getStartDate());
         shoppingList.setStatus(ShoppingListStatus.DRAFT);

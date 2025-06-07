@@ -41,7 +41,7 @@ public class MealPlanController {
         return response;
     }
 
-    @PostMapping("/finish/{mealplanId}")
+    @PatchMapping("/finish/{mealplanId}")
     public ApiResponse<MealPlanResponse> finishMealPlan( @PathVariable Integer mealplanId) {
         ApiResponse<MealPlanResponse> response = new ApiResponse<>();
         response.setResult(mealPlanService.finishedMealPlan(mealplanId));  // gọi instance method

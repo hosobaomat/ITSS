@@ -54,6 +54,7 @@ public class MealPlanService {
                 .group(group)
                 .createdBy(createdBy)
                 .createdAt(new Timestamp(System.currentTimeMillis()))
+                .status(false)
                 .build();
 
         mealPlansRepository.save(plan);

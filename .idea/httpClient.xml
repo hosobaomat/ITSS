@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="HttpClientEndpointsTabState">
-    <option name="requestToText" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;273dc8c5df13f1e72ca26299c6f867c42c92ffe7&quot; value=&quot;###&amp;#10;GET http://localhost:8082/ITSS_BE/FoodItems/Storage&quot; /&gt;&#10;  &lt;entry key=&quot;fe56f769d73ff91fb30123645f061f0213871df0&quot; value=&quot;###&amp;#10;GET http://localhost:8082/ITSS_BE/ShoppingList/user/{{userId}}&quot; /&gt;&#10;  &lt;entry key=&quot;69ec5995fd09c30a0349fc2cec409a7138a9e46b&quot; value=&quot;###&amp;#10;GET http://localhost:8082/ITSS_BE/family_group/user/{{userId}}&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
+    <option name="requestToText" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;273dc8c5df13f1e72ca26299c6f867c42c92ffe7&quot; value=&quot;###&amp;#10;GET http://localhost:8082/ITSS_BE/FoodItems/Storage&quot; /&gt;&#10;  &lt;entry key=&quot;914a81ae43806ac73af0f311f5948a829f93456c&quot; value=&quot;###&amp;#10;PATCH http://localhost:8082/ITSS_BE/mealplans/finish/{{mealplanId}}&quot; /&gt;&#10;  &lt;entry key=&quot;fe56f769d73ff91fb30123645f061f0213871df0&quot; value=&quot;###&amp;#10;GET http://localhost:8082/ITSS_BE/ShoppingList/user/{{userId}}&quot; /&gt;&#10;  &lt;entry key=&quot;69ec5995fd09c30a0349fc2cec409a7138a9e46b&quot; value=&quot;###&amp;#10;GET http://localhost:8082/ITSS_BE/family_group/user/{{userId}}&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
   </component>
 </project>
