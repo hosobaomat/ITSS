@@ -38,5 +38,8 @@ public class Notification {
     private User user;
 
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "food_id")
+    private FoodItem food;
 
 }

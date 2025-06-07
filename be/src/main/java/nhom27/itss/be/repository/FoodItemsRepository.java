@@ -16,18 +16,16 @@ public interface FoodItemsRepository extends JpaRepository<FoodItem, Integer> {
     // Tìm kiếm
     List<FoodItem> findByGroup(FamilyGroup group);
 
-//    List<FoodItem> findByGroup_IdAndFoodNameContainingIgnoreCase(Integer groupId, String foodName);
-//    List<FoodItem> findByGroup_IdAndFoodCatalog_Category_Id(Integer groupId, Integer categoryId);
-//    List<FoodItem> findByGroup_IdAndFoodNameContainingIgnoreCaseAndFoodCatalog_Category_Id(Integer groupId, String foodName, Integer categoryId);
-//
-//    // Tìm item cụ thể trong nhóm
-//    Optional<FoodItem> findByFoodIdAndGroup_Id(Integer foodId, Integer groupId);
-//
-//    // Tìm item sắp hết hạn
-//    List<FoodItem> findByExpiryDateBetween(Timestamp startDate, Timestamp endDate);
+    @Query("SELECT fi FROM FoodItem fi WHERE fi.expiryDate BETWEEN :startDate AND :endDate AND fi.quantity > 0")
+    List<FoodItem> findByExpiryDateBetweenAndQuantityGreaterThan(
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate);
 
     @Query("SELECT f FROM FoodItem f WHERE f.group.groupId= :groupId AND f.expiryDate >= CURRENT_DATE AND f.quantity > 0")
     List<FoodItem> findValidFoodItemsByGroupId(@Param("groupId") Integer groupId);
+
+    @Query("SELECT f FROM FoodItem f WHERE f.expiryDate < CURRENT_DATE AND f.quantity > 0")
+    List<FoodItem> findAllExpiredFoodItems();
 
     @Query("SELECT DISTINCT f.storageLocation FROM FoodItem f")
     List<String> findDistinctStorageLocations();

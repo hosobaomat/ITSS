@@ -14,6 +14,7 @@ import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.exception.ErrorCode;
 import nhom27.itss.be.exception.ResourceNotFoundException;
 import nhom27.itss.be.repository.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +42,8 @@ public class FoodItemService {
     FamilyGroupMembersRepository familyGroupMemberRepository;
     FamilyGroupsRepository familyGroupsRepository;
     UnitsRepository unitsRepository;
+    private final FoodHistoryRepository foodHistoryRepository;
+    private final NotificationsRepository notificationsRepository;
 
 
     private FoodItemResponse mapToFoodItemResponse(FoodItem foodItem) {
@@ -69,7 +74,7 @@ public class FoodItemService {
                         .foodCatalog(foodCatalogRepository.findById(Item.getFoodCatalogId()).orElseThrow(() -> new AppException(ErrorCode.FOOD_NOT_EXISTS)))
                         .expiryDate(Item.getExpiryDate())
                         .storageLocation(Item.getStorageLocation())
-                        .build()
+                        .status(false).build()
         ).collect(Collectors.toSet());
 
         foodItemRepository.saveAll(ItemToFrigde);
@@ -152,29 +157,53 @@ public class FoodItemService {
     }
 
 
+    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional
+    public void checkExpiringFoodItems() {
+
+        List<FoodItem> expiredItems = foodItemRepository.findAllExpiredFoodItems();
+
+        for (FoodItem item : expiredItems) {
+            FamilyGroup group = familyGroupsRepository.findById(item.getGroup().getGroupId())
+                    .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_FOUND));
+
+            // Ghi vào foodhistory
+            FoodHistory history = FoodHistory.builder()
+                    .food(item)
+                    .group(group)
+                    .quantity(item.getQuantity())
+                    .unit(item.getUnit())
+                    .action("wasted")
+                    .actionDate(Instant.now())
+                    .food(item)
+                    .build();
+            foodHistoryRepository.save(history);
+
+            // Tạo thông báo
+
+            for(FamilyGroupMember member : group.getMembers()) {
+                if (!notificationsRepository.existsByFoodAndNotificationTypeAndUser(item, "expiry", member.getUser())) {
+                    Notification notification = Notification.builder()
+                            .user(member.getUser())
+                            .food(item)
+                            .message(String.format("%s đã hết hạn, %d %s bị lãng phí",
+                                    item.getFoodCatalog().getFoodName(), item.getQuantity(),
+                                    item.getUnit().getUnitName()))
+                            .notificationType("wasted")
+                            .createdAt(new Timestamp(System.currentTimeMillis()))
+                            .read(false)
+                            .build();
+                    notificationsRepository.save(notification);
+                }
+
+            }
+        }
+    }
 
 
-//    public List<FoodItemResponse> searchFoodItems(String name, Integer categoryId) {
-//        Integer groupId = getCurrentUserGroup().getGroup_id();
-//        List<FoodItem> foodItems;
-//
-//        boolean hasName = name != null && !name.trim().isEmpty();
-//        boolean hasCategory = categoryId != null;
-//
-//        if (hasName && hasCategory) {
-//            foodItems = foodItemRepository.findByGroup_IdAndFoodNameContainingIgnoreCaseAndFoodCatalog_Category_Id(groupId, name, categoryId);
-//        } else if (hasName) {
-//            foodItems = foodItemRepository.findByGroup_IdAndFoodNameContainingIgnoreCase(groupId, name);
-//        } else if (hasCategory) {
-//            foodItems = foodItemRepository.findByGroup_IdAndFoodCatalog_Category_Id(groupId, categoryId);
-//        } else {
-//            foodItems = foodItemRepository.findByGroup_Id(groupId);
-//        }
-//
-//        return foodItems.stream()
-//                .map(this::mapToFoodItemResponse)
-//                .collect(Collectors.toList());
-//    }
+
+
+
 
 }
 

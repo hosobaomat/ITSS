@@ -43,6 +43,17 @@ public class StatService {
 
     }
 
+    public List<FoodUsedResponse> getFoodWasted(Integer groupId){
+        Optional<List<FoodHistory>> foodWasted = foodHistoryRepository.findByGroup_GroupIdAndAction(groupId,"wasted");
+        List<FoodHistory> foodUsedList = foodWasted.orElse(new ArrayList<>());
+
+        return foodUsedList.stream().map(
+                this::toFoodUsedResponse
+        ).toList();
+    }
+
+
+
 
     private FoodUsedResponse toFoodUsedResponse(FoodHistory foodUsed){
         FoodUsedResponse foodUsedResponse = new FoodUsedResponse();

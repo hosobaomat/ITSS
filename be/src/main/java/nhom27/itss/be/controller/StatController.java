@@ -33,6 +33,14 @@ public class StatController {
         return response;
     }
 
+    @GetMapping("/wastedItem/{groupdId}")
+    ApiResponse<List<FoodUsedResponse>> getWastedFood(@PathVariable Integer groupdId) {
+        ApiResponse<List<FoodUsedResponse>> response = new ApiResponse<>();
+        //log.info("In method createUser,controller");
+        response.setResult(statService.getFoodWasted(groupdId));
+        return response;
+    }
+
 //    @GetMapping("/user/{userId}")
 //    ApiResponse<List<RecipeResponse>> getShoppingListByUserId( @PathVariable Integer userId) {
 //        ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
