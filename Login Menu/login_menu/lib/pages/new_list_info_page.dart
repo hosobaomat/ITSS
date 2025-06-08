@@ -114,7 +114,7 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
         const SnackBar(content: Text('List saved successfully')),
       );
 
-      Navigator.push(
+      final result = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => NewListItemsPage(
@@ -126,6 +126,9 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
           ),
         ),
       );
+      if (result == true) {
+        Navigator.pop(context, true); // Truyền kết quả về ShoppingListTab
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),

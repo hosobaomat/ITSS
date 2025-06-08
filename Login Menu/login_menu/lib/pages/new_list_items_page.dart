@@ -302,7 +302,6 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
       }
 
       await widget.authService.addShoppingListItems(_listId!, itemsToSave);
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Tạo danh sách thành công')),
       );
@@ -328,16 +327,17 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
         listId: _listId,
       );
       print('DEBUG: Navigating to ShoppingListTab with date: ${newList.date}');
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ShoppingListTab(
-            authService: widget.authService,
-          ),
-        ),
-        (route) =>
-            false, // Xoá hết các màn hình trước và về lại ShoppingListTab
-      );
+      // Navigator.pushAndRemoveUntil(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (_) => ShoppingListTab(
+      //       authService: widget.authService,
+      //     ),
+      //   ),
+      //   (route) =>
+      //       false, // Xoá hết các màn hình trước và về lại ShoppingListTab
+      // );
+      Navigator.pop(context, true);
     } catch (e) {
       print('Error in _handleCreateList: $e');
       ScaffoldMessenger.of(context).showSnackBar(

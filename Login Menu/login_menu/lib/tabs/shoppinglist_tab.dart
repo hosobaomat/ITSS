@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/foodItemsResponse.dart';
-
 import 'package:login_menu/models/shopping_list_model.dart.dart';
 import 'package:login_menu/models/ShoppingListModelShare.dart';
 import 'package:login_menu/models/updateItemRequest.dart';
@@ -78,13 +77,12 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
     });
 
     try {
-      final userId = await widget.authService.getUserId();
-      final groupId = await widget.authService.getGroupIdByUserId(userId);
-      print('groupId: $groupId');
-      print('userId truyền lên: $userId');
-
+       final userId = await widget.authService.getUserId();
+       DataStore().UserID = userId;
+      final groupId = await widget.authService.getGroupIdByUserId(DataStore().UserID);
+      DataStore().GroupID = groupId;
       final userLists =
-          await widget.authService.fetchShoppingListsByUserId(userId);
+          await widget.authService.fetchShoppingListsByUserId(DataStore().UserID);
       final sharedLists =
           await widget.authService.fetchShoppingListsByGroupId(groupId);
       print('Fetched User Lists: $userLists');
@@ -567,18 +565,18 @@ class ShoppingItem {
   double quantity;
   String unit;
   String? category;
-
-  ShoppingItem(
-      this.id, this.name, this.icon, this.checked, this.quantity, this.unit,
-      {this.category});
+  int? unitId; // Thêm trường unitId
+  int? foodCatalogId; // Thêm trường foodCatalogId
+  ShoppingItem(this.id,this.name, this.icon, this.checked, this.quantity, this.unit,
+      {this.unitId, this.foodCatalogId, this.category});
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'name': name,
       'quantity': quantity.toInt(),
-      'unitId': 1,
-      'foodCatalogId': 9
+      'unitId': unitId ?? 1,
+      'foodCatalogId': foodCatalogId ?? 1
     };
   }
 }

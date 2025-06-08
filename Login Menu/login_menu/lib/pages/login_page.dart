@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:login_menu/Components/button.dart';
 import 'package:login_menu/admin/adminHomePage.dart';
+import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/pages/home_page.dart';
 import 'package:login_menu/pages/register_page.dart';
 import 'package:login_menu/pages/forgot_pass.dart';
@@ -28,12 +29,16 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (success) {
+      // Gọi hàm getMyInfo và in ra thông tin user
+      final user = await Userapi.getMyInfo();
+      DataStore().username = user['username'];
+      DataStore().email = user['email'];
+
       String? token = authService.token;
       print(token);
 
       if (token != null) {
         Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-
         String role = decodedToken['role'];
 
         if (role == 'admin') {
@@ -46,6 +51,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
         } else {
+          DataStore().authService = authService;
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
