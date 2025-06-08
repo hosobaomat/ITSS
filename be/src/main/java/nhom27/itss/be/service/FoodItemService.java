@@ -160,7 +160,7 @@ public class FoodItemService {
     }
 
 
-    @Scheduled(cron = "0 */3 * * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void checkExpiringFoodItems() {
 
