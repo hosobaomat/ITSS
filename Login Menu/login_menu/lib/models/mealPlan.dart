@@ -44,7 +44,7 @@ class MealPlanProvider with ChangeNotifier {
       final item = inventory.firstWhere(
         (item) => item.name.trim().toLowerCase() == trimmedIngredient,
       );
-      if (item.name.isEmpty || item.quantity! <= 0) return false;
+      if (item.name.isEmpty || item.quantity <= 0) return false;
     }
     return true;
   }

@@ -1,164 +1,86 @@
 import 'package:flutter/material.dart';
-import 'package:login_menu/models/fooditem.dart';
-import 'package:provider/provider.dart';
+import 'package:login_menu/models/foodItemsResponse.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:login_menu/service/auth_service.dart';
+// import các model/service của bạn
 
 class FoodInventoryScreen extends StatefulWidget {
-  const FoodInventoryScreen({super.key, required this.inventoryItems});
-  final List<FoodItem> inventoryItems;
-
+  const FoodInventoryScreen(
+      {super.key, required this.authService, required this.items});
+  final AuthService authService;
+  final List<FoodItemResponse> items;
   @override
-  _FoodInventoryScreenState createState() => _FoodInventoryScreenState();
+  State<FoodInventoryScreen> createState() => _FoodInventoryScreenState();
 }
 
 class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
-  List<FoodItem> filteredItems = [];
-  List<FoodItem> expiringItems = []; // Lưu trữ món sắp hết hạn
-  bool _isDialogShowing = false;
-  FoodInventoryProvider? _provider; // Lưu trữ tham chiếu đến provider
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Lưu tham chiếu đến FoodInventoryProvider
-    _provider = Provider.of<FoodInventoryProvider>(context, listen: false);
-  }
-
-  void _showExpiringItemsDialogIfNeeded() {
-    if (!mounted) return;
-    if (expiringItems.isNotEmpty && !_isDialogShowing) {
-      _isDialogShowing = true;
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('⚠️ Cảnh báo thực phẩm sắp hết hạn'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: expiringItems.length,
-              itemBuilder: (context, index) {
-                final item = expiringItems[index];
-                return ListTile(
-                  leading: Icon(item.icon),
-                  title: Text(item.name),
-                  subtitle: Text(
-                      'HSD: ${item.expiry!.day}/${item.expiry!.month}/${item.expiry!.year}'),
-                );
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _isDialogShowing = false;
-                print('[ShowExpiringItemsDialogIfNeeded] Người dùng đóng dialog');
-                Navigator.pop(context);
-              },
-              child: const Text('Đóng'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      print('[ShowExpiringItemsDialogIfNeeded] Không có món hết hạn hoặc dialog đang hiển thị');
-    }
-  }
-
   final TextEditingController searchController = TextEditingController();
+  Future<List<foodCategory>>? foodCategoriesFuture;
 
   @override
   void initState() {
     super.initState();
-    final merged = mergeItems(widget.inventoryItems,
-        Provider.of<FoodInventoryProvider>(context, listen: false).items);
-    final provider = Provider.of<FoodInventoryProvider>(context, listen: false);
-    for (var item in merged) {
-      if (!provider.items.any((e) => e.name == item.name)) {
-        provider.addItem(item);
-      }
+    _loadData();
+  }
+
+  Future<int> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) throw Exception('Token không tồn tại');
+    final decodedToken = JwtDecoder.decode(token);
+    final userId =
+        decodedToken['userId']; // hoặc 'id' nếu backend dùng key khác
+    if (userId == null) throw Exception('Không tìm thấy userId trong token');
+    return userId;
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final userId = await widget.authService.getUserId();
+      final groupId = await widget.authService.getGroupIdByUserId(userId);
+
+      setState(() {
+        foodCategoriesFuture =
+            widget.authService.fetchFoodItemsByGroup(groupId);
+      });
+    } catch (e) {
+      // Bạn có thể show lỗi ở đây nếu muốn
+      debugPrint('Lỗi load data: $e');
     }
-    filteredItems = List.from(provider.items);
-    provider.addListener(_onProviderChanged);
-    // Lần đầu cập nhật expiringItems và hiện dialog sau khi frame build xong
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _updateExpiringItems();
-      _showExpiringItemsDialogIfNeeded();
-    });
   }
 
   @override
   void dispose() {
-    // Sử dụng _provider thay vì Provider.of(context)
-    _provider?.removeListener(_onProviderChanged);
     searchController.dispose();
     super.dispose();
   }
 
-  void _onProviderChanged() {
-    // Khi provider thay đổi, chỉ update expiringItems, không hiện dialog
-    _updateExpiringItems();
-  }
-
-  Future<void> _updateExpiringItems() async {
-    final now = DateTime.now();
-    final threeDaysLater = now.add(const Duration(days: 3));
-
-    final provider = Provider.of<FoodInventoryProvider>(context, listen: false);
-    final newExpiring = provider.items.where((item) {
-      final expiry = item.expiry;
-      return expiry != null &&
-          expiry.isAfter(now) &&
-          expiry.isBefore(threeDaysLater);
-    }).toList();
-
-    setState(() {
-      expiringItems = newExpiring;
-    });
-    print('[UpdateExpiringItems] Có ${expiringItems.length} món sắp hết hạn:');
-  }
-
-  void updateSearch(String query) {
-    final inventory =
-        Provider.of<FoodInventoryProvider>(context, listen: false).items;
-    setState(() {
-      filteredItems = inventory.where((item) {
-        return item.name.toLowerCase().contains(query.toLowerCase());
-      }).toList();
-    });
-  }
-
-  List<FoodItem> mergeItems(List<FoodItem> base, List<FoodItem> updated) {
-    final Map<String, FoodItem> itemMap = {
-      for (var item in base) item.name: item,
-    };
-
-    for (var item in updated) {
-      itemMap[item.name] = item; // Ghi đè nếu đã có
+  List<FoodItemResponse> filterFoodItems(
+      List<foodCategory> categories, String query) {
+    if (query.isEmpty) {
+      return categories.expand((cat) => cat.foodItemResponses).toList();
     }
-
-    return itemMap.values.toList();
+    return categories
+        .expand((cat) => cat.foodItemResponses)
+        .where(
+            (item) => item.foodname.toLowerCase().contains(query.toLowerCase()))
+        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12.0),
-            child: Text(
-              'Food Inventory',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: TextField(
+      appBar: AppBar(title: const Text('Food Inventory')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
               controller: searchController,
-              onChanged: updateSearch,
+              onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                hintText: 'Search items',
+                hintText: 'Tìm kiếm thực phẩm...',
                 prefixIcon: const Icon(Icons.search),
                 border:
                     OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -166,40 +88,67 @@ class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
                 fillColor: Colors.grey[200],
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: Selector<FoodInventoryProvider, List<FoodItem>>(
-              selector: (_, provider) => provider.items,
-              builder: (context, inventory, _) {
-                final query = searchController.text.trim().toLowerCase();
-                final results = query.isEmpty
-                    ? inventory
-                    : inventory
-                        .where(
-                            (item) => item.name.toLowerCase().contains(query))
-                        .toList();
+            const SizedBox(height: 12),
+            Expanded(
+              child: FutureBuilder<List<foodCategory>>(
+                future: foodCategoriesFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Lỗi: ${snapshot.error}'));
+                  }
 
-                return results.isEmpty
-                    ? const Center(child: Text('No items found.'))
-                    : ListView.builder(
-                        itemCount: results.length,
-                        itemBuilder: (context, index) {
-                          final item = results[index];
-                          return ListTile(
-                            title: Text(item.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            trailing: Text('${item.quantity}/${item.location}'),
-                            subtitle: Text(
-                                '${item.expiry!.day}/${item.expiry!.month}/${item.expiry!.year}'),
-                          );
-                        },
+                  final categories = snapshot.data ?? [];
+                  // --- Đặt log ở đây ---
+                  debugPrint('Fetched foodCategories:');
+                  for (var cat in categories) {
+                    debugPrint(
+                        'Category: ${cat.categoryName}, items: ${cat.foodItemResponses.length}');
+                    for (var item in cat.foodItemResponses) {
+                      debugPrint(
+                          '  - FoodItem: ${item.foodname}, SL: ${item.quantity}, Nơi: ${item.storageLocation}, HSD: ${item.expiryDate}');
+                    }
+                  }
+                  // --- Kết thúc log ---
+                  final query = searchController.text.trim();
+                  final filtered = filterFoodItems(categories, query);
+
+                  if (filtered.isEmpty) {
+                    return const Center(child: Text('Không có thực phẩm nào.'));
+                  }
+                  return ListView.separated(
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const Divider(),
+                    itemBuilder: (context, index) {
+                      final item = filtered[index];
+                      return ListTile(
+                        title: Text(item.foodname,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Số lượng: ${item.quantity} ${item.unitName}"),
+                            Text("Nơi lưu trữ: ${item.storageLocation}"),
+                            Text(
+                                "Ngày hết hạn: ${item.expiryDate?.day}/${item.expiryDate?.month}/${item.expiryDate?.year}"),
+                            if (item.categoryName.isNotEmpty)
+                              Text("Phân loại: ${item.categoryName}"),
+                            if (item.storageSuggestion.isNotEmpty)
+                              Text("Gợi ý bảo quản: ${item.storageSuggestion}"),
+                          ],
+                        ),
+                        isThreeLine: true,
                       );
-              },
+                    },
+                  );
+                },
+              ),
             ),
-          )
-        ],
+          ],
+        ),
       ),
     );
   }

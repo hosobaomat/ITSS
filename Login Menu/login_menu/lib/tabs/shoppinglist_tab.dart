@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:login_menu/models/fooditem.dart';
+import 'package:login_menu/data/data_store.dart';
+import 'package:login_menu/models/foodItemsResponse.dart';
+
 import 'package:login_menu/models/shopping_list_model.dart.dart';
 import 'package:login_menu/models/ShoppingListModelShare.dart';
-import 'package:login_menu/models/update_item.dart';
+import 'package:login_menu/models/updateItemRequest.dart';
+
 import 'package:login_menu/pages/editShoppingItem.dart';
 import 'package:login_menu/pages/inventory_ipput.dart';
+
 import 'package:login_menu/pages/new_list_info_page.dart';
 import 'package:login_menu/pages/share_member_page.dart';
 import 'package:login_menu/service/auth_service.dart';
-import 'package:provider/provider.dart';
 
 class ShoppingListTab extends StatefulWidget {
   const ShoppingListTab({super.key, required this.authService});
@@ -23,8 +26,8 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
   List<Map<String, dynamic>> _shareInvitations = [];
   List<ShoppingListModelShare> _sharedLists = [];
   bool _hasUnreadInvites = false;
-  List<FoodItem> foodInventory = [];
-  List<FoodItem> deletedInventory = [];
+  List<FoodItemResponse> foodInventory = [];
+  List<FoodItemResponse> deletedInventory = [];
   bool _isLoading = true;
   final List<String> _weekdayNames = [
     'Monday',
@@ -76,7 +79,9 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
 
     try {
       final userId = await widget.authService.getUserId();
-      final groupId = 2;
+      final groupId = await widget.authService.getGroupIdByUserId(userId);
+      print('groupId: $groupId');
+      print('userId truyền lên: $userId');
 
       final userLists =
           await widget.authService.fetchShoppingListsByUserId(userId);
@@ -87,6 +92,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
       final fetchedPersonalLists = userLists.map((item) {
         final items = (item['items'] as List? ?? []).map((i) {
           return ShoppingItem(
+            i['id'] as int? ?? 0,
             i['name']?.toString() ?? 'Unknown',
             getIconDataFromString(i['icon']?.toString() ?? 'help_outline'),
             i['status'] == 'PURCHASED',
@@ -101,6 +107,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           date: _parseDate(item['startDate']),
           items: items,
           listId: item['id'] as int?,
+          purchasedBy: DataStore().userId,
         );
       }).toList();
 
@@ -108,9 +115,10 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
       final fetchedSharedLists = sharedLists.map((item) {
         final items = (item['items'] as List? ?? []).map((i) {
           return ShoppingItem(
+            i['id'] as int? ?? 0,
             i['name']?.toString() ?? 'Unknown',
             getIconDataFromString(i['icon']?.toString() ?? 'help_outline'),
-            i['isDone'] ?? false,
+            i['status'] == 'PURCHASED',
             (i['quantity'] as num?)?.toDouble() ?? 1.0,
             i['unit']?.toString() ?? '',
             category: i['category']?.toString(),
@@ -165,7 +173,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
 
       // Sau khi xóa thành công, cập nhật lại giao diện người dùng
       setState(() {
-        _lists.removeAt(index); // Xóa danh sách khỏi _lists trong UI
+        _lists.removeAt(index);
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -181,44 +189,10 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
     }
   }
 
-  void _updateInventoryOnRemove(ShoppingItem item) {
-    final inventoryProvider =
-        Provider.of<FoodInventoryProvider>(context, listen: false);
-    final matchingItems =
-        foodInventory.where((food) => food.name == item.name).toList();
-
-    if (matchingItems.isEmpty) return;
-
-    for (var inventoryItem in matchingItems) {
-      final providerItems = inventoryProvider.items
-          .where((food) => food.name == item.name)
-          .toList();
-      for (var providerItem in providerItems) {
-        if (providerItem.quantity <= 0 || providerItem.location == '') {
-          inventoryProvider.removeItem(providerItem);
-        } else if (providerItem.location == inventoryItem.location &&
-            providerItem.expiry == inventoryItem.expiry) {
-          if (providerItem.quantity > inventoryItem.quantity) {
-            providerItem.quantity -= inventoryItem.quantity;
-            inventoryProvider.updateItem(providerItem);
-            print(
-                'Đã cập nhật số lượng: ${providerItem.name} - ${providerItem.quantity}');
-          } else if (providerItem.quantity == inventoryItem.quantity) {
-            inventoryProvider.removeItem(providerItem);
-            print('Đã xóa: ${providerItem.name}');
-          }
-        }
-      }
-
-      final foodItem = getFoodItemByName(item.name);
-      if (foodItem != null) {
-        ItemisDeleted(foodItem);
-        foodInventory.removeWhere((food) => food.name == item.name);
-      }
-    }
-  }
-
   Widget _buildListCard(ShoppingListModel list, int index) {
+    // Kiểm tra xem tất cả items trong list đã được tick chưa
+    bool allItemsChecked = list.items.every((item) => item.checked);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -269,38 +243,63 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           Text('${list.completedCount} of ${list.items.length} items'),
           const SizedBox(height: 12),
           ...list.items.map((item) => buildItem(item, list.date)),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => InventoryItemInputWidget(
-                      items: foodInventory,
-                    ),
-                  ),
-                ).then((result) {
-                  if (result == null) {
-                    final updateItemProvider =
-                        Provider.of<UpdateItemProvider>(context, listen: false);
-                    for (var updateItem in updateItemProvider.updateItems) {
-                      final index = foodInventory
-                          .indexWhere((item) => item.name == updateItem.name);
-                      if (index != -1) {
-                        foodInventory[index] = updateItem;
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              ElevatedButton(
+                onPressed: () async {
+                  // Xử lý khi người dùng nhấn nút "Done"
+                  if (allItemsChecked) {
+                    final response = await widget.authService
+                        .markShoppingListAsPurchased(list.listId!);
+
+                    //Parse ra danh sách foodItemResponses
+                    final List<FoodItemResponse> inventoryItems =
+                        (response?['result']['foodItemResponses'] as List)
+                            .map((item) => FoodItemResponse.fromJson(item))
+                            .toList();
+
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => InventoryItemInputWidget(
+                          items: inventoryItems,
+                          listId: list.listId!,
+                        ),
+                      ),
+                    );
+                    if (result is List<FoodItemResponse>) {
+                      // Update từng item
+                      for (final food in result) {
+                        print('hehehe: ${food.expiryDate}');
+                        print('hehehe: ${food.storageLocation}');
+                        await widget.authService
+                            .updateFoodItem(UpdateItemRequest(
+                          id: food.id,
+                          storageLocation: food.storageLocation,
+                          expireDate: food.expiryDate,
+                        ));
                       }
+
+                      fetchShoppingList();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Đã mua hết sản phẩm!')),
+                      );
                     }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Chưa mua hết sản phẩm!')),
+                    );
                   }
-                });
-              },
-              label: const Text('Add Inventory'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
+                },
+                child: const Text("Done"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
               ),
-              icon: const Icon(Icons.add),
-            ),
+            ],
           ),
         ],
       ),
@@ -395,54 +394,30 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
             },
             child: const Text('Từ chối'),
           ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _sharedLists.add(
-                  ShoppingListModelShare(
-                    date: DateTime.now(),
-                    title: 'Weekend Grocery',
-                    sharedBy: invite['from'],
-                    items: [
-                      ShoppingItem("Milk", Icons.local_drink, false, 1, ''),
-                      ShoppingItem("Eggs", Icons.egg, false, 1, ''),
-                    ],
-                  ),
-                );
-                _shareInvitations.remove(invite);
-                _hasUnreadInvites = _shareInvitations.isNotEmpty;
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Đồng ý'),
-          ),
+          // TextButton(
+          //   onPressed: () {
+          //     setState(() {
+          //       _sharedLists.add(
+          //         ShoppingListModelShare(
+          //           date: DateTime.now(),
+          //           title: 'Weekend Grocery',
+          //           sharedBy: invite['from'],
+          //           items: [
+          //             ShoppingItem(0, "Milk", Icons.local_drink, false, 1, ''),
+          //             ShoppingItem(1, "Eggs", Icons.egg, false, 1, ''),
+          //           ],
+          //         ),
+          //       );
+          //       _shareInvitations.remove(invite);
+          //       _hasUnreadInvites = _shareInvitations.isNotEmpty;
+          //     });
+          //     Navigator.pop(context);
+          //   },
+          //   child: const Text('Đồng ý'),
+          // ),
         ],
       ),
     );
-  }
-
-  void ItemisDeleted(FoodItem item) {
-    item.isDeleted = true;
-    item.isUpdate = false;
-    deletedInventory.add(item);
-  }
-
-  void ItemnotDeleted(FoodItem item) {
-    item.isDeleted = false;
-    deletedInventory.removeWhere((food) => food.name == item.name);
-    foodInventory.add(item);
-  }
-
-  FoodItem? getFoodItemByName(String name) {
-    if (name.isEmpty) {
-      return null;
-    }
-    try {
-      return foodInventory.firstWhere((food) => food.name == name);
-    } catch (e) {
-      print('Lỗi khi tìm FoodItem với name "$name": $e');
-      return null;
-    }
   }
 
   @override
@@ -465,6 +440,20 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                   ),
                   Row(
                     children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.share,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const SharingMembersPage(), // Navigate to the SharingMembersPage
+                            ),
+                          );
+                        },
+                      ),
                       Stack(
                         children: [
                           IconButton(
@@ -548,33 +537,13 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
               : (val) {
                   setState(() {
                     item.checked = val ?? false;
-                    final alreadyExists =
-                        foodInventory.any((food) => food.name == item.name);
-                    final alreadyExistsInDeleted =
-                        deletedInventory.any((food) => food.name == item.name);
 
-                    if (item.checked) {
-                      if (!alreadyExists && !alreadyExistsInDeleted) {
-                        final newItem = FoodItem(
-                          item.name,
-                          item.icon,
-                          item.checked,
-                          0,
-                          '',
-                          DateTime.now(),
-                          false,
-                          false,
-                        );
-                        foodInventory.add(newItem);
-                      } else if (!alreadyExists && alreadyExistsInDeleted) {
-                        final newItem = deletedInventory
-                            .firstWhere((food) => food.name == item.name);
-                        ItemnotDeleted(newItem);
-                      }
-                    } else {
-                      if (alreadyExists) {
-                        _updateInventoryOnRemove(item);
-                      }
+                    try {
+                      widget.authService.markItemAsPurchased(item.id);
+                    } catch (e) {
+                      setState(() {
+                        item.checked = !item.checked; // Rollback lại UI
+                      });
                     }
                   });
                 },
@@ -591,6 +560,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
 }
 
 class ShoppingItem {
+  final int id;
   String name;
   IconData icon;
   bool checked;
@@ -598,11 +568,13 @@ class ShoppingItem {
   String unit;
   String? category;
 
-  ShoppingItem(this.name, this.icon, this.checked, this.quantity, this.unit,
+  ShoppingItem(
+      this.id, this.name, this.icon, this.checked, this.quantity, this.unit,
       {this.category});
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'quantity': quantity.toInt(),
       'unitId': 1,

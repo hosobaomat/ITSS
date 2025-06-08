@@ -109,15 +109,14 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
         for (var category in categories) {
           print('Category: ${category.categoryName}');
           print(
-              'FoodCatalogResponses: ${category.foodCatalogResponses?.map((f) => f.foodCatalogName).toList()}');
+              'FoodCatalogResponses: ${category.foodCatalogResponses.map((f) => f.foodCatalogName).toList()}');
           print(
               'UnitResponses: ${category.unitResponses?.map((u) => u.toString()).toList()}');
         }
 
         // Tạo danh sách phẳng cho foodCatalogs và units
         final foodCatalogs = categories
-            .expand((category) => category.foodCatalogResponses ?? [])
-            .map((e) => e as FoodCatalogResponse)
+            .expand((category) => category.foodCatalogResponses)
             .toList();
         print(
             'FoodCatalogs: ${foodCatalogs.map((f) => f.foodCatalogName).toList()}');
@@ -174,9 +173,8 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
                 builder: (_) => CategoryDetailScreen(
                   categoryName: category.categoryName ?? 'Unknown',
                   items: category.foodCatalogResponses
-                          ?.map((food) => food.foodCatalogName ?? '')
-                          .toList() ??
-                      [],
+                      .map((food) => food.foodCatalogName ?? '')
+                      .toList(),
                   selectedItems:
                       _selectedItemsByCategory[category.categoryName] ?? [],
                 ),
@@ -290,7 +288,6 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
             'quantity': selectedItem.quantity.toDouble(),
             'unitId': unit.unidId,
             'foodCatalogId': foodCatalog.foodCatalogId,
-            'purchasedBy': _userId,
           });
         }
       }
@@ -313,6 +310,7 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
       final items = _selectedItemsByCategory.entries
           .expand((entry) => entry.value.map(
                 (selectedItem) => ShoppingItem(
+                  selectedItem.id,
                   selectedItem.name,
                   Icons.shopping_cart,
                   false,

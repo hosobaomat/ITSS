@@ -92,16 +92,17 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
       _isLoading = true;
     });
 
-    final request = ShoppingListCreateRequest(
-      _listNameController.text,
-      _userId!,
-      2,
-      _combineDateOnly(_selectedDate!),
-      _combineDateOnly(_selectedDate!.add(const Duration(days: 1))),
-      'DRAFT',
-    );
-
     try {
+      final _groupId = await widget.authService.getGroupIdByUserId(_userId!);
+      final request = ShoppingListCreateRequest(
+        _listNameController.text,
+        _userId!,
+        _groupId,
+        _combineDateOnly(_selectedDate!),
+        _combineDateOnly(_selectedDate!.add(const Duration(days: 1))),
+        'DRAFT',
+      );
+
       final listResponse = await widget.authService.addShoppingList(request);
       final listId = listResponse['result']?['id'] as int?;
 

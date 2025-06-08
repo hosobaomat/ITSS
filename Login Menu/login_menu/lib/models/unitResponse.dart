@@ -1,4 +1,3 @@
-// Định nghĩa duy nhất trong một file (ví dụ: models/unit_response.dart)
 class UnitResponse {
   int? unidId;
   String? unitName;

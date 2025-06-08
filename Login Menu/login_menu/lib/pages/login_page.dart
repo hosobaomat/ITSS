@@ -28,18 +28,13 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (success) {
-      // Gọi hàm getMyInfo và in ra thông tin user
-      final userApi = Userapi.getMyInfo();
-
-      // Nếu muốn lấy dữ liệu chi tiết, bạn có thể sửa getMyInfo trả về Map thay vì bool
-
       String? token = authService.token;
       print(token);
 
       if (token != null) {
         Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
 
-        String role = 'user';
+        String role = decodedToken['role'];
 
         if (role == 'admin') {
           Navigator.pushReplacement(

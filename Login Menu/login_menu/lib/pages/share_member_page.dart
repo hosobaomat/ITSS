@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:login_menu/service/auth_service.dart';
 
 class SharingMembersPage extends StatefulWidget {
   const SharingMembersPage({super.key});
@@ -9,15 +11,35 @@ class SharingMembersPage extends StatefulWidget {
 
 class _SharingMembersPageState extends State<SharingMembersPage> {
   List<String> selectedUsers = [];
-  final List<String> members = [];
+  List<String> members = [];
   List<String> filteredMembers = [];
   final TextEditingController searchController = TextEditingController();
+
+  // Hàm gọi fetchGroupData từ AuthService để lấy danh sách thành viên
+  Future<void> fetchGroupData(int groupId) async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    try {
+      final groupData = await authService
+          .fetchGroupData(groupId); // Gọi fetchGroupData từ AuthService
+      setState(() {
+        members = List<String>.from(groupData['members'] ?? []);
+        members.sort(); // Sắp xếp theo thứ tự A-Z
+        filteredMembers = List.from(members);
+      });
+    } catch (e) {
+      print('Lỗi khi lấy dữ liệu nhóm: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi lấy dữ liệu nhóm: $e')),
+      );
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    members.sort(); // Sắp xếp theo thứ tự A-Z
-    filteredMembers = List.from(members);
+    fetchGroupData(
+        1); // Gọi API với groupId là 1 (hoặc thay thế bằng ID nhóm thực tế)
   }
 
   void _addMemberDialog() {

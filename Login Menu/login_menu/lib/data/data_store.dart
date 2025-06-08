@@ -23,6 +23,7 @@ class DataStore {
   List<FoodCategoryResponse> categories = [];
   List<FoodCatalogResponse> foodCatalogs = [];
   List<UnitResponse> units = [];
+  late int? userId; // ID của người dùng hiện tại
   // Hàm clear nếu cần reset
   void clearAll() {
     categories = [];

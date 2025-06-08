@@ -56,7 +56,10 @@ class _HomePageState extends State<HomePage> {
             authService: widget.authService,
           ),
           CategoriesTab(),
-          FoodInventoryScreen(inventoryItems: []),
+          FoodInventoryScreen(
+            items: [],
+            authService: AuthService(),
+          ),
           RecipesScreen(inventoryItems: []),
           StatisticTab(),
           ProfilTab(),

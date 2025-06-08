@@ -5,11 +5,13 @@ class ShoppingListModel {
   final String listName;
   final List<ShoppingItem> items;
   final int? listId;
+  final int? purchasedBy;
   ShoppingListModel(
       {required this.date,
       required this.listName,
       required this.items,
-      required this.listId});
+      required this.listId,
+      this.purchasedBy});
 
   int get completedCount => items.where((item) => item.checked).length;
 }

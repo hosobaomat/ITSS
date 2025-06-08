@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:login_menu/models/fooditem.dart';
 import 'package:login_menu/models/mealPlan.dart';
-import 'package:login_menu/models/update_item.dart';
+import 'package:login_menu/models/updateItemRequest.dart';
 import 'package:login_menu/pages/login_page.dart';
 import 'package:login_menu/pages/profile_page.dart';
 
@@ -68,8 +68,7 @@ class _ProfilTabState extends State<ProfilTab> {
           Provider.of<FoodInventoryProvider>(context, listen: false);
       final mealPlanProvider =
           Provider.of<MealPlanProvider>(context, listen: false);
-      final updateItemProvider =
-          Provider.of<UpdateItemProvider>(context, listen: false);
+
       // // Lưu hồ sơ người dùng vào backend
       // await ApiService.saveUserProfile(
       //   name: _name,
@@ -89,7 +88,6 @@ class _ProfilTabState extends State<ProfilTab> {
       await prefs.remove('avatar_path');
       foodProvider.clearItems();
       mealPlanProvider.clearPlans();
-      updateItemProvider.clearItems();
       print('Đã xóa dữ liệu cục bộ');
 
       // Điều hướng về màn hình đăng nhập

@@ -1,14 +1,17 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/ShoppingListEditRequest.dart';
 import 'package:login_menu/models/foodCategoryResponse.dart';
+import 'package:login_menu/models/foodItemsResponse.dart';
 import 'package:login_menu/models/shoppinglist_request.dart';
+import 'package:login_menu/models/updateItemRequest.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
-  static const String apiUrl = "http://192.168.100.25:8082/ITSS_BE";
+  static const String apiUrl = "http://192.168.244.71:8082/ITSS_BE";
   String? _token;
   String? get token => _token;
 
@@ -39,34 +42,6 @@ class AuthService {
     } catch (e) {
       print("Lỗi kết nối: $e");
       return false;
-    }
-  }
-
-  Future<Map<String, dynamic>> fetchShoppingLists() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-
-    if (token == null) {
-      throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
-    }
-
-    final response = await http.get(
-      Uri.parse('$apiUrl/ShoppingList'),
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    print('Response status: ${response.statusCode}');
-
-    if (response.statusCode == 200) {
-      final decodedBody = utf8.decode(response.bodyBytes);
-      print('Response body: $decodedBody');
-      return jsonDecode(decodedBody);
-    } else {
-      print('Response body: ${response.body}');
-      throw Exception('Lỗi: ${response.statusCode} - ${response.body}');
     }
   }
 
@@ -139,13 +114,14 @@ class AuthService {
         'endDate': request.endDate != null
             ? dateFormat.format(request.endDate!)
             : null,
-        'status': request.status ?? 'DRAFT',
+        'status': request.status,
       }),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      print('Tạo danh sách thành công, list_id: ${data['list_id']}');
+      final listId = data['result']?['id'];
+      print('Tạo danh sách thành công, list_id: $listId');
       return data;
     } else {
       print('Status code: ${response.statusCode}');
@@ -231,24 +207,8 @@ class AuthService {
     final userId =
         decodedToken['userId']; // hoặc 'id' nếu backend dùng key khác
     if (userId == null) throw Exception('Không tìm thấy userId trong token');
-
+    DataStore().userId = userId; // Lưu userId vào DataStore
     return userId;
-  }
-
-  Future<int> getGroupId() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-
-    if (token == null || token.isEmpty) {
-      throw Exception('Token not found');
-    }
-
-    final decoded = JwtDecoder.decode(token);
-    if (!decoded.containsKey('groupId')) {
-      throw Exception('groupId not found in token');
-    }
-
-    return decoded['groupId'];
   }
 
   Future<void> deleteShoppingList(int listId) async {
@@ -299,9 +259,195 @@ class AuthService {
 
     if (response.statusCode != 200) {
       throw Exception('Không thể cập nhật danh sách. Lỗi: ${response.body}');
-      print('Không thể cập nhật danh sách. Lỗi: ${response.body}');
     }
 
     print('Danh sách đã được chỉnh sửa');
+  }
+
+  Future<void> markItemAsPurchased(int itemId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    final url = Uri.parse('$apiUrl/ShoppingList/purchased/$itemId');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update item status');
+      } else {
+        print('Item status updated successfully');
+      }
+    } catch (e) {
+      print('Error in markItemAsPurchased: $e');
+      throw Exception('Failed to update item status');
+    }
+  }
+
+  Future<Map<String, dynamic>?> markShoppingListAsPurchased(int listId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    final url = Uri.parse('$apiUrl/ShoppingList/FinishList/$listId');
+    final response = await http.patch(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print('Status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(utf8.decode(response.bodyBytes));
+      if (body['code'] == 0) {
+        return body; // <-- Trả về cả body
+      } else {
+        print('API trả về code != 0');
+      }
+    } else {
+      print('API trả về lỗi status: ${response.statusCode}');
+    }
+    return null;
+  }
+
+  Future<Map<String, dynamic>> fetchGroupData(int groupId) async {
+    final url = '$apiUrl/family_group/$groupId';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        // Parse dữ liệu JSON và trả về
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Lỗi khi lấy dữ liệu nhóm');
+      }
+    } catch (e) {
+      throw Exception('Lỗi kết nối: $e');
+    }
+  }
+
+  Future<int> getGroupIdByUserId(int userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null || token.isEmpty) {
+      throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
+    }
+
+    // URL API để lấy groupId theo userId
+    final url = Uri.parse('$apiUrl/family_group/user/$userId');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final groupId = data['result']['id']; // Lấy groupId từ phản hồi
+        if (groupId == null) {
+          throw Exception('Không tìm thấy groupId cho userId $userId');
+        }
+        return groupId;
+      } else {
+        throw Exception(
+            'Không thể lấy dữ liệu groupId: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Lỗi khi lấy groupId: $e");
+      throw Exception('Lỗi kết nối: $e');
+    }
+  }
+
+  Future<List<foodCategory>> fetchFoodItemsByGroup(int groupId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    final url = Uri.parse('$apiUrl/FoodItems/group/$groupId');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode == 200) {
+      // Sửa dòng này:
+      final body = jsonDecode(utf8.decode(response.bodyBytes));
+      final List<dynamic> result = body['result'];
+      return result.map((e) => foodCategory.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to load food items');
+    }
+  }
+
+  Future<List<String>> getStorageLocations() async {
+    print('[DEBUG] Bắt đầu gọi API lấy storage locations');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    final url = Uri.parse('$apiUrl/FoodItems/Storage');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('[DEBUG] Status code: ${response.statusCode}');
+      print('[DEBUG] Response body: ${utf8.decode(response.bodyBytes)}');
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(utf8.decode(response.bodyBytes));
+        List<dynamic> results = body['result'];
+        print('[DEBUG] Results trả về: $results');
+        return results.cast<String>();
+      } else {
+        print('[ERROR] Failed to fetch storage locations: ${response.body}');
+        throw Exception('Failed to fetch storage locations');
+      }
+    } catch (e, stack) {
+      print('[ERROR] Exception khi lấy storage locations: $e');
+      print('[ERROR] Stacktrace: $stack');
+      rethrow;
+    }
+  }
+
+  Future<void> updateFoodItem(UpdateItemRequest request) async {
+    final url = Uri.parse('$apiUrl/FoodItems');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    print('[DEBUG] Body gửi lên backend: ${request.toJson()}');
+    print(
+        '[DEBUG] Body gửi lên backend (json): ${jsonEncode(request.toJson())}');
+    final response = await http.patch(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (response.statusCode != 200) {
+      print('[DEBUG] updateFoodItem FAILED status: ${response.statusCode}');
+      print('[DEBUG] updateFoodItem FAILED body: ${response.body}');
+      throw Exception('Cập nhật thất bại');
+    }
   }
 }
