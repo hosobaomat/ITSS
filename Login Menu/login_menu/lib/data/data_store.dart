@@ -28,9 +28,11 @@ class DataStore {
   List<UnitResponse> units = [];
   List<Recipesresponse> recipesresponse = [];
   late AuthService authService;
-  late int GroupID;
-  late int UserID;
+  late int GroupID=0;
+  late int UserID=0;
   List<MealPlanResponse> mealPlanResponse = [];
+  late String username = '';
+  late String email= '';
   // Hàm clear nếu cần reset
   void clearAll() {
     categories = [];

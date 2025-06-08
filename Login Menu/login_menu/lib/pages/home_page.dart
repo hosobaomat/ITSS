@@ -4,8 +4,6 @@ import 'package:login_menu/models/recipesResponse.dart';
 import 'package:login_menu/tabs/meal_plan.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:login_menu/service/auth_service.dart';
-import 'package:login_menu/tabs/meal_plan_tab.dart';
-import 'package:login_menu/tabs/recipes_Screen_tab.dart';
 import 'package:login_menu/tabs/shoppinglist_tab.dart';
 import 'package:login_menu/tabs/categories_tab.dart';
 import 'package:login_menu/tabs/profil_tab.dart';
@@ -40,7 +38,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt('userId'); // 🔁 Đảm bảo đã lưu userId khi login
+    final userId = prefs.getInt('userId'); //  Đảm bảo đã lưu userId khi login
     setState(() {
       _userId = userId;
     });
@@ -69,9 +67,6 @@ class _HomePageState extends State<HomePage> {
           CategoriesTab(),
           FoodInventoryScreen(inventoryItems: []),
           // RecipesScreen(inventoryItems: [], authService: widget.authService,),
-          MealPlanScreen(
-            recipes: DataStore().recipesresponse,
-          ),
           MealPlanScreenGet(authService: widget.authService),
           StatisticTab(),
           ProfilTab(),
@@ -91,8 +86,6 @@ class _HomePageState extends State<HomePage> {
               icon: Icon(Icons.shopping_bag), label: 'Food Inventory'),
           BottomNavigationBarItem(
               icon: Icon(Icons.play_lesson_outlined), label: 'Meal Plan'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.play_lesson_outlined), label: 'Meal Plan get'),
           BottomNavigationBarItem(
               icon: Icon(Icons.receipt), label: 'Statistic'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),

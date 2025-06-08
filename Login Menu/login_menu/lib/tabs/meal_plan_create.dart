@@ -19,9 +19,10 @@ class MealPlanScreen extends StatefulWidget {
 }
 
 class _MealPlanScreenState extends State<MealPlanScreen> {
+  late TextEditingController _planNameController;
   final createmealplan = Createmealplan(
     createdBy: DataStore().UserID,
-    planName: 'an com tron keo kerra',
+    planName: '',
     startDate: DateTime.now(),
     endDate: DateTime.now(),
     groupId: DataStore().GroupID,
@@ -39,6 +40,11 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     'Saturday',
     'Sunday',
   ];
+  @override
+  void dispose() {
+    _planNameController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -49,6 +55,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     _selectedDates = mealPlanProvider.dailyPlans.keys.toSet();
     final today =
         DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    _planNameController = TextEditingController(text: createmealplan.planName);
     if (!_selectedDates.contains(today)) {
       _selectedDates.add(today);
       mealPlanProvider.initializeMealPlanForDate(today);
@@ -158,6 +165,21 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: TextField(
+              controller: _planNameController,
+              decoration: InputDecoration(
+                labelText: 'Tên thực đơn',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  createmealplan.planName = value;
+                });
+              },
+            ),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -263,55 +285,60 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
           ..sort((a, b) => a.date.compareTo(b.date)); // Sắp xếp theo ngày
         print(
             'Meal Plans: ${mealPlans.map((plan) => "${plan.date}: ${plan.meals}").toList()}'); // Debug log
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Lập thực đơn theo ngày'),
-            backgroundColor: Colors.green,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.calendar_today),
-                onPressed: _selectDate,
-              ),
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () {
-                  setState(() {}); // Làm mới giao diện
-                },
-              ),
-            ],
-          ),
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Icon(Icons.restaurant_menu, size: 30),
-                      const Text(
-                        'Meal Plans',
-                        style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(width: 30),
-                    ],
+        return WillPopScope(
+            onWillPop: () async {
+              Navigator.pop(context, 'refresh'); // Gửi result khi back
+              return false; // Ngăn mặc định pop nữa
+            },
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text('Lập thực đơn theo ngày'),
+                backgroundColor: Colors.green,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: _selectDate,
                   ),
-                  const SizedBox(height: 24),
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        ...mealPlans
-                            .map((mealPlan) => _buildMealPlanCard(mealPlan)),
-                      ],
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      setState(() {}); // Làm mới giao diện
+                    },
                   ),
                 ],
               ),
-            ),
-          ),
-        );
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Icon(Icons.restaurant_menu, size: 30),
+                          const Text(
+                            'Meal Plans',
+                            style: TextStyle(
+                                fontSize: 24, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 30),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Expanded(
+                        child: ListView(
+                          children: [
+                            ...mealPlans.map(
+                                (mealPlan) => _buildMealPlanCard(mealPlan)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ));
       },
     );
   }

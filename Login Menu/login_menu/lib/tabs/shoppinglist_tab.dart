@@ -76,12 +76,12 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
     });
 
     try {
-      final userId = await widget.authService.getUserId();
-      DataStore().UserID = userId;
+       final userId = await widget.authService.getUserId();
+       DataStore().UserID = userId;
       final groupId = await widget.authService.getGroupIdByUserId(DataStore().UserID);
       DataStore().GroupID = groupId;
       final userLists =
-          await widget.authService.fetchShoppingListsByUserId(userId);
+          await widget.authService.fetchShoppingListsByUserId(DataStore().UserID);
       final sharedLists =
           await widget.authService.fetchShoppingListsByGroupId(groupId);
       print('Fetched User Lists: $userLists');

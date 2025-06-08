@@ -30,8 +30,9 @@ class _LoginPageState extends State<LoginPage> {
 
     if (success) {
       // Gọi hàm getMyInfo và in ra thông tin user
-      Userapi.getMyInfo();
-
+      final user = await Userapi.getMyInfo();
+      DataStore().username = user['username'];
+      DataStore().email = user['email'];
 
       String? token = authService.token;
       print(token);

@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
-  static const String apiUrl = "http://192.168.1.15:8082/ITSS_BE";
+  static const String apiUrl = "http://192.168.1.13:8082/ITSS_BE";
   String? _token;
   String? get token => _token;
 
@@ -401,7 +401,8 @@ class AuthService {
     );
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final jsonData = json.decode(decodedBody);
       final List<dynamic> plansJson = jsonData['result'];
       return plansJson.map((e) => MealPlanResponse.fromJson(e)).toList();
     } else {
@@ -411,7 +412,8 @@ class AuthService {
     }
   }
 
-  Future<bool> addMealPlan(Createmealplan items) async {//tao meal plan
+  Future<bool> addMealPlan(Createmealplan items) async {
+    //tao meal plan
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     final response = await http.post(Uri.parse('$apiUrl/mealplans'),
@@ -427,6 +429,62 @@ class AuthService {
       print("Lỗi khi tạo Meal Plan: ${response.statusCode}");
       print("Body: ${response.body}");
       return false;
+    }
+  }
+
+  Future<void> deleteMealPlanbyId(int planId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token'); // Lấy token từ SharedPreferences
+
+    if (token == null || token.isEmpty) {
+      throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
+    }
+
+    final response = await http.delete(
+      Uri.parse('$apiUrl/mealplans/$planId'), // API DELETE với listId
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token', // Thêm token vào header
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Không thể xóa danh sách. Lỗi: ${response.body}');
+    }
+
+    print('Danh sách với listId $planId đã được xóa khỏi MySQL');
+  }
+
+  Future<List<String>> getEmailvaNamebyId(int userId) async {
+    //lay email nguoi ban userId nhan duoc
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null || token.isEmpty) {
+      throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
+    }
+    final url = Uri.parse('$apiUrl/users/$userId');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        String email = data['result']['email'];
+        String fullName = data['result']['fullName'];
+        if (email.isEmpty||fullName.isEmpty) {
+          throw Exception('Không tìm thấy email hoac ho ten cho userId $userId');
+        }
+        return [email, fullName];
+      } else {
+        throw Exception(
+            'Không thể lấy dữ liệu groupId: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Lỗi kết nối: $e');
     }
   }
 }
