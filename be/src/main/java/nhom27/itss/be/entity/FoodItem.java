@@ -44,8 +44,8 @@ public class FoodItem {
     @Column(name = "updated_at")
     Timestamp updatedAt;
 
-    @Column(name= "status")
-    boolean status;
+    @Column(name= "is_deleted")
+    Integer is_deleted;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id")

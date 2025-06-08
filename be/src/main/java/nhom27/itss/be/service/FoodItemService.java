@@ -77,7 +77,7 @@ public class FoodItemService {
                         .foodCatalog(foodCatalogRepository.findById(Item.getFoodCatalogId()).orElseThrow(() -> new AppException(ErrorCode.FOOD_NOT_EXISTS)))
                         .expiryDate(Item.getExpiryDate())
                         .storageLocation(Item.getStorageLocation())
-                        .status(false).build()
+                        .is_deleted(0).build()
         ).collect(Collectors.toSet());
 
         foodItemRepository.saveAll(ItemToFrigde);
@@ -160,7 +160,7 @@ public class FoodItemService {
     }
 
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 */3 * * * *")
     @Transactional
     public void checkExpiringFoodItems() {
 
@@ -170,6 +170,7 @@ public class FoodItemService {
             FamilyGroup group = item.getGroup();
 
             // Ghi vào foodhistory
+            if(item.getIs_deleted() == 0){
             FoodHistory history = FoodHistory.builder()
                     .food(item)
                     .group(group)
@@ -180,7 +181,6 @@ public class FoodItemService {
                     .food(item)
                     .build();
             foodHistoryRepository.save(history);
-
 
             // Tạo thông báo
 
@@ -198,8 +198,11 @@ public class FoodItemService {
                             .build();
                     notificationsRepository.save(notification);
                 }
+                item.setIs_deleted(1);
+                foodItemRepository.save(item);
+            }
 
-                foodItemRepository.delete(item);
+
 
             }
         }

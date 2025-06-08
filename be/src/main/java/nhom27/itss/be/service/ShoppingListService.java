@@ -123,7 +123,7 @@ public class ShoppingListService {
                         .quantity(Item.getQuantity())
                         .unit(Item.getUnit())
                         .foodCatalog(Item.getFood())
-                        .status(false).build()
+                        .is_deleted(0).build()
         ).toList();
 
         foodItemsRepository.saveAll(ItemToFrigde);
