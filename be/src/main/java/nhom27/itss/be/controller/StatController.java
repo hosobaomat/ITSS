@@ -16,6 +16,7 @@ import nhom27.itss.be.service.StatService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -25,29 +26,29 @@ import java.util.List;
 public class StatController {
     StatService statService;
     //ForAdmin
-    @GetMapping("/usedItem/{groupdId}")
-    ApiResponse<List<FoodUsedResponse>> getUsedFood(@PathVariable Integer groupdId) {
+    @GetMapping("/usedItem/{groupId}")
+    ApiResponse<List<FoodUsedResponse>> getUsedFood(@PathVariable Integer groupId) {
         ApiResponse<List<FoodUsedResponse>> response = new ApiResponse<>();
         //log.info("In method createUser,controller");
-        response.setResult(statService.getFoodUsed(groupdId));
+        response.setResult(statService.getFoodUsed(groupId));
         return response;
     }
 
-    @GetMapping("/wastedItem/{groupdId}")
-    ApiResponse<List<FoodUsedResponse>> getWastedFood(@PathVariable Integer groupdId) {
+    @GetMapping("/wastedItem/{groupId}")
+    ApiResponse<List<FoodUsedResponse>> getWastedFood(@PathVariable Integer groupId) {
         ApiResponse<List<FoodUsedResponse>> response = new ApiResponse<>();
         //log.info("In method createUser,controller");
-        response.setResult(statService.getFoodWasted(groupdId));
+        response.setResult(statService.getFoodWasted(groupId));
         return response;
     }
 
-//    @GetMapping("/user/{userId}")
-//    ApiResponse<List<RecipeResponse>> getShoppingListByUserId( @PathVariable Integer userId) {
-//        ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
-//        //log.info("In method createUser,controller");
-//        response.setResult(recipeService.getRecipesByUserId(userId));
-//        return response;
-//    }
+    @GetMapping("/AnalyzedFoodUsed/{groupId}")
+    ApiResponse<Map<String,Double>> getAnalyzedFoodUsed( @PathVariable Integer groupId) {
+        ApiResponse<Map<String,Double>> response = new ApiResponse<>();
+        //log.info("In method createUser,controller");
+        response.setResult(statService.AnalyzeFoodUsedByCategory(groupId));
+        return response;
+    }
 
 
 

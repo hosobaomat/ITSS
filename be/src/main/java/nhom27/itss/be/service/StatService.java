@@ -9,9 +9,8 @@ import nhom27.itss.be.entity.*;
 import nhom27.itss.be.repository.*;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -40,6 +39,30 @@ public class StatService {
         return foodUsedList.stream().map(
                 this::toFoodUsedResponse
         ).toList();
+
+    }
+
+
+    public Map<String,Double> AnalyzeFoodUsedByCategory(Integer groupId){
+        Optional<List<FoodHistory>> foodUsed = foodHistoryRepository.findByGroup_GroupIdAndAction(groupId,"used");
+        List<FoodHistory> foodUsedList = foodUsed.orElse(new ArrayList<>());
+
+        Map<String, Long> foodTypeCount = foodUsedList.stream()
+                .collect(Collectors.groupingBy(
+                        foodHistory -> String.valueOf(foodHistory.getFood().getFoodCatalog().getFoodCategory().getCategoryName()),
+                        Collectors.counting()
+                ));
+
+        int total = foodUsedList.size();
+        Map<String, Double> foodTypePercentage = new HashMap<>();
+
+
+        for (Map.Entry<String, Long> entry : foodTypeCount.entrySet()) {
+            double percentage = (entry.getValue() * 100.0) / total;
+            foodTypePercentage.put(entry.getKey(), percentage);
+        }
+
+        return foodTypePercentage;
 
     }
 

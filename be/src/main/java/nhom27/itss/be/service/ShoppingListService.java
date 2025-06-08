@@ -53,6 +53,7 @@ public class ShoppingListService {
 
         FamilyGroup familyGroup = familyGroupsRepository.findById(request.getGroup_id())
                 .orElseThrow(() -> new AppException(ErrorCode.FAMILYGROUP_NOT_EXISTED));
+        shoppingList.setGroup(familyGroup);
 
         boolean isMember = familyGroupMembersRepository.existsByGroupAndUser(familyGroup, user);
         if (!isMember) {
