@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/ShoppingListEditRequest.dart';
 import 'package:login_menu/models/foodCatalogResponse.dart';
@@ -300,7 +301,10 @@ class _EditshoppingitemState extends State<Editshoppingitem> {
             ),
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ?  Center(child: LoadingAnimationWidget.threeRotatingDots(
+                        color: Colors.pink,
+                        size: 50,
+                      ))
                   : _categories.isEmpty
                       ? const Center(child: Text('No categories available'))
                       : ListView.builder(

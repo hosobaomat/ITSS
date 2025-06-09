@@ -11,6 +11,7 @@ import 'package:login_menu/pages/inventory_ipput.dart';
 import 'package:login_menu/pages/new_list_info_page.dart';
 import 'package:login_menu/pages/share_member_page.dart';
 import 'package:login_menu/service/auth_service.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class ShoppingListTab extends StatefulWidget {
   const ShoppingListTab({super.key, required this.authService});
@@ -77,12 +78,13 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
     });
 
     try {
-       final userId = await widget.authService.getUserId();
-       DataStore().UserID = userId;
-      final groupId = await widget.authService.getGroupIdByUserId(DataStore().UserID);
+      final userId = await widget.authService.getUserId();
+      DataStore().UserID = userId;
+      final groupId =
+          await widget.authService.getGroupIdByUserId(DataStore().UserID);
       DataStore().GroupID = groupId;
-      final userLists =
-          await widget.authService.fetchShoppingListsByUserId(DataStore().UserID);
+      final userLists = await widget.authService
+          .fetchShoppingListsByUserId(DataStore().UserID);
       final sharedLists =
           await widget.authService.fetchShoppingListsByGroupId(groupId);
       print('Fetched User Lists: $userLists');
@@ -291,11 +293,11 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                     );
                   }
                 },
-                child: const Text("Done"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                 ),
+                child: const Text("Done"),
               ),
             ],
           ),
@@ -501,7 +503,11 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
               const SizedBox(height: 24),
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? Center(
+                        child: LoadingAnimationWidget.waveDots(
+                        color: Colors.pink,
+                        size: 50,
+                      ))
                     : (_lists.isEmpty && _sharedLists.isEmpty)
                         ? const Center(
                             child: Text('No shopping lists available'))
@@ -567,7 +573,8 @@ class ShoppingItem {
   String? category;
   int? unitId; // Thêm trường unitId
   int? foodCatalogId; // Thêm trường foodCatalogId
-  ShoppingItem(this.id,this.name, this.icon, this.checked, this.quantity, this.unit,
+  ShoppingItem(
+      this.id, this.name, this.icon, this.checked, this.quantity, this.unit,
       {this.unitId, this.foodCatalogId, this.category});
 
   Map<String, dynamic> toJson() {

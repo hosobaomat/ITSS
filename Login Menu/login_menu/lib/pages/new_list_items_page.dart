@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/selected_item.dart';
 import 'package:login_menu/models/shoppinglist_request.dart';
@@ -380,7 +381,10 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
             const SizedBox(height: 8),
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Center(child: LoadingAnimationWidget.discreteCircle(
+                        color: Colors.pink,
+                        size: 50,
+                      ))
                   : _categories.isEmpty
                       ? const Center(child: Text('Không có danh mục nào'))
                       : ListView.builder(

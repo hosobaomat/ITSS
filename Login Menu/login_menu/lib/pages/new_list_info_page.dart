@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:login_menu/pages/new_list_items_page.dart';
 import 'package:login_menu/service/auth_service.dart';
 import 'package:login_menu/service/UserAPI.dart' as UserAPI;
@@ -200,7 +201,10 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
             SizedBox(
               width: double.infinity,
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ?  Center(child: LoadingAnimationWidget.discreteCircle(
+                        color: Colors.pink,
+                        size: 50,
+                      ))
                   : OutlinedButton(
                       onPressed: _navigateToItemsPage,
                       child: const Padding(

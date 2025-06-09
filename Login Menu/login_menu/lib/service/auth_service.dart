@@ -516,4 +516,66 @@ class AuthService {
       throw Exception('Cập nhật thất bại');
     }
   }
+  Future<bool> addMealPlan(Createmealplan items) async {
+    //tao meal plan
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    final response = await http.post(Uri.parse('$apiUrl/mealplans'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(items.toJson()));
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print("Tạo Meal Plan thành công");
+      return true;
+    } else {
+      print("Lỗi khi tạo Meal Plan: ${response.statusCode}");
+      print("Body: ${response.body}");
+      return false;
+    }
+  }
+  Future<void> deleteMealPlanbyId(int planId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token'); // Lấy token từ SharedPreferences
+
+    if (token == null || token.isEmpty) {
+      throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
+    }
+
+    final response = await http.delete(
+      Uri.parse('$apiUrl/mealplans/$planId'), // API DELETE với listId
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token', // Thêm token vào header
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Không thể xóa danh sách. Lỗi: ${response.body}');
+    }
+
+    print('Danh sách với listId $planId đã được xóa khỏi MySQL');
+  }
+  Future<List<MealPlanResponse>> fetchMealPlansByGroupId(int GroupID) async {
+    //lay mealplan
+    final response = await http.get(
+      Uri.parse('$apiUrl/mealplans/group/$GroupID'),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token', // Thêm token vào header
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final jsonData = json.decode(decodedBody);
+      final List<dynamic> plansJson = jsonData['result'];
+      return plansJson.map((e) => MealPlanResponse.fromJson(e)).toList();
+    } else {
+      throw Exception(
+        'Failed to load meal plans',
+      );
+    }
+  }
 }
