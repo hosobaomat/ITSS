@@ -68,11 +68,6 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
     }
   }
 
-  DateTime _combineDateOnly(DateTime date) {
-    final now = DateTime.now();
-    return DateTime(date.year, date.month, date.day);
-  }
-
   void _navigateToItemsPage() async {
     if (_listNameController.text.isEmpty || _selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -99,8 +94,8 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
         _listNameController.text,
         _userId!,
         _groupId,
-        _combineDateOnly(_selectedDate!),
-        _combineDateOnly(_selectedDate!.add(const Duration(days: 1))),
+        _selectedDate!,
+        _selectedDate!.add(const Duration(days: 1)), // Default end date
         'DRAFT',
       );
 
@@ -201,10 +196,11 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
             SizedBox(
               width: double.infinity,
               child: _isLoading
-                  ?  Center(child: LoadingAnimationWidget.discreteCircle(
-                        color: Colors.pink,
-                        size: 50,
-                      ))
+                  ? Center(
+                      child: LoadingAnimationWidget.discreteCircle(
+                      color: Colors.pink,
+                      size: 50,
+                    ))
                   : OutlinedButton(
                       onPressed: _navigateToItemsPage,
                       child: const Padding(

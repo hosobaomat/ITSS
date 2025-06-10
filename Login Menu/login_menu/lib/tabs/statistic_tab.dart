@@ -1,215 +1,270 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:login_menu/models/fooditem.dart';
+import 'package:login_menu/data/data_store.dart';
+import 'package:login_menu/models/ItemsForStatistics.dart';
+import 'package:login_menu/models/consumptionTrend.dart';
+import 'package:login_menu/service/auth_service.dart';
 
-class StatisticTab extends StatelessWidget {
+class StatisticTab extends StatefulWidget {
   const StatisticTab({super.key});
 
-  List<_StatRow> _collectAllItems(List<FoodItem> inventory) {
-    final now = DateTime.now();
-    return inventory.map((item) {
-      return _StatRow(
-        name: item.name,
-        quantity: item.quantity ?? 0,
-        date: now,
-        time: TimeOfDay.fromDateTime(now),
-        category: item.category, // Lưu category nếu có
-      );
-    }).toList();
-  }
+  @override
+  _StatisticTabState createState() => _StatisticTabState();
+}
 
-  /// Phân tích xu hướng tiêu thụ thực phẩm (theo category)
-  Map<String, int> _analyzeTrendsByCategory(List<FoodItem> inventory) {
-    final Map<String, int> trendMap = {};
-    for (var item in inventory) {
-      final cat = item.category ?? 'Khác';
-      trendMap[cat] = (trendMap[cat] ?? 0) + item.quantity.toInt();
-    }
-    return trendMap;
-  }
+class _StatisticTabState extends State<StatisticTab> {
+  // Sử dụng PageController để điều hướng các bảng
+  final PageController _pageController = PageController();
 
   @override
   Widget build(BuildContext context) {
-    final inventory = context.watch<FoodInventoryProvider>().items;
-    final allRows = _collectAllItems(inventory);
-    // Sửa lỗi: Định nghĩa lại _analyzeTrends cho xu hướng theo sản phẩm
-    Map<String, int> _analyzeTrends(List<FoodItem> inventory) {
-      final Map<String, int> trendMap = {};
-      for (var item in inventory) {
-        trendMap[item.name] =
-            (trendMap[item.name] ?? 0) + item.quantity.toInt();
-      }
-      return trendMap;
-    }
-
-    final trends = _analyzeTrends(inventory);
-    final trendsByCategory = _analyzeTrendsByCategory(inventory);
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bảng Thống Kê Sản Phẩm Đã Mua'),
-        centerTitle: true,
+      body: Column(
+        children: [
+          // Các nút mũi tên bên trái và bên phải
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_back),
+                  onPressed: () {
+                    if (_pageController.page! > 0) {
+                      _pageController.previousPage(
+                        duration: Duration(milliseconds: 300),
+                        curve: Curves.ease,
+                      );
+                    }
+                  },
+                ),
+                Expanded(
+                  child: Text(
+                    'Thống kê gia đình',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.arrow_forward),
+                  onPressed: () {
+                    if (_pageController.page! < 2) {
+                      _pageController.nextPage(
+                        duration: Duration(milliseconds: 300),
+                        curve: Curves.ease,
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              children: [
+                // Bảng Sản phẩm đã mua
+                _buildUsedItemsTable(),
+                // Bảng Sản phẩm đã lãng phí
+                _buildWastedItemsTable(),
+                // Bảng Xu hướng tiêu thụ
+                _buildConsumptionTrendTable(),
+              ],
+            ),
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.topCenter,
-                child: Card(
-                  elevation: 1,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: DataTable(
-                      columnSpacing: 12,
-                      headingRowColor:
-                          MaterialStateProperty.all(Colors.blue.shade50),
-                      headingTextStyle: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                      columns: const [
-                        DataColumn(label: Text('Tên thực phẩm')),
-                        DataColumn(label: Text('SL')),
-                        DataColumn(label: Text('Ngày')),
-                        DataColumn(label: Text('Giờ')),
-                      ],
-                      rows: allRows.map((row) {
-                        return DataRow(
-                          cells: [
-                            DataCell(Text(row.name)),
-                            DataCell(Text('${row.quantity}')),
-                            DataCell(Text(
-                              '${row.date.day.toString().padLeft(2, '0')}/${row.date.month.toString().padLeft(2, '0')}/${row.date.year}',
-                            )),
-                            DataCell(Text(
-                              '${row.time.hour.toString().padLeft(2, '0')}:${row.time.minute.toString().padLeft(2, '0')}',
-                            )),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              if (trends.isNotEmpty)
-                Card(
-                  elevation: 1,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Xu hướng tiêu thụ theo sản phẩm',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.blue),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 200,
-                          child: _TrendBarChart(trends: trends),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 24),
-              if (trendsByCategory.isNotEmpty)
-                Card(
-                  elevation: 1,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Xu hướng tiêu thụ theo nhóm (category)',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.deepPurple),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 200,
-                          child: _TrendBarChart(trends: trendsByCategory),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
+    );
+  }
+
+  // Bảng "Sản phẩm đã mua"
+  Widget _buildUsedItemsTable() {
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Text(
+            'Sản phẩm đã mua', // Tiêu đề cho bảng "Sản phẩm đã mua"
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
           ),
         ),
-      ),
+        FutureBuilder<List<ItemModel>>(
+          future: AuthService().getUsedItems(DataStore().GroupID),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('Không có dữ liệu'));
+            } else {
+              final usedItems = snapshot.data!;
+              return Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: DataTable(
+                    columnSpacing: 12,
+                    headingRowColor:
+                        MaterialStateProperty.all(Colors.blue.shade50),
+                    headingTextStyle: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.blue),
+                    columns: const [
+                      DataColumn(label: Text('Tên thực phẩm')),
+                      DataColumn(label: Text('SL')),
+                      DataColumn(label: Text('Ngày')),
+                      DataColumn(label: Text('Giờ')),
+                    ],
+                    rows: usedItems.map((item) {
+                      return DataRow(
+                        cells: [
+                          DataCell(Text(item.foodname)),
+                          DataCell(Text('${item.quantity}')),
+                          DataCell(Text(
+                              '${item.actionDate.day.toString().padLeft(2, '0')}/${item.actionDate.month.toString().padLeft(2, '0')}/${item.actionDate.year}')),
+                          DataCell(Text(
+                              '${item.actionDate.hour.toString().padLeft(2, '0')}:${item.actionDate.minute.toString().padLeft(2, '0')}')),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+      ],
     );
   }
-}
 
-// Widget biểu đồ cột đơn giản cho xu hướng tiêu thụ
-class _TrendBarChart extends StatelessWidget {
-  final Map<String, int> trends;
-  const _TrendBarChart({required this.trends});
-
-  @override
-  Widget build(BuildContext context) {
-    final maxVal = trends.values.isEmpty
-        ? 1
-        : trends.values.reduce((a, b) => a > b ? a : b);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: trends.entries.map((entry) {
-        final barHeight = (entry.value / maxVal) * 120.0;
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Container(
-              width: 24,
-              height: barHeight,
-              decoration: BoxDecoration(
-                color: Colors.blueAccent,
-                borderRadius: BorderRadius.circular(6),
-              ),
+  // Bảng "Sản phẩm đã lãng phí"
+  Widget _buildWastedItemsTable() {
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Text(
+            'Sản phẩm đã lãng phí', // Tiêu đề cho bảng "Sản phẩm đã lãng phí"
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.deepPurple,
             ),
-            const SizedBox(height: 4),
-            Text(
-              entry.key,
-              style: const TextStyle(fontSize: 12),
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              '${entry.value}',
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
-            ),
-          ],
-        );
-      }).toList(),
+          ),
+        ),
+        FutureBuilder<List<ItemModel>>(
+          future: AuthService().getWastedItems(DataStore().GroupID),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('Không có dữ liệu'));
+            } else {
+              final wastedItems = snapshot.data!;
+              return Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: DataTable(
+                    columnSpacing: 12,
+                    headingRowColor:
+                        MaterialStateProperty.all(Colors.deepPurple.shade50),
+                    headingTextStyle: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                    columns: const [
+                      DataColumn(label: Text('Thực phẩm')),
+                      DataColumn(label: Text('SL')),
+                      DataColumn(label: Text('Ngày')),
+                      DataColumn(label: Text('Giờ')),
+                    ],
+                    rows: wastedItems.map((item) {
+                      return DataRow(
+                        cells: [
+                          DataCell(Text(item.foodname)),
+                          DataCell(Text('${item.quantity}')),
+                          DataCell(Text(
+                              '${item.actionDate.day.toString().padLeft(2, '0')}/${item.actionDate.month.toString().padLeft(2, '0')}/${item.actionDate.year}')),
+                          DataCell(Text(
+                              '${item.actionDate.hour.toString().padLeft(2, '0')}:${item.actionDate.minute.toString().padLeft(2, '0')}')),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+      ],
     );
   }
-}
 
-class _StatRow {
-  final String name;
-  final int quantity;
-  final DateTime date;
-  final TimeOfDay time;
-  final String? category; // Thêm category
-
-  _StatRow({
-    required this.name,
-    required this.quantity,
-    required this.date,
-    required this.time,
-    this.category,
-  });
+  // Bảng "Xu hướng tiêu thụ của gia đình"
+  Widget _buildConsumptionTrendTable() {
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Text(
+            'Xu hướng tiêu thụ của gia đình', // Tiêu đề cho bảng "Xu hướng tiêu thụ của gia đình"
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.green,
+            ),
+          ),
+        ),
+        FutureBuilder<List<ConsumptionTrend>>(
+          future: AuthService().getConsumptionTrend(DataStore().GroupID),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('Không có dữ liệu'));
+            } else {
+              final consumptionData = snapshot.data!;
+              return Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: DataTable(
+                    columnSpacing: 12,
+                    headingRowColor:
+                        MaterialStateProperty.all(Colors.green.shade50),
+                    headingTextStyle: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.green),
+                    columns: const [
+                      DataColumn(label: Text('Tên thực phẩm')),
+                      DataColumn(label: Text('Tỷ lệ tiêu thụ')),
+                    ],
+                    rows: consumptionData.map((item) {
+                      return DataRow(
+                        cells: [
+                          DataCell(Text(item.categoryName)),
+                          DataCell(Text('${item.consumptionPercentage}')),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
 }

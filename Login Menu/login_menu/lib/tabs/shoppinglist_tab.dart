@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/foodItemsResponse.dart';
 import 'package:login_menu/models/shopping_list_model.dart.dart';
@@ -46,32 +47,6 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
     fetchShoppingList();
   }
 
-  DateTime _parseDate(dynamic rawDate) {
-    if (rawDate == null) return DateTime.now();
-    if (rawDate is int) {
-      return DateTime.fromMillisecondsSinceEpoch(rawDate).toLocal();
-    } else if (rawDate is String) {
-      try {
-        // Lấy đúng phần yyyy-MM-dd, bỏ giờ phút giây và timezone để tránh lệch ngày
-        String dateOnly =
-            rawDate.length >= 10 ? rawDate.substring(0, 10) : rawDate;
-        final parts = dateOnly.split('-');
-        if (parts.length == 3) {
-          return DateTime(
-            int.parse(parts[0]),
-            int.parse(parts[1]),
-            int.parse(parts[2]),
-          );
-        }
-        // Nếu không thể tách, fallback parse bình thường rồi convert về local
-        return DateTime.parse(rawDate).toLocal();
-      } catch (_) {
-        return DateTime.now();
-      }
-    }
-    return DateTime.now();
-  }
-
   Future<void> fetchShoppingList() async {
     setState(() {
       _isLoading = true;
@@ -83,16 +58,17 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
       final groupId =
           await widget.authService.getGroupIdByUserId(DataStore().UserID);
       DataStore().GroupID = groupId;
+
       final userLists = await widget.authService
           .fetchShoppingListsByUserId(DataStore().UserID);
-      final sharedLists =
-          await widget.authService.fetchShoppingListsByGroupId(groupId);
+      final sharedLists = await widget.authService
+          .fetchShoppingListsByGroupId(DataStore().GroupID);
       print('Fetched User Lists: $userLists');
       // Danh sách cá nhân
       final fetchedPersonalLists = userLists.map((item) {
         final items = (item['items'] as List? ?? []).map((i) {
           return ShoppingItem(
-            i['id'] as int? ?? 0,
+            i['id'],
             i['name']?.toString() ?? 'Unknown',
             getIconDataFromString(i['icon']?.toString() ?? 'help_outline'),
             i['status'] == 'PURCHASED',
@@ -104,7 +80,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
 
         return ShoppingListModel(
           listName: item['listName']?.toString() ?? 'Untitled',
-          date: _parseDate(item['startDate']),
+          date: DateTime.fromMillisecondsSinceEpoch(item['startDate']),
           items: items,
           listId: item['id'] as int?,
           purchasedBy: DataStore().userId,
@@ -115,7 +91,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
       final fetchedSharedLists = sharedLists.map((item) {
         final items = (item['items'] as List? ?? []).map((i) {
           return ShoppingItem(
-            i['id'] as int? ?? 0,
+            i['id'],
             i['name']?.toString() ?? 'Unknown',
             getIconDataFromString(i['icon']?.toString() ?? 'help_outline'),
             i['status'] == 'PURCHASED',
@@ -126,9 +102,10 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
         }).toList();
 
         return ShoppingListModelShare(
-          date: _parseDate(item['startDate']),
-          title: item['listName'] ?? 'Untitled',
-          sharedBy: item['sharedBy'] ?? 'Unknown',
+          listId: item['id'],
+          date: DateTime.fromMillisecondsSinceEpoch(item['startDate']),
+          title: item['listName'],
+          sharedBy: item['createdBy'],
           items: items,
         );
       }).toList();
@@ -192,6 +169,9 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
   Widget _buildListCard(ShoppingListModel list, int index) {
     // Kiểm tra xem tất cả items trong list đã được tick chưa
     bool allItemsChecked = list.items.every((item) => item.checked);
+    String formatDate(DateTime date) {
+      return DateFormat('EEE, dd/MM/yyyy').format(date);
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -240,6 +220,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
               ),
             ],
           ),
+          Text('Ngày tạo: ${formatDate(list.date)}'),
           Text('${list.completedCount} of ${list.items.length} items'),
           const SizedBox(height: 12),
           ...list.items.map((item) => buildItem(item, list.date)),
@@ -307,7 +288,9 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
   }
 
   Widget buildSharedListCard(ShoppingListModelShare list) {
-    final dateOnly = DateTime(list.date.year, list.date.month, list.date.day);
+    String formatDate(DateTime date) {
+      return DateFormat('EEE, dd/MM/yyyy').format(date);
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -323,12 +306,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '${_weekdayNames[dateOnly.weekday - 1]}, '
-                '${dateOnly.day.toString().padLeft(2, '0')}/${dateOnly.month.toString().padLeft(2, '0')}',
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              Text('Ngày tạo: ${formatDate(list.date)}'),
               Text(
                 'Shared by: ${list.sharedBy}',
                 style:
@@ -577,6 +555,7 @@ class ShoppingItem {
       this.id, this.name, this.icon, this.checked, this.quantity, this.unit,
       {this.unitId, this.foodCatalogId, this.category});
 
+  // Phương thức chuyển đổi thành JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,

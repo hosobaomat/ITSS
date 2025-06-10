@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/ShoppingListEditRequest.dart';
+import 'package:login_menu/models/consumptionTrend.dart';
 import 'package:login_menu/models/createMealPlan.dart';
 import 'package:login_menu/models/foodCategoryResponse.dart';
 import 'package:login_menu/models/foodItemsResponse.dart';
@@ -12,11 +13,12 @@ import 'package:login_menu/models/getMealPlan.dart';
 import 'package:login_menu/models/recipesResponse.dart';
 import 'package:login_menu/models/shoppinglist_request.dart';
 import 'package:login_menu/models/updateItemRequest.dart';
+import 'package:login_menu/models/ItemsForStatistics.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
-  static const String apiUrl = "http://192.168.1.13:8082/ITSS_BE";
+  static const String apiUrl = "http://192.168.0.101:8082/ITSS_BE";
   String? _token;
   String? get token => _token;
 
@@ -516,6 +518,7 @@ class AuthService {
       throw Exception('Cập nhật thất bại');
     }
   }
+
   Future<bool> addMealPlan(Createmealplan items) async {
     //tao meal plan
     final prefs = await SharedPreferences.getInstance();
@@ -535,6 +538,7 @@ class AuthService {
       return false;
     }
   }
+
   Future<void> deleteMealPlanbyId(int planId) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token'); // Lấy token từ SharedPreferences
@@ -557,6 +561,7 @@ class AuthService {
 
     print('Danh sách với listId $planId đã được xóa khỏi MySQL');
   }
+
   Future<List<MealPlanResponse>> fetchMealPlansByGroupId(int GroupID) async {
     //lay mealplan
     final response = await http.get(
@@ -576,6 +581,85 @@ class AuthService {
       throw Exception(
         'Failed to load meal plans',
       );
+    }
+  }
+
+  // Phương thức để lấy danh sách các sản phẩm đã sử dụng
+  Future<List<ItemModel>> getUsedItems(int groupid) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token =
+        prefs.getString('token') ?? ''; // Lấy token từ SharedPreferences
+
+    final response = await http.get(
+      Uri.parse('$apiUrl/stats/usedItem/$groupid'), // Tạo URL với groupid
+      headers: {
+        'Authorization': 'Bearer $token', // Thêm token vào header
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('Response parsed successfully');
+      String decodedBody = utf8.decode(response.bodyBytes);
+      // Nếu thành công, parse dữ liệu JSON
+      return parseUsedItems(decodedBody);
+    } else {
+      // Nếu có lỗi, throw exception
+      throw Exception('Failed to load used items');
+    }
+  }
+
+  // Phương thức để lấy danh sách các sản phẩm đã lãng phí
+  Future<List<ItemModel>> getWastedItems(int groupid) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token =
+        prefs.getString('token') ?? ''; // Lấy token từ SharedPreferences
+
+    final response = await http.get(
+      Uri.parse('$apiUrl/stats/wastedItem/$groupid'), // Tạo URL với groupid
+      headers: {
+        'Authorization': 'Bearer $token', // Thêm token vào header
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('Response parsed successfully');
+      String decodedBody = utf8.decode(response.bodyBytes);
+      // Nếu thành công, parse dữ liệu JSON
+      return parseUsedItems(decodedBody);
+    } else {
+      // Nếu có lỗi, throw exception
+      throw Exception('Failed to load wasted items');
+    }
+  }
+
+  Future<List<ConsumptionTrend>> getConsumptionTrend(int groupId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token =
+        prefs.getString('token') ?? ''; // Lấy token từ SharedPreferences
+
+    final response = await http.get(
+      Uri.parse(
+          '$apiUrl/stats/AnalyzedFoodUsed/$groupId'), // Tạo URL với groupId
+      headers: {
+        'Authorization': 'Bearer $token', // Thêm token vào header
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body)['result'] as Map<String, dynamic>;
+
+      // Ánh xạ từ Map<String, dynamic> sang List<ConsumptionTrend>
+      return data.entries.map((entry) {
+        return ConsumptionTrend(
+          categoryName: entry.key,
+          consumptionPercentage: entry.value.toDouble(),
+        );
+      }).toList();
+    } else {
+      throw Exception('Failed to load consumption trend');
     }
   }
 }
