@@ -28,6 +28,7 @@ class DataStore {
   List<UnitResponse> units = [];
   late int? userId; // ID của người dùng hiện tại
   List<Recipesresponse> recipesresponse = [];
+  List<Recipesresponse> recipesSuggest = [];
   late AuthService authService;
   late int GroupID=0;
   late int UserID=0;
@@ -41,6 +42,7 @@ class DataStore {
     units = [];
     recipesresponse = [];
     mealPlanResponse = [];
+    recipesSuggest = [];
   }
 
   //
