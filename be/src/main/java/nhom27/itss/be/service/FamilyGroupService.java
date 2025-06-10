@@ -46,6 +46,7 @@ public class FamilyGroupService {
 
         group.setCreatedBy(user);
         group.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        group.setInviteCode(UUID.randomUUID().toString().replace("-", "").substring(0, 5).toUpperCase());
 
         familyGroupsRepository.save(group);
 
@@ -78,9 +79,9 @@ public class FamilyGroupService {
         return  toFamilyGroupResponse(user.getFamilyGroupMembers().getFirst().getGroup());
     }
 
-    public FamilyGroupResponse getFamilyGroupByName(String Name){
+    public FamilyGroupResponse getFamilyInviteCode(String Name){
 
-        return  toFamilyGroupResponse(familyGroupsRepository.findByGroupName(Name));
+        return  toFamilyGroupResponse(familyGroupsRepository.findByInviteCode(Name));
     }
 
 
@@ -222,6 +223,7 @@ public class FamilyGroupService {
         familyGroupResponse.setGroupName(familyGroup.getGroupName());
         familyGroupResponse.setCreatedBy(familyGroup.getCreatedBy().getUsername());
         familyGroupResponse.setCreatedAt(familyGroup.getCreatedAt());
+        familyGroupResponse.setInviteCode(familyGroupResponse.getInviteCode());
         familyGroupResponse.setMembers(familyGroup.getMembers().stream()
                 .map(member -> UserToUserResponse(member.getUser()))
                 .collect(Collectors.toSet()));

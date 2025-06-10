@@ -9,7 +9,6 @@ import nhom27.itss.be.dto.request.FamilyGroupRequest;
 import nhom27.itss.be.dto.response.ApiResponse;
 import nhom27.itss.be.dto.response.FamilyGroupResponse;
 import nhom27.itss.be.service.FamilyGroupService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,11 +61,11 @@ public class FamilyGroupController {
                 .code(200).build();
     }
 
-    @GetMapping("/{groupName}")
-    ApiResponse<FamilyGroupResponse> getFamilyGroupByGroupName(@PathVariable String groupName){
+    @GetMapping("/invite/{inviteCode}")
+    ApiResponse<FamilyGroupResponse> getFamilyGroupByInviteCode(@PathVariable String inviteCode){
 
         return ApiResponse.<FamilyGroupResponse>builder()
-                .result(familyGroupService.getFamilyGroupByName(groupName))
+                .result(familyGroupService.getFamilyInviteCode(inviteCode))
                 .code(200).build();
     }
 

@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface FamilyGroupsRepository extends JpaRepository<FamilyGroup, Integer>, JpaSpecificationExecutor<FamilyGroup> {
-    FamilyGroup findByGroupName(String name);
+    FamilyGroup findByInviteCode(String code);
 
 }

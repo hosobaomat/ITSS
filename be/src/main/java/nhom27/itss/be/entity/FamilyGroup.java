@@ -1,6 +1,8 @@
 package nhom27.itss.be.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import nhom27.itss.be.entity.embeddedID.FamilyGroupMemberId;
@@ -49,5 +51,10 @@ public class FamilyGroup {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     User createdBy;
+
+    @Size(max = 5)
+    @NotNull
+    @Column(name = "invite_code", nullable = false, length = 5)
+    private String inviteCode;
 
 }

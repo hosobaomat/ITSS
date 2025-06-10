@@ -21,6 +21,8 @@ public class FamilyGroupResponse {
     String groupName;
     String createdBy;
     Timestamp createdAt;
+    String inviteCode;
+
 
     Set<UserResponse> members = new HashSet<>();
 
