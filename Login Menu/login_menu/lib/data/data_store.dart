@@ -30,11 +30,13 @@ class DataStore {
   List<Recipesresponse> recipesresponse = [];
   List<Recipesresponse> recipesSuggest = [];
   late AuthService authService;
-  late int GroupID=0;
-  late int UserID=0;
+  late int GroupID = 0;
+  late int UserID = 0;
   List<MealPlanResponse> mealPlanResponse = [];
   late String username = '';
-  late String email= '';
+  late String email = '';
+  late String url = 'http://192.168.100.3:8082/ITSS_BE/users';
+  late int userCreateID = 0;
   // Hàm clear nếu cần reset
   void clearAll() {
     categories = [];

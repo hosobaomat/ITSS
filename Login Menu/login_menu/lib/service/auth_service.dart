@@ -7,6 +7,7 @@ import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/ShoppingListEditRequest.dart';
 import 'package:login_menu/models/consumptionTrend.dart';
 import 'package:login_menu/models/createMealPlan.dart';
+import 'package:login_menu/models/createUser.dart';
 import 'package:login_menu/models/foodCategoryResponse.dart';
 import 'package:login_menu/models/foodItemsResponse.dart';
 import 'package:login_menu/models/getMealPlan.dart';
@@ -661,4 +662,5 @@ class AuthService {
       throw Exception('Error fetching recipe items: $e');
     }
   }
+
 }
