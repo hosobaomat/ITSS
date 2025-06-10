@@ -78,6 +78,13 @@ public class FamilyGroupService {
         return  toFamilyGroupResponse(user.getFamilyGroupMembers().getFirst().getGroup());
     }
 
+    public FamilyGroupResponse getFamilyGroupByName(String Name){
+
+        return  toFamilyGroupResponse(familyGroupsRepository.findByGroupName(Name));
+    }
+
+
+
     public FamilyGroupResponse updateFamilyGroup(FamilyGroupRequest request,Integer id){
         FamilyGroup group = getFamilyGroup(id);
         if (request.getGroupName() != null) {

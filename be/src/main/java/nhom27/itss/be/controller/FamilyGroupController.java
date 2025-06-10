@@ -62,6 +62,14 @@ public class FamilyGroupController {
                 .code(200).build();
     }
 
+    @GetMapping("/{groupName}")
+    ApiResponse<FamilyGroupResponse> getFamilyGroupByGroupName(@PathVariable String groupName){
+
+        return ApiResponse.<FamilyGroupResponse>builder()
+                .result(familyGroupService.getFamilyGroupByName(groupName))
+                .code(200).build();
+    }
+
     @GetMapping("/{familygroupid}")
     ApiResponse<FamilyGroupResponse> getFamilyGroupById(@PathVariable("familygroupid") Integer familygroupid) {
         return ApiResponse.<FamilyGroupResponse>builder()
