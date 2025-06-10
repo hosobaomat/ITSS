@@ -5,13 +5,14 @@ import 'package:http/http.dart' as http;
 import 'package:login_menu/models/foodCategoryResponse.dart';
 import 'package:login_menu/service/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/selected_item.dart';
 
-const String apiUrl = AuthService.apiUrl;
+const String apiUrl = AuthService.apiUrl; // Thay URL thật
 
 class CategoryDetailScreen extends StatefulWidget {
   final String categoryName;
-  final List<String> items; // Danh sách tên thực phẩm
+  final List<String> items;
   final List<SelectedItem> selectedItems;
 
   const CategoryDetailScreen({
@@ -29,10 +30,8 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   late List<String> _items;
   final Map<String, SelectedItem> _selectedItems = {};
   final Map<String, TextEditingController> quantityControllers = {};
-  Map<String, String> selectedUnits = {};
-
-  // NEW: mapping tên thực phẩm -> list đơn vị hợp lệ
-  Map<String, List<String>> foodToUnits = {};
+  Map<String, String> selectedUnits = {}; // quản lý đơn vị cho từng item
+  List<String> units = [];
 
   @override
   void initState() {
@@ -46,7 +45,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       selectedUnits[item.name] = item.unit;
     }
 
-    loadFoodCatalogAndUnits();
+    loadUnitsFromApi();
   }
 
   @override
@@ -57,13 +56,13 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     super.dispose();
   }
 
-  // NEW: Mapping món ăn -> đơn vị đúng
-  Future<void> loadFoodCatalogAndUnits() async {
+  Future<void> loadUnitsFromApi() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-      if (token == null) throw Exception('Token không tồn tại');
-
+      if (token == null) {
+        throw Exception('Token không tồn tại');
+      }
       final response = await http.get(
         Uri.parse("$apiUrl/ShoppingList/FoodCatalog"),
         headers: {
@@ -81,23 +80,21 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
               .map((json) => FoodCategoryResponse.fromJson(json))
               .toList();
 
-          // Map: tên thực phẩm -> list đơn vị
-          final tempFoodToUnits = <String, List<String>>{};
+          final unitSet = <String>{};
           for (var cat in categories) {
-            final unitsInCat = cat.unitResponses
-                    ?.map((u) => u.unitName ?? '')
-                    .where((e) => e.isNotEmpty)
-                    .toList() ??
-                [];
-            for (var food in cat.foodCatalogResponses) {
-              final name = food.foodCatalogName;
-              if (name != null && name.isNotEmpty) {
-                tempFoodToUnits[name] = unitsInCat;
+            if (cat.unitResponses != null) {
+              for (var unitResp in cat.unitResponses!) {
+                final unitName = unitResp.unitName;
+                print("Unit name lấy được: $unitName");
+                if (unitName != null && unitName.isNotEmpty) {
+                  unitSet.add(unitName);
+                }
               }
             }
           }
+
           setState(() {
-            foodToUnits = tempFoodToUnits;
+            units = unitSet.toList();
           });
         } else {
           throw Exception('Dữ liệu result không phải là danh sách');
@@ -129,9 +126,6 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
           final isSelected = _selectedItems.containsKey(item);
           final selectedItem = _selectedItems[item];
 
-          // Lấy list đơn vị phù hợp cho từng item
-          final foodUnits = foodToUnits[item] ?? [];
-
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -142,16 +136,11 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                   setState(() {
                     if (val == true) {
                       final newItem = SelectedItem(
-                        id: DateTime.now().millisecondsSinceEpoch,
-                        name: item,
-                        quantity: 1,
-                        unit: foodUnits.isNotEmpty ? foodUnits.first : '',
-                      );
+                          id: 0, name: item, quantity: 1, unit: '');
                       _selectedItems[item] = newItem;
                       quantityControllers[item] =
                           TextEditingController(text: '1');
-                      selectedUnits[item] =
-                          foodUnits.isNotEmpty ? foodUnits.first : '';
+                      selectedUnits[item] = '';
                     } else {
                       _selectedItems.remove(item);
                       quantityControllers[item]?.dispose();
@@ -190,7 +179,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                               : null,
                           decoration:
                               const InputDecoration(labelText: 'Đơn vị'),
-                          items: foodUnits.map((unit) {
+                          items: units.map((unit) {
                             return DropdownMenuItem(
                               value: unit,
                               child: Text(unit),

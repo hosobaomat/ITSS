@@ -381,10 +381,11 @@ class _NewListItemsPageState extends State<NewListItemsPage> {
             const SizedBox(height: 8),
             Expanded(
               child: _isLoading
-                  ? Center(child: LoadingAnimationWidget.discreteCircle(
-                        color: Colors.pink,
-                        size: 50,
-                      ))
+                  ? Center(
+                      child: LoadingAnimationWidget.discreteCircle(
+                      color: Colors.pink,
+                      size: 50,
+                    ))
                   : _categories.isEmpty
                       ? const Center(child: Text('Không có danh mục nào'))
                       : ListView.builder(

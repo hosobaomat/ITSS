@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/ShoppingListEditRequest.dart';
+import 'package:login_menu/models/consumptionTrend.dart';
 import 'package:login_menu/models/createMealPlan.dart';
 import 'package:login_menu/models/foodCategoryResponse.dart';
 import 'package:login_menu/models/foodItemsResponse.dart';
@@ -14,6 +15,7 @@ import 'package:login_menu/models/recipeInput.dart';
 import 'package:login_menu/models/recipesResponse.dart';
 import 'package:login_menu/models/shoppinglist_request.dart';
 import 'package:login_menu/models/updateItemRequest.dart';
+import 'package:login_menu/models/ItemsForStatistics.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
