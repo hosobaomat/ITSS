@@ -9,7 +9,6 @@ import 'package:login_menu/tabs/categories_tab.dart';
 import 'package:login_menu/tabs/profil_tab.dart';
 import 'package:login_menu/tabs/food_inventory_screen.dart';
 import 'package:login_menu/tabs/statistic_tab.dart';
-import 'package:water_drop_nav_bar/water_drop_nav_bar.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 class HomePage extends StatefulWidget {
@@ -23,14 +22,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   int? _userId;
-  late Future<List<Recipesresponse>> _recipeFuture;
   @override
   void initState() {
     super.initState();
-    if (DataStore().recipesresponse.isNotEmpty) {
-      _recipeFuture = Future.value(DataStore().recipesresponse);
+    if (DataStore().recipesSuggest.isNotEmpty) {
     } else {
-      _recipeFuture = widget.authService.fetchRecipesByUser().then((recipes) {
+      widget.authService.fetchRecipesByUser().then((recipes) {
         DataStore().recipesresponse = recipes;
         return recipes;
       });
