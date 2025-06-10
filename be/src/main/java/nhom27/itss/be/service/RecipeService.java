@@ -172,10 +172,10 @@ public class RecipeService {
     }
 
 
-    public List<RecipeIngredientResponse> getMissingIngredient(MissingIngredientRequest request){
-           Recipe recipe = recipesRepository.findById(request.getRecipeId()).orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_EXISTS));
+    public List<RecipeIngredientResponse> getMissingIngredient(Integer groupId,Integer recipeId){
+           Recipe recipe = recipesRepository.findById(recipeId).orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_EXISTS));
 
-           List<FoodItem> itemsInFridge = foodItemsRepository.findValidFoodItemsByGroupId(request.getGroupId());
+           List<FoodItem> itemsInFridge = foodItemsRepository.findValidFoodItemsByGroupId(groupId);
            List<RecipeIngredient> ingredients = recipeIngredientsRepository.findByRecipe(recipe);
 
            List<RecipeIngredient> missingIngredients = new ArrayList<>();

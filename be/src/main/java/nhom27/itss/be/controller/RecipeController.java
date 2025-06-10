@@ -75,10 +75,10 @@ public class RecipeController {
         return response;
     }
 
-    @GetMapping("/missingIngredient")
-    public ApiResponse<List<RecipeIngredientResponse>> getMissingIngredient(@RequestBody MissingIngredientRequest request ) {
+    @GetMapping("/missingIngredient/{recipeId}/{groupId}")
+    public ApiResponse<List<RecipeIngredientResponse>> getMissingIngredient(@PathVariable Integer groupId,@PathVariable Integer recipeId) {
         ApiResponse<List<RecipeIngredientResponse>> response = new ApiResponse<>();
-        response.setResult(recipeService.getMissingIngredient(request));
+        response.setResult(recipeService.getMissingIngredient(groupId,recipeId));
         response.setCode(200);
         return response;
     }
