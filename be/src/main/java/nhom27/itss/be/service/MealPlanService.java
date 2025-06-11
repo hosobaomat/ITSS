@@ -154,7 +154,7 @@ public class MealPlanService {
                 .createdAt(plan.getCreatedAt())
                 .createdBy(plan.getCreatedBy().getUserId())
                 .details(plan.getMealplandetails().stream().map(this::mapMealDetailToResponse).collect(Collectors.toList()))
-                .status(true)
+                .status(plan.getStatus())
                 .build();
     }
 
