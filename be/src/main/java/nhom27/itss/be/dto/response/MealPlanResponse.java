@@ -19,6 +19,8 @@ public class MealPlanResponse {
     Integer groupId;
     Integer createdBy;
     Timestamp createdAt;
+    Boolean status;
+
     List<MealDetailResponse> details;
 
 
