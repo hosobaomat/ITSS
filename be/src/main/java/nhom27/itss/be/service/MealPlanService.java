@@ -138,7 +138,7 @@ public class MealPlanService {
             }
         }
         // 5. Trả về kết quả (tuỳ bạn cần gì trong response)
-        return mapPlanToResponse(plan);
+        return mapPlanToResponse(mealPlansRepository.save(plan));
     }
 
 
