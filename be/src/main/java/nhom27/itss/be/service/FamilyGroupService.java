@@ -176,43 +176,44 @@ public class FamilyGroupService {
     }
 
     public FamilyGroupResponse joinGroupByCode(String code){
-        FamilyGroup group = familyGroupsRepository.findByInviteCode(code);
+        try {
+            FamilyGroup group = familyGroupsRepository.findByInviteCode(code);
 
-        if (group == null) {
-            throw new AppException(ErrorCode.GROUP_NOT_FOUND);
+            if (group == null) {
+                throw new AppException(ErrorCode.GROUP_NOT_FOUND);
+            }
+
+            var context = SecurityContextHolder.getContext();
+            String email = context.getAuthentication().getName();
+
+            User currUser = usersRepository.findByEmail(email);
+
+            Integer currentUserId = currUser.getUserId();
+
+            List<FamilyGroupMember> existingMembers = familyGroupMembersRepository.findByIdGroupId(group.getGroupId());
+            boolean isAlreadyMember = existingMembers.stream()
+                    .anyMatch(member -> member.getId().getMemberId().equals(currentUserId));
+
+            if (isAlreadyMember) {
+                throw new AppException(ErrorCode.MEMBER_ALREADY_EXISTS); // Người dùng đã tham gia
+            }
+
+            FamilyGroupMember newMember = FamilyGroupMember.builder()
+                    .id(new FamilyGroupMemberId(group.getGroupId(), currentUserId))
+                    .group(group)
+                    .user(currUser)
+                    .joinedAt(new Timestamp(System.currentTimeMillis()))
+                    .build();
+
+            group.getMembers().add(newMember);
+            familyGroupsRepository.save(group);
+            
+
+
+            return toFamilyGroupResponse(group);
+        } catch (AppException e) {
+            throw new RuntimeException(e);
         }
-
-        var context = SecurityContextHolder.getContext();
-        String email = context.getAuthentication().getName();
-
-        User currUser = usersRepository.findByEmail(email);
-
-        Integer currentUserId = currUser.getUserId();
-
-        List<FamilyGroupMember> existingMembers = familyGroupMembersRepository.findByIdGroupId(group.getGroupId());
-        boolean isAlreadyMember = existingMembers.stream()
-                .anyMatch(member -> member.getId().getMemberId().equals(currentUserId));
-
-        if (isAlreadyMember) {
-            throw new AppException(ErrorCode.MEMBER_ALREADY_EXISTS); // Người dùng đã tham gia
-        }
-
-        FamilyGroupMember newMember = FamilyGroupMember.builder()
-                .id(new FamilyGroupMemberId(group.getGroupId(), currentUserId))
-                .group(group)
-                .user(currUser)
-                .joinedAt(new Timestamp(System.currentTimeMillis()))
-                .build();
-
-        group.getMembers().add(newMember);
-        familyGroupsRepository.save(group);
-
-
-        group.getMembers().add(newMember);
-        familyGroupsRepository.save(group);
-
-
-        return toFamilyGroupResponse(group);
 
     }
 

@@ -42,8 +42,7 @@ public class FamilyGroup {
     @OneToMany(mappedBy = "group")
     Set<MealPlan> mealplans = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "group")
-    Set<Report> reports = new LinkedHashSet<>();
+
 
     @OneToMany(mappedBy = "group")
     Set<ShoppingList> shoppinglists = new LinkedHashSet<>();
