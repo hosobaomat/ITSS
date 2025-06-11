@@ -292,50 +292,48 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
       return DateFormat('EEE, dd/MM/yyyy').format(date);
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.green),
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.green.shade50,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Ngày tạo: ${formatDate(list.date)}'),
-              Text(
-                'Shared by: ${list.sharedBy}',
-                style:
-                    const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            list.title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 6),
-          Text('${list.completedCount} of ${list.items.length} items'),
-          const SizedBox(height: 12),
-          ...list.items.map((item) {
-            return Row(
-              children: [
-                Checkbox(
-                  value: item.checked,
-                  onChanged: null,
-                ),
-                Icon(item.icon),
-                const SizedBox(width: 8),
-                Text('${item.name} (x${item.quantity})'),
-              ],
-            );
-          }),
-        ],
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.green),
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.green.shade50,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Ngày tạo: ${formatDate(list.date)}'),
+            const SizedBox(height: 8),
+            Text(
+              'Shared by: ${list.sharedBy}',
+              style:
+                  const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              list.title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 6),
+            Text('${list.completedCount} of ${list.items.length} items'),
+            const SizedBox(height: 12),
+            ...list.items.map((item) {
+              return Row(
+                children: [
+                  Checkbox(
+                    value: item.checked,
+                    onChanged: null,
+                  ),
+                  Icon(item.icon),
+                  const SizedBox(width: 8),
+                  Text('${item.name} (x${item.quantity})'),
+                ],
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -400,108 +398,110 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Icon(Icons.shopping_cart_outlined, size: 30),
-                  const Text(
-                    'Shopping Lists',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.share,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  const SharingMembersPage(), // Navigate to the SharingMembersPage
-                            ),
-                          );
-                        },
-                      ),
-                      Stack(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.mail_outline, size: 28),
-                            onPressed: () {
-                              if (_shareInvitations.isNotEmpty) {
-                                _showInvitationDialog(_shareInvitations[0]);
-                              }
-                            },
-                          ),
-                          if (_hasUnreadInvites)
-                            Positioned(
-                              right: 6,
-                              top: 6,
-                              child: Container(
-                                width: 10,
-                                height: 10,
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Icon(Icons.shopping_cart_outlined, size: 30),
+                    const Text(
+                      'Shopping Lists',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    Row(
+                      children: [
+                        // IconButton(
+                        //   icon: const Icon(
+                        //     Icons.share,
+                        //   ),
+                        //   onPressed: () {
+                        //     Navigator.push(
+                        //       context,
+                        //       MaterialPageRoute(
+                        //         builder: (_) =>
+                        //             const SharingMembersPage(), // Navigate to the SharingMembersPage
+                        //       ),
+                        //     );
+                        //   },
+                        // ),
+                        // Stack(
+                        //   children: [
+                        //     IconButton(
+                        //       icon: const Icon(Icons.mail_outline, size: 28),
+                        //       onPressed: () {
+                        //         if (_shareInvitations.isNotEmpty) {
+                        //           _showInvitationDialog(_shareInvitations[0]);
+                        //         }
+                        //       },
+                        //     ),
+                        //     if (_hasUnreadInvites)
+                        //       Positioned(
+                        //         right: 6,
+                        //         top: 6,
+                        //         child: Container(
+                        //           width: 10,
+                        //           height: 10,
+                        //           decoration: const BoxDecoration(
+                        //             color: Colors.red,
+                        //             shape: BoxShape.circle,
+                        //           ),
+                        //         ),
+                        //       ),
+                        //   ],
+                        // ),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline, size: 30),
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => NewListInfoPage(
+                                  authService: widget.authService,
                                 ),
                               ),
+                            );
+      
+                            if (result == true) {
+                              fetchShoppingList();
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: _isLoading
+                      ? Center(
+                          child: LoadingAnimationWidget.waveDots(
+                          color: Colors.pink,
+                          size: 50,
+                        ))
+                      : (_lists.isEmpty && _sharedLists.isEmpty)
+                          ? const Center(
+                              child: Text('No shopping lists available'))
+                          : ListView(
+                              children: [
+                                ..._sharedLists
+                                    .map((shared) => buildSharedListCard(shared)),
+                                const SizedBox(height: 24),
+                                ..._lists.asMap().entries.map(
+                                      (entry) =>
+                                          _buildListCard(entry.value, entry.key),
+                                    ),
+                              ],
                             ),
-                        ],
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add_circle_outline, size: 30),
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => NewListInfoPage(
-                                authService: widget.authService,
-                              ),
-                            ),
-                          );
-
-                          if (result == true) {
-                            fetchShoppingList();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: _isLoading
-                    ? Center(
-                        child: LoadingAnimationWidget.waveDots(
-                        color: Colors.pink,
-                        size: 50,
-                      ))
-                    : (_lists.isEmpty && _sharedLists.isEmpty)
-                        ? const Center(
-                            child: Text('No shopping lists available'))
-                        : ListView(
-                            children: [
-                              ..._sharedLists
-                                  .map((shared) => buildSharedListCard(shared)),
-                              const SizedBox(height: 24),
-                              ..._lists.asMap().entries.map(
-                                    (entry) =>
-                                        _buildListCard(entry.value, entry.key),
-                                  ),
-                            ],
-                          ),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

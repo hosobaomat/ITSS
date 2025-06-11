@@ -7,7 +7,6 @@ import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/ShoppingListEditRequest.dart';
 import 'package:login_menu/models/consumptionTrend.dart';
 import 'package:login_menu/models/createMealPlan.dart';
-import 'package:login_menu/models/createUser.dart';
 import 'package:login_menu/models/foodCategoryResponse.dart';
 import 'package:login_menu/models/foodItemsResponse.dart';
 import 'package:login_menu/models/getMealPlan.dart';
@@ -21,7 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
-  static const String apiUrl = "http://192.168.100.3:8082/ITSS_BE";
+  static const String apiUrl = "http://172.18.38.67:8082/ITSS_BE";
   String? _token;
   String? get token => _token;
 
@@ -285,7 +284,6 @@ class AuthService {
   Future<int> getGroupIdByUserId(int userId) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-
     if (token == null || token.isEmpty) {
       throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
     }
@@ -620,7 +618,7 @@ class AuthService {
       // Hàm gọi API cho một RecipeInput
       RecipeInput input) async {
     final url = Uri.parse(
-        '$apiUrl/Recipe/missingIngredient/${input.recipeId}/${input.groupId}');
+        '$apiUrl/Recipe/missingIngredient/recipeId=${input.recipeId}&&groupId=${input.groupId}');
     try {
       final response = await http.get(
         url,
@@ -662,5 +660,104 @@ class AuthService {
       throw Exception('Error fetching recipe items: $e');
     }
   }
+  // Phương thức để lấy danh sách các sản phẩm đã sử dụng
+  Future<List<ItemModel>> getUsedItems(int groupid) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token =
+        prefs.getString('token') ?? ''; // Lấy token từ SharedPreferences
 
+    final response = await http.get(
+      Uri.parse('$apiUrl/stats/usedItem/$groupid'), // Tạo URL với groupid
+      headers: {
+        'Authorization': 'Bearer $token', // Thêm token vào header
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('Response parsed successfully');
+      String decodedBody = utf8.decode(response.bodyBytes);
+      // Nếu thành công, parse dữ liệu JSON
+      return parseUsedItems(decodedBody);
+    } else {
+      // Nếu có lỗi, throw exception
+      throw Exception('Failed to load used items');
+    }
+  }
+
+  // Phương thức để lấy danh sách các sản phẩm đã lãng phí
+  Future<List<ItemModel>> getWastedItems(int groupid) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token =
+        prefs.getString('token') ?? ''; // Lấy token từ SharedPreferences
+
+    final response = await http.get(
+      Uri.parse('$apiUrl/stats/wastedItem/$groupid'), // Tạo URL với groupid
+      headers: {
+        'Authorization': 'Bearer $token', // Thêm token vào header
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('Response parsed successfully');
+      String decodedBody = utf8.decode(response.bodyBytes);
+      // Nếu thành công, parse dữ liệu JSON
+      return parseUsedItems(decodedBody);
+    } else {
+      // Nếu có lỗi, throw exception
+      throw Exception('Failed to load wasted items');
+    }
+  }
+
+  Future<List<ConsumptionTrend>> getConsumptionTrend(int groupId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token =
+        prefs.getString('token') ?? ''; // Lấy token từ SharedPreferences
+
+    final response = await http.get(
+      Uri.parse(
+          '$apiUrl/stats/AnalyzedFoodUsed/$groupId'), // Tạo URL với groupId
+      headers: {
+        'Authorization': 'Bearer $token', // Thêm token vào header
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body)['result'] as Map<String, dynamic>;
+
+      // Ánh xạ từ Map<String, dynamic> sang List<ConsumptionTrend>
+      return data.entries.map((entry) {
+        return ConsumptionTrend(
+          categoryName: entry.key,
+          consumptionPercentage: entry.value.toDouble(),
+        );
+      }).toList();
+    } else {
+      throw Exception('Failed to load consumption trend');
+    }
+  }
+  Future<void> FinishMealPlan(int planId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token'); // Lấy token từ SharedPreferences
+
+    if (token == null || token.isEmpty) {
+      throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
+    }
+
+    final response = await http.patch(
+      Uri.parse('$apiUrl/mealplans/finish/$planId'), // API DELETE với listId
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token', // Thêm token vào header
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Không thể xóa danh sách. Lỗi: ${response.body}');
+    }
+
+    print('Danh sách với listId $planId đã được xóa khỏi MySQL');
+  }
 }

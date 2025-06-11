@@ -77,30 +77,31 @@ class _HomePageState extends State<HomePage> {
         bottomNavigationBar: SalomonBottomBar(
           currentIndex: _selectedIndex,
           onTap: (i) => setState(() => _selectedIndex = i),
+          itemPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6), // giảm padding
           items: [
             SalomonBottomBarItem(
-                icon: Icon(Icons.home),
-                title: Text("Home"),
+                icon: Icon(Icons.home, size: 20),
+                title: Text("Home", style: TextStyle(fontSize: 14)),
                 selectedColor: Colors.green),
             SalomonBottomBarItem(
-                icon: Icon(Icons.category),
-                title: Text("Categories"),
+                icon: Icon(Icons.category, size: 20),
+                title: Text("Categories", style: TextStyle(fontSize: 14)),
                 selectedColor: Colors.green),
             SalomonBottomBarItem(
-                icon: Icon(Icons.shopping_bag),
-                title: Text("Inventory"),
+                icon: Icon(Icons.shopping_bag, size: 20),
+                title: Text("Inventory", style: TextStyle(fontSize: 14)),
                 selectedColor: Colors.green),
             SalomonBottomBarItem(
-                icon: Icon(Icons.play_lesson),
-                title: Text("Meal"),
+                icon: Icon(Icons.play_lesson, size: 20),
+                title: Text("Meal", style: TextStyle(fontSize: 14)),
                 selectedColor: Colors.green),
             SalomonBottomBarItem(
-                icon: Icon(Icons.receipt),
-                title: Text("Statistic"),
+                icon: Icon(Icons.receipt, size: 20),
+                title: Text("Statistic", style: TextStyle(fontSize: 14)),
                 selectedColor: Colors.green),
             SalomonBottomBarItem(
-                icon: Icon(Icons.person),
-                title: Text("Profile"),
+                icon: Icon(Icons.person, size: 20),
+                title: Text("Profile", style: TextStyle(fontSize: 14)),
                 selectedColor: Colors.green),
           ],
         ));

@@ -3,11 +3,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:login_menu/data/data_store.dart';
+import 'package:login_menu/models/createFamilugroup.dart';
 
 class CreateGroupPage extends StatefulWidget {
   final int userId; // ID của người tạo (bạn cần truyền vào từ Register/Login)
-
-  const CreateGroupPage({super.key, required this.userId});
+  final String token;
+  const CreateGroupPage({super.key, required this.userId, required this.token});
 
   @override
   State<CreateGroupPage> createState() => _CreateGroupPageState();
@@ -16,10 +17,12 @@ class CreateGroupPage extends StatefulWidget {
 class _CreateGroupPageState extends State<CreateGroupPage> {
   final TextEditingController groupNameController = TextEditingController();
   bool isLoading = false;
-
+  late Createfamilugroup createfamilugroup;
   Future<void> createGroup() async {
     final groupName = groupNameController.text.trim();
-
+    print(widget.token);
+    print(widget.userId);
+    print(DataStore().url);
     if (groupName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Tên nhóm không được để trống')),
@@ -34,12 +37,18 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       "createdBy": widget.userId,
       "members": [widget.userId],
     };
-
+    createfamilugroup = Createfamilugroup(
+        groupName: groupName,
+        createdBy: widget.userId,
+        members: [widget.userId]);
     try {
       final response = await http.post(
-        Uri.parse(DataStore().url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(requestData),
+        Uri.parse('${DataStore().url}/family_group'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode(createfamilugroup.toJson()),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {

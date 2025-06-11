@@ -35,8 +35,9 @@ class DataStore {
   List<MealPlanResponse> mealPlanResponse = [];
   late String username = '';
   late String email = '';
-  late String url = 'http://192.168.100.3:8082/ITSS_BE/users';
+  late String url = 'http://172.18.38.67:8082/ITSS_BE';
   late int userCreateID = 0;
+  late String tokenSignup = '';
   // Hàm clear nếu cần reset
   void clearAll() {
     categories = [];

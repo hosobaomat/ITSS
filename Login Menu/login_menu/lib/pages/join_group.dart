@@ -3,7 +3,8 @@ import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/pages/createGroupPage.dart';
 
 class JoinGroupPage extends StatelessWidget {
-  const JoinGroupPage({super.key});
+  String token;
+  JoinGroupPage({super.key, required this.token});
 
   @override
   Widget build(BuildContext context) {
@@ -53,14 +54,14 @@ class JoinGroupPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        CreateGroupPage(userId: DataStore().userCreateID), // truyền ID user thật
+                    builder: (context) => CreateGroupPage(
+                      userId: DataStore().userCreateID,
+                      token: token,
+                    ), // truyền ID user thật
                   ),
                 );
                 // TODO: Chuyển sang màn tạo nhóm
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đi tới trang Tạo nhóm')),
-                );
+                
               },
             ),
             const SizedBox(height: 20),
@@ -77,9 +78,8 @@ class JoinGroupPage extends StatelessWidget {
               ),
               onPressed: () {
                 // TODO: Chuyển sang màn nhập link
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đi tới trang Nhập link nhóm')),
-                );
+                JoinGroupPage(token: token);
+                
               },
             ),
             const SizedBox(height: 40),

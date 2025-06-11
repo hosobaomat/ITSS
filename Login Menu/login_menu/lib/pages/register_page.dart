@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:login_menu/pages/join_group.dart';
+import 'package:login_menu/service/auth_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -22,7 +23,7 @@ class _RegisterPageState extends State<RegisterPage> {
       TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController fullNameController = TextEditingController();
-
+  final AuthService authService = AuthService();
   // role mặc định
   String selectedRole = 'user';
 
@@ -33,7 +34,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final confirmPassword = confirmPasswordController.text.trim();
     final email = emailController.text.trim();
     final fullName = fullNameController.text.trim();
-
+    String? token;
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Password không khớp')),
@@ -51,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final response = await http.post(
-        Uri.parse(DataStore().url),
+        Uri.parse('${DataStore().url}/users'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(user.toJson()),
       );
@@ -62,9 +63,20 @@ class _RegisterPageState extends State<RegisterPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Đăng ký thành công')),
         );
+        bool success = await authService.login(
+          email,
+          password,
+        );
+        if (success) {
+          token = authService.token;
+          print(token);
+        }
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const JoinGroupPage()),
+          MaterialPageRoute(
+              builder: (context) => JoinGroupPage(
+                    token: token ?? '',
+                  )),
         ); // quay lại màn hình login (nếu có)
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
