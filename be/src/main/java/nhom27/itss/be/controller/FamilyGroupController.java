@@ -42,6 +42,17 @@ public class FamilyGroupController {
                 .build();
     }
 
+    @PostMapping("/join/{inviteCode}")
+    public ApiResponse<FamilyGroupResponse> joinGroupByInviteCode(
+            @PathVariable String inviteCode
+            ) {
+        FamilyGroupResponse response = familyGroupService.joinGroupByCode(inviteCode);
+        return ApiResponse.<FamilyGroupResponse>builder()
+                .result(response)
+                .code(200)
+                .build();
+    }
+
     @DeleteMapping("/{groupId}/members")
     public ApiResponse<FamilyGroupResponse> deleteFamilyGroupMembers(
             @PathVariable Integer groupId,
@@ -61,11 +72,21 @@ public class FamilyGroupController {
                 .code(200).build();
     }
 
+
+
     @GetMapping("/invite/{inviteCode}")
     ApiResponse<FamilyGroupResponse> getFamilyGroupByInviteCode(@PathVariable String inviteCode){
 
         return ApiResponse.<FamilyGroupResponse>builder()
                 .result(familyGroupService.getFamilyInviteCode(inviteCode))
+                .code(200).build();
+    }
+
+    @GetMapping("/code/{groupId}")
+    ApiResponse<String> getFamilyGroupByInviteCode(@PathVariable Integer groupId){
+
+        return ApiResponse.<String>builder()
+                .result(familyGroupService.getInvitedCodeByGroupId(groupId))
                 .code(200).build();
     }
 

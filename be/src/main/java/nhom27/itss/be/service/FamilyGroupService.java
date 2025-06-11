@@ -17,6 +17,7 @@ import nhom27.itss.be.exception.ErrorCode;
 import nhom27.itss.be.repository.FamilyGroupMembersRepository;
 import nhom27.itss.be.repository.FamilyGroupsRepository;
 import nhom27.itss.be.repository.UsersRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -48,7 +49,28 @@ public class FamilyGroupService {
         group.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         group.setInviteCode(UUID.randomUUID().toString().replace("-", "").substring(0, 5).toUpperCase());
 
+
+
+
+
         familyGroupsRepository.save(group);
+
+
+        FamilyGroupMemberId memberId = new FamilyGroupMemberId();
+        memberId.setGroupId(group.getGroupId());
+        memberId.setMemberId(user.getUserId());
+
+        // Tạo thành viên nhóm
+        FamilyGroupMember member = new FamilyGroupMember();
+        member.setId(memberId);
+        member.setGroup(group);
+        member.setUser(user);
+        member.setJoinedAt(new Timestamp(System.currentTimeMillis()));
+
+        // Lưu thành viên vào bảng trung gian
+        familyGroupMembersRepository.save(member);
+
+
 
 
         return FamilyGroupResponse.builder()
@@ -56,6 +78,7 @@ public class FamilyGroupService {
                 .createdBy(user.getEmail())
                 .groupName(group.getGroupName())
                 .createdAt(group.getCreatedAt())
+                .inviteCode(group.getInviteCode())
                 .build();
     }
 
@@ -79,9 +102,13 @@ public class FamilyGroupService {
         return  toFamilyGroupResponse(user.getFamilyGroupMembers().getFirst().getGroup());
     }
 
-    public FamilyGroupResponse getFamilyInviteCode(String Name){
+    public FamilyGroupResponse getFamilyInviteCode(String code){
 
-        return  toFamilyGroupResponse(familyGroupsRepository.findByInviteCode(Name));
+        return  toFamilyGroupResponse(familyGroupsRepository.findByInviteCode(code));
+    }
+
+    public String getInvitedCodeByGroupId(Integer groupId){
+        return familyGroupsRepository.findById(groupId).get().getInviteCode();
     }
 
 
@@ -146,6 +173,47 @@ public class FamilyGroupService {
                                 .collect(Collectors.toSet())
                 )
                 .build();
+    }
+
+    public FamilyGroupResponse joinGroupByCode(String code){
+        FamilyGroup group = familyGroupsRepository.findByInviteCode(code);
+
+        if (group == null) {
+            throw new AppException(ErrorCode.GROUP_NOT_FOUND);
+        }
+
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        User currUser = usersRepository.findByEmail(email);
+
+        Integer currentUserId = currUser.getUserId();
+
+        List<FamilyGroupMember> existingMembers = familyGroupMembersRepository.findByIdGroupId(group.getGroupId());
+        boolean isAlreadyMember = existingMembers.stream()
+                .anyMatch(member -> member.getId().getMemberId().equals(currentUserId));
+
+        if (isAlreadyMember) {
+            throw new AppException(ErrorCode.MEMBER_ALREADY_EXISTS); // Người dùng đã tham gia
+        }
+
+        FamilyGroupMember newMember = FamilyGroupMember.builder()
+                .id(new FamilyGroupMemberId(group.getGroupId(), currentUserId))
+                .group(group)
+                .user(currUser)
+                .joinedAt(new Timestamp(System.currentTimeMillis()))
+                .build();
+
+        group.getMembers().add(newMember);
+        familyGroupsRepository.save(group);
+
+
+        group.getMembers().add(newMember);
+        familyGroupsRepository.save(group);
+
+
+        return toFamilyGroupResponse(group);
+
     }
 
     public FamilyGroupResponse deleteUsersFromGroup(FamilyGroupMemberRequest request, Integer groupId) {
