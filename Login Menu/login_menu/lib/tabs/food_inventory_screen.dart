@@ -71,7 +71,15 @@ class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Food Inventory')),
+      appBar: AppBar(title: const Text('Food Inventory'), actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          tooltip: 'Tải lại dữ liệu',
+          onPressed: () {
+            _loadData(); // Gọi lại hàm load
+          },
+        ),
+      ]),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -133,7 +141,7 @@ class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
                             Text("Số lượng: ${item.quantity} ${item.unitName}"),
                             Text("Nơi lưu trữ: ${item.storageLocation}"),
                             Text(
-                                "Ngày hết hạn: ${item.expiryDate?.day}/${item.expiryDate?.month}/${item.expiryDate?.year}"),
+                                "Ngày hết hạn: ${item.expiryDate.day}/${item.expiryDate.month}/${item.expiryDate.year}"),
                             if (item.categoryName.isNotEmpty)
                               Text("Phân loại: ${item.categoryName}"),
                             if (item.storageSuggestion.isNotEmpty)

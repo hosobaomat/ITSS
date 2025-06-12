@@ -585,4 +585,83 @@ class AuthService {
       );
     }
   }
+
+  // Phương thức để lấy danh sách các sản phẩm đã sử dụng
+  Future<List<ItemModel>> getUsedItems(int groupid) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token =
+        prefs.getString('token') ?? ''; // Lấy token từ SharedPreferences
+
+    final response = await http.get(
+      Uri.parse('$apiUrl/stats/usedItem/$groupid'), // Tạo URL với groupid
+      headers: {
+        'Authorization': 'Bearer $token', // Thêm token vào header
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('Response parsed successfully');
+      String decodedBody = utf8.decode(response.bodyBytes);
+      // Nếu thành công, parse dữ liệu JSON
+      return parseUsedItems(decodedBody);
+    } else {
+      // Nếu có lỗi, throw exception
+      throw Exception('Failed to load used items');
+    }
+  }
+
+  // Phương thức để lấy danh sách các sản phẩm đã lãng phí
+  Future<List<ItemModel>> getWastedItems(int groupid) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token =
+        prefs.getString('token') ?? ''; // Lấy token từ SharedPreferences
+
+    final response = await http.get(
+      Uri.parse('$apiUrl/stats/wastedItem/$groupid'), // Tạo URL với groupid
+      headers: {
+        'Authorization': 'Bearer $token', // Thêm token vào header
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('Response parsed successfully');
+      String decodedBody = utf8.decode(response.bodyBytes);
+      // Nếu thành công, parse dữ liệu JSON
+      return parseUsedItems(decodedBody);
+    } else {
+      // Nếu có lỗi, throw exception
+      throw Exception('Failed to load wasted items');
+    }
+  }
+
+  Future<List<ConsumptionTrend>> getConsumptionTrend(int groupId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token =
+        prefs.getString('token') ?? ''; // Lấy token từ SharedPreferences
+
+    final response = await http.get(
+      Uri.parse(
+          '$apiUrl/stats/AnalyzedFoodUsed/$groupId'), // Tạo URL với groupId
+      headers: {
+        'Authorization': 'Bearer $token', // Thêm token vào header
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body)['result'] as Map<String, dynamic>;
+
+      // Ánh xạ từ Map<String, dynamic> sang List<ConsumptionTrend>
+      return data.entries.map((entry) {
+        return ConsumptionTrend(
+          categoryName: entry.key,
+          consumptionPercentage: entry.value.toDouble(),
+        );
+      }).toList();
+    } else {
+      throw Exception('Failed to load consumption trend');
+    }
+  }
 }

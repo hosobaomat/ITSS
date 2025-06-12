@@ -169,7 +169,8 @@ class _MealPlanScreenGetState extends State<MealPlanScreenGet> {
                     final ingredients = result
                         .where((item) => item.recipeId == recipeId)
                         .toList();
-                    final plan = plandetail.firstWhere((item)=>item.recipeId == recipeId);    
+                    final plan = plandetail
+                        .firstWhere((item) => item.recipeId == recipeId);
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -239,16 +240,26 @@ class _MealPlanScreenGetState extends State<MealPlanScreenGet> {
               mealPlan.planName,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            Text(
-              'Create by: $username',
-              style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-            ),
             IconButton(
                 onPressed: () {
                   showMissingIngredient(context, mealPlan.details);
                 },
-                icon: Icon(Icons.warning))
+                icon: Icon(Icons.warning)),
+            IconButton(
+                onPressed: () {
+                  _FinishMealPlan(mealPlan.planId);
+                  setState(() {
+                     mealplan.removeWhere((item)=>item.planId == mealPlan.planId);
+                  });
+                 
+                },
+                icon: Icon(Icons.done))
           ]),
+          const SizedBox(height: 4),
+          Text(
+              'Create by: $username',
+              style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+            ),
           const SizedBox(height: 8),
           Text(
             'Ngày bắt đầu: $formattedDate',
@@ -269,6 +280,15 @@ class _MealPlanScreenGetState extends State<MealPlanScreenGet> {
   Future<void> _deleteMealPlan(int planId) async {
     try {
       await DataStore().authService.deleteMealPlanbyId(planId);
+      print('thanh cong');
+    } catch (e) {
+      print("loi: $e");
+    }
+  }
+
+  Future<void> _FinishMealPlan(int planId) async {
+    try {
+      await DataStore().authService.FinishMealPlan(planId);
       print('thanh cong');
     } catch (e) {
       print("loi: $e");
