@@ -94,7 +94,7 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
         _listNameController.text,
         _userId!,
         _groupId,
-        _selectedDate!,
+        _selectedDate!.add(const Duration(days: 1)),
         _selectedDate!.add(const Duration(days: 1)), // Default end date
         'DRAFT',
       );

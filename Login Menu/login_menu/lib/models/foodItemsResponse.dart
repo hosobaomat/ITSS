@@ -43,6 +43,21 @@ class FoodItemResponse {
           : DateTime.now(),
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'foodname': foodname,
+      'quantity': quantity,
+      'unitName': unitName,
+      'storageLocation': storageLocation,
+      // Dùng millisecondsSinceEpoch để chuyển DateTime sang int cho backend
+      'expiryDate': expiryDate.millisecondsSinceEpoch,
+      'addedAt': addedAt.millisecondsSinceEpoch,
+      'categoryName': categoryName,
+      'storageSuggestion': storageSuggestion,
+      'updatedAt': updatedAt.millisecondsSinceEpoch,
+    };
+  }
 }
 
 class foodCategory {

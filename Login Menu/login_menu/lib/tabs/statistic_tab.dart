@@ -83,7 +83,7 @@ class _StatisticTabState extends State<StatisticTab> {
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 16),
           child: Text(
-            'Sản phẩm đã mua', // Tiêu đề cho bảng "Sản phẩm đã mua"
+            'Sản phẩm đã sử dụng', // Tiêu đề cho bảng "Sản phẩm đã mua"
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

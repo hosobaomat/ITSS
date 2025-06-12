@@ -1,16 +1,20 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/models/ShoppingListEditRequest.dart';
+import 'package:login_menu/models/addNewFoodItems.dart';
 import 'package:login_menu/models/consumptionTrend.dart';
 import 'package:login_menu/models/createMealPlan.dart';
 import 'package:login_menu/models/foodCategoryResponse.dart';
 import 'package:login_menu/models/foodItemsResponse.dart';
+import 'package:login_menu/models/fooditem.dart';
 import 'package:login_menu/models/getMealPlan.dart';
 import 'package:login_menu/models/getmissingIngredient.dart';
+import 'package:login_menu/models/notification.dart';
 import 'package:login_menu/models/recipeInput.dart';
 import 'package:login_menu/models/recipesResponse.dart';
 import 'package:login_menu/models/shoppinglist_request.dart';
@@ -20,7 +24,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
-  static const String apiUrl = "http://192.168.1.13:8082/ITSS_BE";
+  static const String apiUrl = "http://192.168.0.102:8082/ITSS_BE";
   String? _token;
   String? get token => _token;
 
@@ -662,6 +666,186 @@ class AuthService {
       }).toList();
     } else {
       throw Exception('Failed to load consumption trend');
+    }
+  }
+
+  Future<List<Recipesresponse>> fetchRecipesSuggest(int groupID) async {
+    final url = Uri.parse('$apiUrl/Recipe/suggestRecipe/$groupID');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final jsonResponse = jsonDecode(decodedBody);
+
+      if (jsonResponse['code'] == 200) {
+        final List<dynamic> resultList = jsonResponse['result'];
+
+        return resultList
+            .map((json) => Recipesresponse.fromJson(json))
+            .toList();
+      } else {
+        throw Exception('API trả về lỗi: code != 0');
+      }
+    } else {
+      throw Exception('Lỗi kết nối: ${response.statusCode}');
+    }
+  }
+
+  Future<List<Getmissingingredient>> fetchSingleRecipeMissing(
+      // Hàm gọi API cho một RecipeInput
+      RecipeInput input) async {
+    final url = Uri.parse(
+        '$apiUrl/Recipe/missingIngredient/${input.recipeId}/${input.groupId}');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final jsonResponse = jsonDecode(decodedBody);
+
+        if (jsonResponse['code'] == 200) {
+          final List<dynamic> resultList = jsonResponse['result'];
+
+          return resultList
+              .map((json) => Getmissingingredient.fromJson(json))
+              .toList();
+        } else {
+          throw Exception('API trả về lỗi: code != 200');
+        }
+      } else {
+        throw Exception('Failed to fetch recipe items: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching recipe items: $e');
+    }
+  }
+
+  Future<List<Getmissingingredient>> getRecipeItems(
+      // Hàm gọi API cho danh sách RecipeInput
+      List<RecipeInput> input) async {
+    try {
+      final futures =
+          input.map((input) => fetchSingleRecipeMissing(input)).toList();
+      final result = await Future.wait(futures, eagerError: true);
+      return result.expand((itemList) => itemList).toList();
+    } catch (e) {
+      throw Exception('Error fetching recipe items: $e');
+    }
+  }
+
+  Future<void> addFoodItems(List<Map<String, dynamic>> addNewFoodItems,
+      {required int userId, required int groupId}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    // Đúng format cho backend
+    final foodItems = addNewFoodItems
+        .map((item) => {
+              "foodCatalogId": item['foodCatalogId'],
+              "foodName": item['foodName'],
+              "quantity": item['quantity'],
+              "unitId": item['unitId'],
+              "expiryDate": item['expiryDate'],
+              "storageLocation": item['storageLocation'],
+            })
+        .toList();
+
+    final request = {
+      "userId": userId,
+      "groupId": groupId,
+      "foodItems": foodItems,
+    };
+
+    final reqBody = jsonEncode(request);
+
+    debugPrint('Request Add FoodItems: $reqBody');
+
+    final response = await http.post(
+      Uri.parse('$apiUrl/FoodItems'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: reqBody,
+    );
+
+    debugPrint('StatusCode: ${response.statusCode}');
+    debugPrint('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      return;
+    } else {
+      throw Exception(
+        'Không thể thêm thực phẩm.\n'
+        'Status: ${response.statusCode}\n'
+        'Body: ${response.body}',
+      );
+    }
+  }
+
+  Future<void> FinishMealPlan(int planId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token'); // Lấy token từ SharedPreferences
+
+    if (token == null || token.isEmpty) {
+      throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
+    }
+
+    final response = await http.patch(
+      Uri.parse('$apiUrl/mealplans/finish/$planId'), // API DELETE với listId
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token', // Thêm token vào header
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Không thể xóa danh sách. Lỗi: ${response.body}');
+    }
+
+    print('Danh sách với listId $planId đã được xóa khỏi MySQL');
+  }
+
+  Future<List<UserNotification>> fetchUserNotifications(int userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    final url = Uri.parse('$apiUrl/notifiation/user/$userId');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // Giải mã bằng UTF-8
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final Map<String, dynamic> data = json.decode(decodedBody);
+
+      if (data.containsKey('result')) {
+        List resultList = data['result'] as List;
+        List<UserNotification> notifications =
+            resultList.map((item) => UserNotification.fromJson(item)).toList();
+        return notifications;
+      } else {
+        throw Exception('Không tìm thấy dữ liệu "result"');
+      }
+    } else {
+      throw Exception(
+          'Failed to load notifications. Status: ${response.statusCode}');
     }
   }
 }
