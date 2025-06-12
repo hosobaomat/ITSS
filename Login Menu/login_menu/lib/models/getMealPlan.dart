@@ -32,6 +32,7 @@ class MealPlanResponse {
   final int groupId;
   final int createdBy;
   final int createdAt;
+  final bool status;
   final List<PlanDetail> details;
 
   MealPlanResponse({
@@ -42,6 +43,7 @@ class MealPlanResponse {
     required this.groupId,
     required this.createdBy,
     required this.createdAt,
+    required this.status,
     required this.details,
   });
   // 👉 Convert milliseconds -> DateTime
@@ -60,6 +62,7 @@ class MealPlanResponse {
       groupId: json['groupId'],
       createdBy: json['createdBy'],
       createdAt: json['createdAt'],
+      status: json['status'],
       details: detailsList,
     );
   }

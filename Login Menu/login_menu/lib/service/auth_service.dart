@@ -12,6 +12,7 @@ import 'package:login_menu/models/createMealPlan.dart';
 import 'package:login_menu/models/foodCategoryResponse.dart';
 import 'package:login_menu/models/foodItemsResponse.dart';
 import 'package:login_menu/models/fooditem.dart';
+import 'package:login_menu/models/getGroupMember.dart';
 import 'package:login_menu/models/getMealPlan.dart';
 import 'package:login_menu/models/getmissingIngredient.dart';
 import 'package:login_menu/models/notification.dart';
@@ -24,7 +25,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
-  static const String apiUrl = "http://192.168.0.102:8082/ITSS_BE";
+  static const String apiUrl = "http://192.168.100.19:8082/ITSS_BE";
   String? _token;
   String? get token => _token;
 
@@ -151,11 +152,10 @@ class AuthService {
         'createdBy': request.createdBy,
         'group_id': request.group_id,
         'startDate': request.startDate != null
-            ? dateFormat.format(request.startDate!)
+            ? dateFormat.format(request.startDate)
             : null,
-        'endDate': request.endDate != null
-            ? dateFormat.format(request.endDate!)
-            : null,
+        'endDate':
+            request.endDate != null ? dateFormat.format(request.endDate) : null,
         'status': request.status,
       }),
     );
@@ -590,6 +590,82 @@ class AuthService {
     }
   }
 
+  Future<List<Recipesresponse>> fetchRecipesSuggest(int groupID) async {
+    final url = Uri.parse('$apiUrl/Recipe/suggestRecipe/$groupID');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final jsonResponse = jsonDecode(decodedBody);
+
+      if (jsonResponse['code'] == 200) {
+        final List<dynamic> resultList = jsonResponse['result'];
+
+        return resultList
+            .map((json) => Recipesresponse.fromJson(json))
+            .toList();
+      } else {
+        throw Exception('API trả về lỗi: code != 0');
+      }
+    } else {
+      throw Exception('Lỗi kết nối: ${response.statusCode}');
+    }
+  }
+
+  Future<List<Getmissingingredient>> fetchSingleRecipeMissing(
+      // Hàm gọi API cho một RecipeInput
+      RecipeInput input) async {
+    final url = Uri.parse(
+        '$apiUrl/Recipe/missingIngredient/recipeId=${input.recipeId}&&groupId=${input.groupId}');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final jsonResponse = jsonDecode(decodedBody);
+
+        if (jsonResponse['code'] == 200) {
+          final List<dynamic> resultList = jsonResponse['result'];
+
+          return resultList
+              .map((json) => Getmissingingredient.fromJson(json))
+              .toList();
+        } else {
+          throw Exception('API trả về lỗi: code != 200');
+        }
+      } else {
+        throw Exception('Failed to fetch recipe items: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching recipe items: $e');
+    }
+  }
+
+  Future<List<Getmissingingredient>> getRecipeItems(
+      // Hàm gọi API cho danh sách RecipeInput
+      List<RecipeInput> input) async {
+    try {
+      final futures =
+          input.map((input) => fetchSingleRecipeMissing(input)).toList();
+      final result = await Future.wait(futures, eagerError: true);
+      return result.expand((itemList) => itemList).toList();
+    } catch (e) {
+      throw Exception('Error fetching recipe items: $e');
+    }
+  }
+
   // Phương thức để lấy danh sách các sản phẩm đã sử dụng
   Future<List<ItemModel>> getUsedItems(int groupid) async {
     final prefs = await SharedPreferences.getInstance();
@@ -669,132 +745,6 @@ class AuthService {
     }
   }
 
-  Future<List<Recipesresponse>> fetchRecipesSuggest(int groupID) async {
-    final url = Uri.parse('$apiUrl/Recipe/suggestRecipe/$groupID');
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final decodedBody = utf8.decode(response.bodyBytes);
-      final jsonResponse = jsonDecode(decodedBody);
-
-      if (jsonResponse['code'] == 200) {
-        final List<dynamic> resultList = jsonResponse['result'];
-
-        return resultList
-            .map((json) => Recipesresponse.fromJson(json))
-            .toList();
-      } else {
-        throw Exception('API trả về lỗi: code != 0');
-      }
-    } else {
-      throw Exception('Lỗi kết nối: ${response.statusCode}');
-    }
-  }
-
-  Future<List<Getmissingingredient>> fetchSingleRecipeMissing(
-      // Hàm gọi API cho một RecipeInput
-      RecipeInput input) async {
-    final url = Uri.parse(
-        '$apiUrl/Recipe/missingIngredient/${input.recipeId}/${input.groupId}');
-    try {
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-      if (response.statusCode == 200) {
-        final decodedBody = utf8.decode(response.bodyBytes);
-        final jsonResponse = jsonDecode(decodedBody);
-
-        if (jsonResponse['code'] == 200) {
-          final List<dynamic> resultList = jsonResponse['result'];
-
-          return resultList
-              .map((json) => Getmissingingredient.fromJson(json))
-              .toList();
-        } else {
-          throw Exception('API trả về lỗi: code != 200');
-        }
-      } else {
-        throw Exception('Failed to fetch recipe items: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error fetching recipe items: $e');
-    }
-  }
-
-  Future<List<Getmissingingredient>> getRecipeItems(
-      // Hàm gọi API cho danh sách RecipeInput
-      List<RecipeInput> input) async {
-    try {
-      final futures =
-          input.map((input) => fetchSingleRecipeMissing(input)).toList();
-      final result = await Future.wait(futures, eagerError: true);
-      return result.expand((itemList) => itemList).toList();
-    } catch (e) {
-      throw Exception('Error fetching recipe items: $e');
-    }
-  }
-
-  Future<void> addFoodItems(List<Map<String, dynamic>> addNewFoodItems,
-      {required int userId, required int groupId}) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-
-    // Đúng format cho backend
-    final foodItems = addNewFoodItems
-        .map((item) => {
-              "foodCatalogId": item['foodCatalogId'],
-              "foodName": item['foodName'],
-              "quantity": item['quantity'],
-              "unitId": item['unitId'],
-              "expiryDate": item['expiryDate'],
-              "storageLocation": item['storageLocation'],
-            })
-        .toList();
-
-    final request = {
-      "userId": userId,
-      "groupId": groupId,
-      "foodItems": foodItems,
-    };
-
-    final reqBody = jsonEncode(request);
-
-    debugPrint('Request Add FoodItems: $reqBody');
-
-    final response = await http.post(
-      Uri.parse('$apiUrl/FoodItems'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: reqBody,
-    );
-
-    debugPrint('StatusCode: ${response.statusCode}');
-    debugPrint('Response body: ${response.body}');
-
-    if (response.statusCode == 200) {
-      return;
-    } else {
-      throw Exception(
-        'Không thể thêm thực phẩm.\n'
-        'Status: ${response.statusCode}\n'
-        'Body: ${response.body}',
-      );
-    }
-  }
-
   Future<void> FinishMealPlan(int planId) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token'); // Lấy token từ SharedPreferences
@@ -846,6 +796,87 @@ class AuthService {
     } else {
       throw Exception(
           'Failed to load notifications. Status: ${response.statusCode}');
+    }
+  }
+
+  Future<FamilyGroup?> fetchFamilyGroupbyId(int groupID) async {
+    final url = '$apiUrl/family_group/$groupID';
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        if (jsonData['code'] == 200 && jsonData['result'] != null) {
+          return FamilyGroup.fromJson(jsonData['result']);
+        } else {
+          print('Không có dữ liệu nhóm trong response.');
+          return null;
+        }
+      } else {
+        print('Lỗi HTTP: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Lỗi ngoại lệ khi gọi API: $e');
+      return null;
+    }
+  }
+
+  Future<void> addFoodItems(List<Map<String, dynamic>> addNewFoodItems,
+      {required int userId, required int groupId}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    // Đúng format cho backend
+    final foodItems = addNewFoodItems
+        .map((item) => {
+              "foodCatalogId": item['foodCatalogId'],
+              "foodName": item['foodName'],
+              "quantity": item['quantity'],
+              "unitId": item['unitId'],
+              "expiryDate": item['expiryDate'],
+              "storageLocation": item['storageLocation'],
+            })
+        .toList();
+
+    final request = {
+      "userId": userId,
+      "groupId": groupId,
+      "foodItems": foodItems,
+    };
+
+    final reqBody = jsonEncode(request);
+
+    debugPrint('Request Add FoodItems: $reqBody');
+
+    final response = await http.post(
+      Uri.parse('$apiUrl/FoodItems'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: reqBody,
+    );
+
+    debugPrint('StatusCode: ${response.statusCode}');
+    debugPrint('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      return;
+    } else {
+      throw Exception(
+        'Không thể thêm thực phẩm.\n'
+        'Status: ${response.statusCode}\n'
+        'Body: ${response.body}',
+      );
     }
   }
 }

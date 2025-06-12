@@ -1,5 +1,6 @@
 import 'package:login_menu/models/foodCatalogResponse.dart';
 import 'package:login_menu/models/foodCategoryResponse.dart';
+import 'package:login_menu/models/getGroupMember.dart';
 import 'package:login_menu/models/getMealPlan.dart';
 import 'package:login_menu/models/recipesResponse.dart';
 import 'package:login_menu/models/unitResponse.dart';
@@ -35,8 +36,9 @@ class DataStore {
   List<MealPlanResponse> mealPlanResponse = [];
   late String username = '';
   late String email = '';
-  late String url = 'http://172.18.38.67:8082/ITSS_BE';
+  late String url = 'http://192.168.100.19:8082/ITSS_BE';
   late int userCreateID = 0;
+  late int groupcreatID = 0;
   late String tokenSignup = '';
   // Hàm clear nếu cần reset
   void clearAll() {

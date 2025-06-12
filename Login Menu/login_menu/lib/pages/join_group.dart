@@ -1,10 +1,36 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:login_menu/data/data_store.dart';
 import 'package:login_menu/pages/createGroupPage.dart';
+import 'package:http/http.dart' as http;
+import 'package:login_menu/pages/joinByInviteCode.dart';
 
 class JoinGroupPage extends StatelessWidget {
   String token;
   JoinGroupPage({super.key, required this.token});
+  Future<void> addUsertoGroup() async {
+    try {
+      final response = await http.post(
+          Uri.parse(
+              '${DataStore().url}/family_group/${DataStore().groupcreatID}/members'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'userIds': [DataStore().userCreateID]
+          }));
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('them vao nhom ${DataStore().groupcreatID}thanh cong');
+      } else {
+        print('${response.statusCode} - ${response.body} - ${DataStore().groupcreatID}');
+        print('tao nhom that bai');
+      }
+    } catch (e) {
+      print('loi $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +76,8 @@ class JoinGroupPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => CreateGroupPage(
@@ -60,8 +86,9 @@ class JoinGroupPage extends StatelessWidget {
                     ), // truyền ID user thật
                   ),
                 );
+                if (result == true) {
+                }
                 // TODO: Chuyển sang màn tạo nhóm
-                
               },
             ),
             const SizedBox(height: 20),
@@ -76,10 +103,13 @@ class JoinGroupPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              onPressed: () {
+              onPressed: () {Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => JoinGroupPageByInviteCode(token: token, userId: DataStore().userCreateID,) // truyền ID user thật
+                  ),
+                );
                 // TODO: Chuyển sang màn nhập link
-                JoinGroupPage(token: token);
-                
               },
             ),
             const SizedBox(height: 40),

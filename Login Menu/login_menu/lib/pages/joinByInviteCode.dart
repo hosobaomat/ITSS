@@ -1,18 +1,19 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:login_menu/data/data_store.dart';
 
-class JoinGroupPage extends StatefulWidget {
+class JoinGroupPageByInviteCode extends StatefulWidget {
   final int userId;
   final String token;
 
-  const JoinGroupPage({super.key, required this.userId, required this.token});
+  const JoinGroupPageByInviteCode({super.key, required this.userId, required this.token});
 
   @override
-  State<JoinGroupPage> createState() => _JoinGroupPageState();
+  State<JoinGroupPageByInviteCode> createState() => _JoinGroupPageState();
 }
 
-class _JoinGroupPageState extends State<JoinGroupPage> {
+class _JoinGroupPageState extends State<JoinGroupPageByInviteCode> {
   final TextEditingController codeController = TextEditingController();
   bool isLoading = false;
 
@@ -31,15 +32,11 @@ class _JoinGroupPageState extends State<JoinGroupPage> {
     try {
       // Gửi request POST để tham gia nhóm bằng mã
       final response = await http.post(
-        Uri.parse('https://your-api.com/groups/join'), // 👈 Thay đổi URL theo API thực tế
+        Uri.parse('${DataStore().url}/family_group/join/${code}'), // 👈 Thay đổi URL theo API thực tế
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${widget.token}',
         },
-        body: jsonEncode({
-          'userId': widget.userId,
-          'code': code,
-        }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -66,14 +63,14 @@ class _JoinGroupPageState extends State<JoinGroupPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Tham gia nhóm"),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.blueGrey,
         centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(30),
         child: Column(
           children: [
-            const Icon(Icons.group_add, size: 80, color: Colors.teal),
+            const Icon(Icons.group_add, size: 80, color: Colors.blueGrey),
             const SizedBox(height: 20),
             TextField(
               controller: codeController,
@@ -91,7 +88,7 @@ class _JoinGroupPageState extends State<JoinGroupPage> {
                     icon: const Icon(Icons.input),
                     label: const Text("Tham gia nhóm"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
+                      backgroundColor: Colors.blueGrey,
                       minimumSize: const Size.fromHeight(50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),

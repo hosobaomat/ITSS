@@ -32,11 +32,6 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
     setState(() => isLoading = true);
 
-    final Map<String, dynamic> requestData = {
-      "groupName": groupName,
-      "createdBy": widget.userId,
-      "members": [widget.userId],
-    };
     createfamilugroup = Createfamilugroup(
         groupName: groupName,
         createdBy: widget.userId,
@@ -55,7 +50,9 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Tạo nhóm thành công")),
         );
-        Navigator.pop(context); // Hoặc chuyển đến trang chính nếu cần
+        final decodedBody = jsonDecode(response.body);
+        DataStore().groupcreatID = decodedBody['result']['id'];
+        Navigator.pop(context,true); // Hoặc chuyển đến trang chính nếu cần
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Tạo nhóm thất bại: ${response.body}")),

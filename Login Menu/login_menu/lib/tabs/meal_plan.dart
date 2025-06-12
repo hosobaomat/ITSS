@@ -249,17 +249,17 @@ class _MealPlanScreenGetState extends State<MealPlanScreenGet> {
                 onPressed: () {
                   _FinishMealPlan(mealPlan.planId);
                   setState(() {
-                     mealplan.removeWhere((item)=>item.planId == mealPlan.planId);
+                    mealplan
+                        .removeWhere((item) => item.planId == mealPlan.planId);
                   });
-                 
                 },
                 icon: Icon(Icons.done))
           ]),
           const SizedBox(height: 4),
           Text(
-              'Create by: $username',
-              style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-            ),
+            'Create by: $username',
+            style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+          ),
           const SizedBox(height: 8),
           Text(
             'Ngày bắt đầu: $formattedDate',
@@ -298,60 +298,63 @@ class _MealPlanScreenGetState extends State<MealPlanScreenGet> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Meal Plans"),
-        actions: [
-          IconButton(
-              onPressed: () async {
-                final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MealPlanScreen(
-                              recipes: DataStore().recipesresponse,
-                            )));
-                if (result == 'refresh') {
-                  getMealPlan();
-                }
-              },
-              icon: const Icon(Icons.add_circle_outline, size: 30))
-        ],
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: mealplan.length,
-              itemBuilder: (context, index) {
-                final mealPlan = mealplan[index];
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Dismissible(
-                      key: Key(mealPlan.planId.toString()),
-                      direction: DismissDirection.endToStart,
-                      background: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(12),
+        appBar: AppBar(
+          title: const Text("Meal Plans"),
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => MealPlanScreen(
+                                recipes: DataStore().recipesresponse,
+                              )));
+                  if (result == 'refresh') {
+                    getMealPlan();
+                  }
+                },
+                icon: const Icon(Icons.add_circle_outline, size: 30))
+          ],
+        ),
+        body: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Builder(builder: (context) {
+                final visibleMealPlans = mealplan.where((m) => !m.status).toList();
+                return ListView.builder(
+                  itemCount: visibleMealPlans.length,
+                  itemBuilder: (context, index) {
+                    final mealPlan = visibleMealPlans[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Dismissible(
+                          key: Key(mealPlan.planId.toString()),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 20),
+                            child:
+                                const Icon(Icons.delete, color: Colors.white),
+                          ),
+                          onDismissed: (direction) {
+                            setState(() {
+                              mealplan.removeAt(index);
+                              _deleteMealPlan(mealPlan.planId);
+                            });
+                          },
+                          child: _buildMealPlanCard(
+                              mealPlan), // Sử dụng lại hàm hiện có
                         ),
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 20),
-                        child: const Icon(Icons.delete, color: Colors.white),
                       ),
-                      onDismissed: (direction) {
-                        setState(() {
-                          mealplan.removeAt(index);
-                          _deleteMealPlan(mealPlan.planId);
-                        });
-                      },
-                      child: _buildMealPlanCard(
-                          mealPlan), // Sử dụng lại hàm hiện có
-                    ),
-                  ),
+                    );
+                  },
                 );
-              },
-            ),
-    );
+              }));
   }
 }
