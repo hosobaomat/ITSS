@@ -38,7 +38,7 @@ public class NotificationService {
 
 
     public List<NotificationResponse> getAllNotificationsByUserId(Integer userId) {
-        Optional<List<Notification>> optionalList= notificationsRepository.findByUser_UserId(userId);
+        Optional<List<Notification>> optionalList= notificationsRepository.findByUser_UserIdAndReadFalse(userId);
         List<Notification> notificationList = optionalList.orElse(new ArrayList<>());
 
         return notificationList.stream().map(

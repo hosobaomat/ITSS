@@ -15,4 +15,6 @@ public interface NotificationsRepository extends JpaRepository<Notification, Int
 
     Optional<List<Notification>> findByUser_UserId(Integer userid);
 
+    Optional<List<Notification>> findByUser_UserIdAndReadFalse(Integer userId);
+
 }
