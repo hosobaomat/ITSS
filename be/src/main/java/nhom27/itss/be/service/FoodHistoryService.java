@@ -112,7 +112,7 @@ public class FoodHistoryService {
         );
 
         for (FoodItem item : soonToExpireItems) {
-            if (item.getIs_deleted() != 0 && item.getIs_deleted() != 2 ) continue;
+            if (item.getIs_deleted() != 2 ) continue;
 
             FamilyGroup group = item.getGroup();
 
