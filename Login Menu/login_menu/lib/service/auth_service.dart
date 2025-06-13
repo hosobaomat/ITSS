@@ -26,7 +26,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
-  static const String apiUrl = "http://192.168.100.19:8082/ITSS_BE";
+  static const String apiUrl = "http://192.168.1.19:8082/ITSS_BE";
   String? _token;
   String? get token => _token;
 
@@ -928,4 +928,24 @@ class AuthService {
 
     return null;
   }
+  Future<void> markNotificationAsRead(int notificationId) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token') ?? '';
+
+  final url = Uri.parse('$apiUrl/notifiation/$notificationId/read');
+
+  final response = await http.put(
+    url,
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    print('Đã đánh dấu thông báo là đã đọc.');
+  } else {
+    throw Exception('Lỗi khi đánh dấu thông báo là đã đọc: ${response.statusCode}');
+  }
+}
 }

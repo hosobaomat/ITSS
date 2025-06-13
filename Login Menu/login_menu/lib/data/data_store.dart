@@ -36,7 +36,7 @@ class DataStore {
   List<MealPlanResponse> mealPlanResponse = [];
   late String username = '';
   late String email = '';
-  late String url = 'http://192.168.100.19:8082/ITSS_BE';
+  late String url = 'http://192.168.1.19:8082/ITSS_BE';
   late int userCreateID = 0;
   late int groupcreatID = 0;
   late String tokenSignup = '';

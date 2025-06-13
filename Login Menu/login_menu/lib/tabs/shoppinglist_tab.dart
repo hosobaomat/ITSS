@@ -10,6 +10,7 @@ import 'package:login_menu/pages/editShoppingItem.dart';
 import 'package:login_menu/pages/inventory_ipput.dart';
 
 import 'package:login_menu/pages/new_list_info_page.dart';
+import 'package:login_menu/pages/notificationScreen.dart';
 import 'package:login_menu/service/auth_service.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
@@ -158,7 +159,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
 
   Widget _buildListCard(ShoppingListModel list, int index) {
     // Kiểm tra xem tất cả items trong list đã được tick chưa
-    bool allItemsChecked = list.items.every((item) => item.checked);
+    list.items.every((item) => item.checked);
     String formatDate(DateTime date) {
       return DateFormat('EEE, dd/MM/yyyy').format(date);
     }
@@ -221,46 +222,36 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
               ElevatedButton(
                 onPressed: () async {
                   // Xử lý khi người dùng nhấn nút "Done"
-                  if (allItemsChecked) {
-                    final response = await widget.authService
-                        .markShoppingListAsPurchased(list.listId!);
+                  final response = await widget.authService
+                      .markShoppingListAsPurchased(list.listId!);
 
-                    //Parse ra danh sách foodItemResponses
-                    final List<FoodItemResponse> inventoryItems =
-                        (response?['result']['foodItemResponses'] as List)
-                            .map((item) => FoodItemResponse.fromJson(item))
-                            .toList();
+                  final List<FoodItemResponse> inventoryItems =
+                      (response?['result']['foodItemResponses'] as List)
+                          .map((item) => FoodItemResponse.fromJson(item))
+                          .toList();
 
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => InventoryItemInputWidget(
-                          items: inventoryItems,
-                          listId: list.listId!,
-                        ),
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => InventoryItemInputWidget(
+                        items: inventoryItems,
+                        listId: list.listId!,
                       ),
-                    );
-                    if (result is List<FoodItemResponse>) {
-                      // Update từng item
-                      for (final food in result) {
-                        print('hehehe: ${food.expiryDate}');
-                        print('hehehe: ${food.storageLocation}');
-                        await widget.authService
-                            .updateFoodItem(UpdateItemRequest(
-                          id: food.id,
-                          storageLocation: food.storageLocation,
-                          expireDate: food.expiryDate,
-                        ));
-                      }
-
-                      fetchShoppingList();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Đã mua hết sản phẩm!')),
-                      );
+                    ),
+                  );
+                  if (result is List<FoodItemResponse>) {
+                    for (final food in result) {
+                      await widget.authService.updateFoodItem(UpdateItemRequest(
+                        id: food.id,
+                        storageLocation: food.storageLocation,
+                        expireDate: food.expiryDate,
+                      ));
                     }
-                  } else {
+
+                    fetchShoppingList();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Chưa mua hết sản phẩm!')),
+                      const SnackBar(
+                          content: Text('Đã xử lý danh sách mua sắm!')),
                     );
                   }
                 },
@@ -392,6 +383,16 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                         //       ),
                         //   ],
                         // ),
+                        IconButton(
+                          icon: Icon(Icons.notifications),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => NotificationScreen()),
+                            );
+                          },
+                        ),
                         IconButton(
                           icon: const Icon(Icons.add_circle_outline, size: 30),
                           onPressed: () async {

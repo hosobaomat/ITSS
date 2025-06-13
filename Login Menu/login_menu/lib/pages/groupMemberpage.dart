@@ -218,7 +218,9 @@ class _GroupMemberListPageState extends State<GroupMemberListPage> {
     );
   }
 
-  void deleteGroup() {
+  void deleteGroup() async {
+    await DataStore().authService.deleteGroup(DataStore().GroupID);
+    DataStore().GroupID = 0;
     // TODO: Gọi API xóa nhóm tại đây
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Nhóm đã được xóa.")),
