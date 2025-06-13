@@ -4,7 +4,8 @@ spring:
   jpa:
     show-sql: true
     database-platform : org.hibernate.dialect.MySQLDialect
-
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
 
 jwt:
   signerKey: "0W3qLeL6jzJngLVD3GO6zao26tDvm+CLerQOUoBxyOTSZZ+PypzVjDIct3fEKz4d"
