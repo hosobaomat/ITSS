@@ -188,8 +188,6 @@ public class ShoppingListService {
                         .shoppingList(shoppingList)
                         .status(ShoppingListItemStatus.PENDING)
                         .quantity(item.getQuantity())
-                        .purchasedBy(shoppingList.getCreatedBy())
-                        .purchasedAt(new Timestamp(System.currentTimeMillis()))
                         .unit(unitsRepository.findById(item.getUnitId()).orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_EXISTS)))
                         .build()).collect(Collectors.toSet());
 
