@@ -235,7 +235,7 @@ public class FamilyGroupService {
 
         // Cập nhật lại danh sách members trong group (nếu bạn đang dùng quan hệ 2 chiều)
         Set<FamilyGroupMember> updatedMembers = group.getMembers();
-        updatedMembers.removeAll(membersToDelete);
+        membersToDelete.forEach(updatedMembers::remove);
         group.setMembers(updatedMembers);
         familyGroupsRepository.save(group);
 
@@ -245,8 +245,6 @@ public class FamilyGroupService {
     public void deleteFamilyGroup(Integer groupId) {
         familyGroupsRepository.deleteById(groupId);
    }
-
-
 
     private FamilyGroup getFamilyGroup(Integer groupId) {
         return familyGroupsRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.FAMILYGROUP_NOT_EXISTED) );

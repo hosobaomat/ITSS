@@ -34,32 +34,42 @@ public class RecommendRecipeService {
 
 
     public List<RecipeResponse> recommendRecipes(Integer groupId) {
-        // 1. Load toàn bộ FoodItems hợp lệ
         List<FoodItem> itemsInFridge = foodItemsRepository.findValidFoodItemsByGroupId(groupId);
 
-        // 2. Tạo map để tra cứu nhanh (theo FoodCatalogId + UnitId)
+        // Tạo map key = foodCatalogId-unitId
         Map<String, FoodItem> fridgeMap = itemsInFridge.stream().collect(Collectors.toMap(
                 item -> item.getFoodCatalog().getFoodCatalogId() + "-" + item.getUnit().getId(),
                 item -> item,
-                (item1, item2) -> item1 // nếu trùng thì giữ lại cái đầu
+                (item1, item2) -> item1
         ));
 
-        // 3. Load toàn bộ recipes và ingredients (eager fetch để tránh N+1)
-        List<Recipe> recipes = recipesRepository.findAllWithIngredients(); // cần viết custom query
+        List<Recipe> recipes = recipesRepository.findAllWithIngredients(); // custom query with fetch join
         List<Recipe> recipeMatches = new ArrayList<>();
 
         for (Recipe recipe : recipes) {
             Set<RecipeIngredient> ingredients = recipe.getRecipeingredients();
-            long matchedCount = ingredients.stream()
-                    .filter(ingredient -> {
-                        String key = ingredient.getFoodCatalog().getFoodCatalogId() + "-" + ingredient.getUnit().getId();
-                        FoodItem item = fridgeMap.get(key);
-                        return item != null && item.getQuantity() >= ingredient.getQuantity();
-                    })
-                    .count();
 
-            double matchPercentage = (double) matchedCount / ingredients.size();
-            if (matchPercentage >= 0.7) {
+            double totalRequired = 0.0;
+            double quantityMatched = 0.0;
+
+            for (RecipeIngredient ingredient : ingredients) {
+                double requiredQty = ingredient.getQuantity();
+                totalRequired += requiredQty;
+
+                String key = ingredient.getFoodCatalog().getFoodCatalogId() + "-" + ingredient.getUnit().getId();
+                FoodItem item = fridgeMap.get(key);
+
+                if (item != null) {
+                    double availableQty = item.getQuantity();
+                    // Nếu đủ, cộng toàn bộ, nếu thiếu, cộng phần có
+                    quantityMatched += Math.min(availableQty, requiredQty);
+                }
+            }
+
+            double matchRatio = totalRequired == 0 ? 0 : quantityMatched / totalRequired;
+
+            // Đủ từ 70% trở lên tổng quantity → chấp nhận
+            if (matchRatio >= 0.7) {
                 recipeMatches.add(recipe);
             }
         }
@@ -68,6 +78,7 @@ public class RecommendRecipeService {
                 .map(RecipeMapper::toRecipeResponse)
                 .toList();
     }
+
 
 
 
