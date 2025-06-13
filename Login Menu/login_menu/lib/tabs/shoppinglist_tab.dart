@@ -10,7 +10,6 @@ import 'package:login_menu/pages/editShoppingItem.dart';
 import 'package:login_menu/pages/inventory_ipput.dart';
 
 import 'package:login_menu/pages/new_list_info_page.dart';
-import 'package:login_menu/pages/share_member_page.dart';
 import 'package:login_menu/service/auth_service.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
@@ -24,21 +23,10 @@ class ShoppingListTab extends StatefulWidget {
 
 class _ShoppingListTabState extends State<ShoppingListTab> {
   List<ShoppingListModel> _lists = [];
-  List<Map<String, dynamic>> _shareInvitations = [];
   List<ShoppingListModelShare> _sharedLists = [];
-  bool _hasUnreadInvites = false;
   List<FoodItemResponse> foodInventory = [];
   List<FoodItemResponse> deletedInventory = [];
   bool _isLoading = true;
-  final List<String> _weekdayNames = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
 
   @override
   void initState() {
@@ -86,9 +74,11 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
           purchasedBy: DataStore().userId,
         );
       }).toList();
-
+      print(DataStore().username);
       // Danh sách chia sẻ theo group
-      final fetchedSharedLists = sharedLists.map((item) {
+      final fetchedSharedLists = sharedLists
+          .where((item) => item['createdBy'] != DataStore().username)
+          .map((item) {
         final items = (item['items'] as List? ?? []).map((i) {
           return ShoppingItem(
             i['id'],
@@ -308,8 +298,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
             const SizedBox(height: 8),
             Text(
               'Shared by: ${list.sharedBy}',
-              style:
-                  const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+              style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
             ),
             const SizedBox(height: 8),
             Text(
@@ -339,61 +328,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
   }
 
   void _checkForInvitations() {
-    setState(() {
-      _shareInvitations = [
-        {
-          'from': 'Alice',
-          'listName': 'Weekend Grocery',
-          'listId': 'abc123',
-        },
-      ];
-      _hasUnreadInvites = true;
-    });
-  }
-
-  void _showInvitationDialog(Map<String, dynamic> invite) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Lời mời chia sẻ'),
-        content: Text(
-          '${invite['from']} đã chia sẻ danh sách "${invite['listName']}" với bạn. Bạn có muốn chấp nhận không?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _shareInvitations.remove(invite);
-                _hasUnreadInvites = _shareInvitations.isNotEmpty;
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Từ chối'),
-          ),
-          // TextButton(
-          //   onPressed: () {
-          //     setState(() {
-          //       _sharedLists.add(
-          //         ShoppingListModelShare(
-          //           date: DateTime.now(),
-          //           title: 'Weekend Grocery',
-          //           sharedBy: invite['from'],
-          //           items: [
-          //             ShoppingItem(0, "Milk", Icons.local_drink, false, 1, ''),
-          //             ShoppingItem(1, "Eggs", Icons.egg, false, 1, ''),
-          //           ],
-          //         ),
-          //       );
-          //       _shareInvitations.remove(invite);
-          //       _hasUnreadInvites = _shareInvitations.isNotEmpty;
-          //     });
-          //     Navigator.pop(context);
-          //   },
-          //   child: const Text('Đồng ý'),
-          // ),
-        ],
-      ),
-    );
+    setState(() {});
   }
 
   @override
@@ -413,7 +348,8 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                     const Icon(Icons.shopping_cart_outlined, size: 30),
                     const Text(
                       'Shopping Lists',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     Row(
                       children: [
@@ -467,7 +403,7 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                                 ),
                               ),
                             );
-      
+
                             if (result == true) {
                               fetchShoppingList();
                             }
@@ -490,12 +426,12 @@ class _ShoppingListTabState extends State<ShoppingListTab> {
                               child: Text('No shopping lists available'))
                           : ListView(
                               children: [
-                                ..._sharedLists
-                                    .map((shared) => buildSharedListCard(shared)),
+                                ..._sharedLists.map(
+                                    (shared) => buildSharedListCard(shared)),
                                 const SizedBox(height: 24),
                                 ..._lists.asMap().entries.map(
-                                      (entry) =>
-                                          _buildListCard(entry.value, entry.key),
+                                      (entry) => _buildListCard(
+                                          entry.value, entry.key),
                                     ),
                               ],
                             ),

@@ -21,16 +21,17 @@ class ItemModel {
 
   // Factory method để chuyển đổi từ JSON sang đối tượng UsedItemModel
   factory ItemModel.fromJson(Map<String, dynamic> json) {
-    return ItemModel(
-      id: json['id'],
-      foodId: json['foodId'],
-      foodname: json['foodname'],
-      quantity: json['quantity'],
-      unitId: json['unitId'],
-      unitName: json['unitName'],
-      actionDate:
-          DateTime.fromMillisecondsSinceEpoch(json['actionDate'] * 1000),
-    );
+   return ItemModel(
+    id: (json['id'] as num).toInt(),
+    foodId: (json['foodId'] as num).toInt(),
+    foodname: json['foodname'] ?? '',
+    quantity: (json['quantity'] as num).toInt(),
+    unitId: (json['unitId'] as num).toInt(),
+    unitName: json['unitName'] ?? '',
+    actionDate: DateTime.fromMillisecondsSinceEpoch(
+      (json['actionDate'] as num).toInt() * 1000,
+    ),
+  );
   }
 
   // Phương thức để chuyển đối tượng UsedItemModel thành JSON

@@ -119,7 +119,7 @@ class _ProfilTabState extends State<ProfilTab> {
       await prefs.remove('avatar_path');
       foodProvider.clearItems();
       mealPlanProvider.clearPlans();
-      DataStore().clearAll;
+      DataStore().clearAll();
       print(DataStore().GroupID);
       print('Đã xóa dữ liệu cục bộ');
 
