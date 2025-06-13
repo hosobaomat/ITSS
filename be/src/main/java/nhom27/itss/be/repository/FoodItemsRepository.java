@@ -27,7 +27,7 @@ public interface FoodItemsRepository extends JpaRepository<FoodItem, Integer> {
     @Query("SELECT f FROM FoodItem f WHERE f.expiryDate < CURRENT_DATE AND f.quantity > 0")
     List<FoodItem> findAllExpiredFoodItems();
 
-    @Query("SELECT DISTINCT f.storageLocation FROM FoodItem f")
+    @Query("SELECT DISTINCT f.storageLocation FROM FoodItem f  WHERE f.storageLocation IS NOT NULL")
     List<String> findDistinctStorageLocations();
 
 

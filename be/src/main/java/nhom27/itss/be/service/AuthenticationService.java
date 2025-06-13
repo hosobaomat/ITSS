@@ -18,6 +18,7 @@ import nhom27.itss.be.entity.User;
 import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -102,5 +103,10 @@ public class AuthenticationService {
             log.error("Cannot create token", e);
             throw new RuntimeException(e);
         }
+    }
+
+
+    public String getCurrentEmail() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

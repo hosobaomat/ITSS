@@ -11,6 +11,7 @@ import nhom27.itss.be.entity.User;
 import nhom27.itss.be.enums.Role;
 import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.exception.ErrorCode;
+import nhom27.itss.be.mapper.UserMapper;
 import nhom27.itss.be.repository.UsersRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -23,6 +24,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import static nhom27.itss.be.mapper.UserMapper.toUserResponse;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -32,6 +36,7 @@ public class UserService {
 
     UsersRepository userRepository;
     PasswordEncoder passwordEncoder;
+    AuthenticationService authenticationService;
 
     FamilyGroupMembersRepository familyGroupMemberRepository;
 
@@ -48,25 +53,17 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         userRepository.save(user);
-        UserResponse userResponse = new UserResponse();
-        userResponse.setUserid(user.getUserId());
-        userResponse.setEmail(user.getEmail());
-        userResponse.setRole(user.getRole().toString());
-        userResponse.setFullName(user.getFullName());
-        userResponse.setUsername(user.getUsername());
-        userResponse.setCreatedAt(user.getCreatedAt());
 
-
-        return userResponse;
+        return toUserResponse(user);
 
     }
 
-    public List<User> getAllUsers(){
+    public List<UserResponse> getAllUsers(){
 
         //log.info("In method getAllUsers");
 
 
-        return userRepository.findAll();
+        return userRepository.findAll().stream().map(UserMapper::toUserResponse).toList();
     }
 
     public UserResponse getUserById(Integer id){
@@ -75,36 +72,16 @@ public class UserService {
 
         User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USERNOTFOUND_EXCEPTION) );
 
-
-
-         UserResponse userResponse = new UserResponse();
-
-        return  UserResponse.builder()
-                .userid(user.getUserId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .createdAt(user.getCreatedAt())
-                .role(String.valueOf(user.getRole()))
-                .build()
-                ;
+        return  toUserResponse(user);
     }
 
     public UserResponse getMyInfo() {
-        var context = SecurityContextHolder.getContext();
-        String email = context.getAuthentication().getName();
+        String email = authenticationService.getCurrentEmail();
 
         User user = userRepository.findByEmail(email);
 
 
-        UserResponse userResponse = new UserResponse();
-        userResponse.setUserid(user.getUserId());
-        userResponse.setUsername(user.getUsername());
-        userResponse.setEmail(user.getEmail());
-        userResponse.setRole(user.getRole().toString());
-        userResponse.setFullName(user.getFullName());
-        userResponse.setCreatedAt(user.getCreatedAt());
-        return userResponse;
+        return toUserResponse(user);
 
     }
 
@@ -129,41 +106,16 @@ public class UserService {
         userRepository.save(user);
 
 
-        return UserResponse.builder()
-                .username(user.getUsername())
-                .userid(user.getUserId())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .createdAt(user.getCreatedAt())
-                .role(String.valueOf(user.getRole()))
-                .updatedAt(new Timestamp(System.currentTimeMillis()))
-                .build()
-                ;
+        return toUserResponse(user);
     }
 
     public void deleteUser(Integer userId) {
         userRepository.deleteById(userId);
     }
 
-    public List<UserResponse> getUsers() {
-        List<User> users = userRepository.findAll(); // Lấy toàn bộ user từ DB
 
-        List<UserResponse> responses = new ArrayList<>();
-        for (User user : users) {
-            UserResponse response = new UserResponse();
-            response.setUsername(user.getUsername());
-            response.setUserid(user.getUserId());
-            response.setEmail(user.getEmail());
-            response.setFullName(user.getFullName());
-            response.setRole(String.valueOf(user.getRole()));
-            response.setCreatedAt(user.getCreatedAt());
-            response.setUpdatedAt(user.getUpdatedAt());
-            responses.add(response);
-        }
 
-        return responses;
 
-    }
 }
 
 

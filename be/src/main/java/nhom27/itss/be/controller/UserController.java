@@ -8,9 +8,7 @@ import nhom27.itss.be.dto.request.UpdateUserRequest;
 import nhom27.itss.be.dto.request.UserCreationRequest;
 import nhom27.itss.be.dto.response.ApiResponse;
 import nhom27.itss.be.dto.response.UserResponse;
-import nhom27.itss.be.entity.User;
 import nhom27.itss.be.service.UserService;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,14 +31,9 @@ public class UserController {
     }
 
     @GetMapping
-    ApiResponse<List<UserResponse>> getUsers(){
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        log.info("Username: {}", authentication.getName());
-        authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
-
+    ApiResponse<List<UserResponse>> getAllUsers(){
         return ApiResponse.<List<UserResponse>>builder()
-                .result(userService.getUsers())
+                .result(userService.getAllUsers())
                 .code(200).build();
     }
 

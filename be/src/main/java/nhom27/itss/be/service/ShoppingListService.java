@@ -14,6 +14,9 @@ import nhom27.itss.be.enums.ShoppingListItemStatus;
 import nhom27.itss.be.enums.ShoppingListStatus;
 import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.exception.ErrorCode;
+import nhom27.itss.be.mapper.FoodCatalogMapper;
+import nhom27.itss.be.mapper.FoodItemMapper;
+import nhom27.itss.be.mapper.ShoppingListMapper;
 import nhom27.itss.be.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,10 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static nhom27.itss.be.mapper.ShoppingListMapper.toShoppingListItemResponse;
+import static nhom27.itss.be.mapper.ShoppingListMapper.toShoppingListResponse;
+import static nhom27.itss.be.mapper.FoodCatalogMapper.toFoodCatalogResponse;
 
 @Slf4j
 @Service
@@ -65,7 +72,7 @@ public class ShoppingListService {
 
         shoppingListsRepository.save(shoppingList);
 
-        return ShoppinglistToResponse(shoppingList);
+        return toShoppingListResponse(shoppingList);
     }
 
     //ERROR Cant delete old item
@@ -100,7 +107,7 @@ public class ShoppingListService {
         }
         shoppingListsRepository.save(shoppingList);
 
-        return ShoppinglistToResponse(shoppingList);
+        return toShoppingListResponse(shoppingList);
     }
 
     public void deleteShoppingList(Integer id) {
@@ -133,7 +140,7 @@ public class ShoppingListService {
                 .addedBy(shoppingList.getCreatedBy().getUsername())
                 .groupId(shoppingList.getGroup().getGroupId())
                 .groupName(shoppingList.getGroup().getGroupName())
-                .foodItemResponses(ItemToFrigde.stream().map(this::ToFoodItemResponse).collect(Collectors.toSet()))
+                .foodItemResponses(ItemToFrigde.stream().map(FoodItemMapper::toFoodItemResponse).collect(Collectors.toSet()))
                 .build();
 
     }
@@ -141,13 +148,13 @@ public class ShoppingListService {
     public ShoppingListResponse getShoppingList(Integer id) {
         ShoppingList shoppingList = shoppingListsRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.SHOPPINGLIST_NOT_EXISTS));
 
-        return ShoppinglistToResponse(shoppingList);
+        return toShoppingListResponse(shoppingList);
     }
 
     public List<ShoppingListResponse> getAllShoppingLists() {
             List<ShoppingList> shoppingLists = shoppingListsRepository.findAll();
 
-            return shoppingLists.stream().map(this::ShoppinglistToResponse).toList();
+            return shoppingLists.stream().map(ShoppingListMapper::toShoppingListResponse).toList();
         }
 
     public List<ShoppingListResponse> getShoppingListByUserId(Integer userId) {
@@ -156,7 +163,7 @@ public class ShoppingListService {
 
         return lists.stream()
                 .filter(list -> list.getStatus() == ShoppingListStatus.DRAFT || list.getStatus() == ShoppingListStatus.PENDING)
-                .map(this::ShoppinglistToResponse) // giả sử bạn có hàm convertToResponse
+                .map(ShoppingListMapper::toShoppingListResponse) // giả sử bạn có hàm convertToResponse
                 .collect(Collectors.toList());
 
     }
@@ -166,7 +173,7 @@ public class ShoppingListService {
 
         List<ShoppingList> lists = shoppingListsRepository.findBygroup(group);
 
-        return lists.stream().map(this::ShoppinglistToResponse).toList();
+        return lists.stream().map(ShoppingListMapper::toShoppingListResponse).toList();
 
     }
 
@@ -189,7 +196,7 @@ public class ShoppingListService {
 
         shoppingListsRepository.save(shoppingList);
 
-        return ShoppinglistToResponse(shoppingList);
+        return toShoppingListResponse(shoppingList);
     }
 
     public List<FoodCategoryResponse> getFoodFilterByCategory() {
@@ -202,7 +209,7 @@ public class ShoppingListService {
                         .CategoryDescription(item.getDescription())
                         .CategoryName(item.getCategoryName())
                         .foodCatalogResponses(item.getFoodcatalogs().stream().map(
-                                this::ToFoodCatalogResponse
+                                FoodCatalogMapper::toFoodCatalogResponse
                         ).collect(Collectors.toSet()))
                         .unitResponses(item.getUnits().stream().map(
                                 unit -> UnitResponse.builder()
@@ -224,7 +231,7 @@ public class ShoppingListService {
         shoppingListItemsRepository.save(item);
 
 
-        return ToItemResponse(item);
+        return toShoppingListItemResponse(item);
 
 
     }
@@ -235,60 +242,15 @@ public class ShoppingListService {
         ShoppingList list = shoppingListsRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.SHOPPINGLIST_NOT_EXISTS));
         List<ShoppingListItem> items = shoppingListItemsRepository.findByShoppingList(list).stream().filter(item -> item.getStatus().equals(ShoppingListItemStatus.PURCHASED)).toList();
 
-        return items.stream().map(this::ToItemResponse).toList();
+        return items.stream().map(ShoppingListMapper::toShoppingListItemResponse).toList();
     }
 
 
 
 
-    //Ham Mapping
-    private ShoppingListResponse ShoppinglistToResponse(ShoppingList shoppingList) {
-        ShoppingListResponse shoppingListResponse = new ShoppingListResponse();
-        shoppingListResponse.setId(shoppingList.getListId());
-        shoppingListResponse.setListName(shoppingList.getListName());
-        shoppingListResponse.setStartDate(shoppingList.getStartDate());
-        shoppingListResponse.setEndDate(shoppingList.getEndDate());
-        shoppingListResponse.setStatus(String.valueOf(shoppingList.getStatus()));
-        shoppingListResponse.setCreatedBy(shoppingList.getCreatedBy().getUsername());
-        shoppingListResponse.setCreatedAt(shoppingList.getCreatedAt());
-        shoppingListResponse.setGroupName(shoppingList.getGroup().getGroupName());
-        shoppingListResponse.setItems(shoppingList.getShoppinglistitems().stream().map(this::ToItemResponse).collect(Collectors.toSet()));
 
-        return shoppingListResponse;
-    }
 
-    public ShoppingListItemResponse ToItemResponse(ShoppingListItem item) {
-        ShoppingListItemResponse shoppingListItemResponse = new ShoppingListItemResponse();
-        shoppingListItemResponse.setId(item.getListItemId());
-        shoppingListItemResponse.setName(item.getFoodName());
-        shoppingListItemResponse.setQuantity(item.getQuantity());
-        shoppingListItemResponse.setStatus(item.getStatus().toString());
-        shoppingListItemResponse.setUnitName(item.getUnit().getUnitName());
 
-        return shoppingListItemResponse;
-    }
-
-    public FoodItemResponse ToFoodItemResponse(FoodItem item){
-        FoodItemResponse foodItemResponse = new FoodItemResponse();
-        foodItemResponse.setId(item.getFoodId());
-        foodItemResponse.setFoodname(item.getFoodName());
-        foodItemResponse.setQuantity(item.getQuantity());
-        foodItemResponse.setUnitName(item.getUnit().getUnitName());
-        foodItemResponse.setExpiryDate(item.getExpiryDate());
-        foodItemResponse.setAddedAt(item.getAddedAt());
-        foodItemResponse.setStorageLocation(item.getStorageLocation());
-        foodItemResponse.setStorageSuggestion(item.getFoodCatalog().getFoodCategory().getDescription());
-        return foodItemResponse;
-
-    }
-
-    public FoodCatalogResponse ToFoodCatalogResponse(FoodCatalog foodCatalog){
-        FoodCatalogResponse foodCatalogResponse = new FoodCatalogResponse();
-        foodCatalogResponse.setFoodCatalogId(foodCatalog.getFoodCatalogId());
-        foodCatalogResponse.setFoodCatalogDescription(foodCatalog.getDescription());
-        foodCatalogResponse.setFoodCatalogName(foodCatalog.getFoodName());
-        return foodCatalogResponse;
-    }
 
 }
 

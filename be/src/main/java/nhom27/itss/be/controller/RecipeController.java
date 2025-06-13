@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import nhom27.itss.be.dto.request.*;
 import nhom27.itss.be.dto.response.*;
 import nhom27.itss.be.service.RecipeService;
+import nhom27.itss.be.service.RecommendRecipeService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.List;
 @RequestMapping("/Recipe")
 public class RecipeController {
     RecipeService recipeService;
+    RecommendRecipeService recommendRecipeService;
 
     @PostMapping("")
     ApiResponse<RecipeResponse> createRecipe(@RequestBody /*@Valid */ RecipeCreationRequest request) {
@@ -70,7 +72,7 @@ public class RecipeController {
     @GetMapping("/suggestRecipe/{groupId}")
     public ApiResponse<List<RecipeResponse>> getSuggestedMealPlan(@PathVariable Integer groupId) {
         ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
-        response.setResult(recipeService.recommendRecipes(groupId));
+        response.setResult(recommendRecipeService.recommendRecipes(groupId));
         response.setCode(200);
         return response;
     }

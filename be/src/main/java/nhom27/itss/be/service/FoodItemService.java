@@ -14,6 +14,7 @@ import nhom27.itss.be.enums.ShoppingListItemStatus;
 import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.exception.ErrorCode;
 import nhom27.itss.be.exception.ResourceNotFoundException;
+import nhom27.itss.be.mapper.FoodItemMapper;
 import nhom27.itss.be.repository.*;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -30,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static nhom27.itss.be.mapper.FoodItemMapper.toFoodItemResponse;
 
 
 @Slf4j
@@ -49,19 +52,7 @@ public class FoodItemService {
     private final NotificationsRepository notificationsRepository;
 
 
-    private FoodItemResponse mapToFoodItemResponse(FoodItem foodItem) {
-        return FoodItemResponse.builder()
-                .id(foodItem.getFoodId())
-                .foodname(foodItem.getFoodName())
-                .quantity(foodItem.getQuantity())
-                .unitName(foodItem.getUnit().getUnitName())
-                .expiryDate(foodItem.getExpiryDate())
-                .storageLocation(foodItem.getStorageLocation())
-                .storageSuggestion(foodItem.getFoodCatalog().getDescription())
-                .addedAt(foodItem.getAddedAt())
-                .updatedAt(foodItem.getUpdatedAt())
-                .build();
-    }
+
 
     @Transactional
     public AddFoodItemToFrigdeResponse addFoodItem(AddFoodItemRequest request) {
@@ -83,7 +74,7 @@ public class FoodItemService {
         foodItemRepository.saveAll(ItemToFrigde);
 
         return AddFoodItemToFrigdeResponse.builder()
-                .foodItemResponses(ItemToFrigde.stream().map(this::mapToFoodItemResponse).collect(Collectors.toSet()))
+                .foodItemResponses(ItemToFrigde.stream().map(FoodItemMapper::toFoodItemResponse).collect(Collectors.toSet()))
                 .addedBy(user.getUsername())
                 .groupId(currentGroup.getGroupId())
                 .groupName(currentGroup.getGroupName())
@@ -136,7 +127,7 @@ public class FoodItemService {
 
            foodItemRepository.save(item);
 
-           return mapToFoodItemResponse(item);
+           return toFoodItemResponse(item);
 
     }
 
@@ -150,7 +141,7 @@ public class FoodItemService {
         List<FoodItem> items =foodItemRepository.findValidFoodItemsByGroupId(groupId);
 
         return items.stream()
-                .map(this::mapToFoodItemResponse)
+                .map(FoodItemMapper::toFoodItemResponse)
                 .collect(Collectors.toList());
 
     }

@@ -8,6 +8,7 @@ import nhom27.itss.be.dto.response.NotificationResponse;
 import nhom27.itss.be.entity.*;
 import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.exception.ErrorCode;
+import nhom27.itss.be.mapper.NotificationMapper;
 import nhom27.itss.be.repository.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
+import static nhom27.itss.be.mapper.NotificationMapper.toNotificationsResponse;
 
 
 @Slf4j
@@ -42,7 +45,7 @@ public class NotificationService {
         List<Notification> notificationList = optionalList.orElse(new ArrayList<>());
 
         return notificationList.stream().map(
-                this::MaptoNotificationsResponse
+                NotificationMapper::toNotificationsResponse
         ).toList();
     }
 
@@ -56,19 +59,9 @@ public class NotificationService {
             notificationsRepository.save(notification);
         }
 
-        return  MaptoNotificationsResponse(notification);
+        return  toNotificationsResponse(notification);
     }
-    private NotificationResponse MaptoNotificationsResponse(Notification notification) {
-         NotificationResponse notificationResponse = new NotificationResponse();
-         notificationResponse.setNotificationId(notification.getNotificationId());
-         notificationResponse.setUserId(notification.getUser().getUserId());
-         notificationResponse.setMessage(notification.getMessage());
-         notificationResponse.setCreatedAt(notification.getCreatedAt());
-         notificationResponse.setIsRead(notification.getRead());
-         notificationResponse.setNotificationType(notification.getNotificationType());
-         notificationResponse.setFoodId(notification.getFood().getFoodId());
-         return notificationResponse;
-    }
+
 
 
 }

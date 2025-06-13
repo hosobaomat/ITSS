@@ -1,16 +1,15 @@
 package nhom27.itss.be.service;
 
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import nhom27.itss.be.dto.request.CreateMealPlanRequest;
-import nhom27.itss.be.dto.response.MealDetailResponse;
 import nhom27.itss.be.dto.response.MealPlanResponse;
 import nhom27.itss.be.entity.*;
 import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.exception.ErrorCode;
+import nhom27.itss.be.mapper.MealPlanMapper;
 import nhom27.itss.be.repository.*;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +17,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static nhom27.itss.be.mapper.MealPlanMapper.toMealPlanResponse;
 
 
 @Slf4j
@@ -35,7 +35,7 @@ public class MealPlanService {
     FoodItemsRepository foodItemsRepository;
     FoodCatalogRepository foodCatalogRepository;
     UnitsRepository unitsRepository;
-    private final FoodHistoryRepository foodHistoryRepository;
+    FoodHistoryRepository foodHistoryRepository;
 
     public MealPlanResponse createMealPlan(CreateMealPlanRequest request) {
 
@@ -73,19 +73,19 @@ public class MealPlanService {
 
         plan.setMealplandetails(detailEntities);
         mealPlansRepository.save(plan);
-        return mapPlanToResponse(plan);
+        return toMealPlanResponse(plan);
     }
 
     public MealPlanResponse getMealPlanById(Integer id) {
         MealPlan plan = mealPlansRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.MEALPLAN_NOT_FOUND));
-        return mapPlanToResponse(plan);
+        return toMealPlanResponse(plan);
     }
     public List<MealPlanResponse> getMealPlansByGroupId(Integer groupId) {
         FamilyGroup group  = familyGroupsRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.FAMILYGROUP_NOT_EXISTED));
         List<MealPlan> plans = mealPlansRepository.findByGroup(group);
         return plans.stream()
-                .map(this::mapPlanToResponse)
+                .map(MealPlanMapper::toMealPlanResponse)
                 .toList();
     }
 
@@ -93,7 +93,7 @@ public class MealPlanService {
         User user = usersRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         List<MealPlan> plans = mealPlansRepository.findByCreatedBy(user);
         return plans.stream()
-                .map(this::mapPlanToResponse)
+                .map(MealPlanMapper::toMealPlanResponse)
                 .toList();
     }
 
@@ -138,35 +138,9 @@ public class MealPlanService {
             }
         }
         // 5. Trả về kết quả (tuỳ bạn cần gì trong response)
-        return mapPlanToResponse(mealPlansRepository.save(plan));
+        return toMealPlanResponse(mealPlansRepository.save(plan));
     }
 
-
-
-
-    public MealPlanResponse mapPlanToResponse(MealPlan plan) {
-        return MealPlanResponse.builder()
-                .planId(plan.getPlanId())
-                .groupId(plan.getGroup().getGroupId())
-                .planName(plan.getPlanName())
-                .startDate(plan.getStartDate())
-                .endDate(plan.getEndDate())
-                .createdAt(plan.getCreatedAt())
-                .createdBy(plan.getCreatedBy().getUserId())
-                .details(plan.getMealplandetails().stream().map(this::mapMealDetailToResponse).collect(Collectors.toList()))
-                .status(plan.getStatus())
-                .build();
-    }
-
-    public MealDetailResponse mapMealDetailToResponse(MealPlanDetail detail) {
-        MealDetailResponse detailResponse = new MealDetailResponse();
-        detailResponse.setPlanDetailId(detail.getPlanDetailId());
-        detailResponse.setMealDate(detail.getMealDate());
-        detailResponse.setRecipeName(detail.getRecipe().getRecipeName());
-        detailResponse.setMealType(detail.getMealType());
-        detailResponse.setRecipeId(detail.getRecipe().getRecipeId());
-        return  detailResponse;
-    }
 
     private Optional<FoodItem> findSuitableFoodItem(List<FoodItem> foodItems, RecipeIngredient ingredient) {
         return foodItems.stream()

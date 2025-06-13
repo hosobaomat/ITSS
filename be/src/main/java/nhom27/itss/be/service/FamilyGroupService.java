@@ -1,6 +1,7 @@
 package nhom27.itss.be.service;
 
 import lombok.AccessLevel;
+import lombok.Generated;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -14,15 +15,20 @@ import nhom27.itss.be.entity.User;
 import nhom27.itss.be.entity.embeddedID.FamilyGroupMemberId;
 import nhom27.itss.be.exception.AppException;
 import nhom27.itss.be.exception.ErrorCode;
+import nhom27.itss.be.mapper.FamilyGroupMapper;
 import nhom27.itss.be.repository.FamilyGroupMembersRepository;
 import nhom27.itss.be.repository.FamilyGroupsRepository;
 import nhom27.itss.be.repository.UsersRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static nhom27.itss.be.mapper.FamilyGroupMapper.toFamilyGroupResponse;
+import static nhom27.itss.be.mapper.UserMapper.toUserResponse;
 
 @Slf4j
 @Service
@@ -48,11 +54,6 @@ public class FamilyGroupService {
         group.setCreatedBy(user);
         group.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         group.setInviteCode(UUID.randomUUID().toString().replace("-", "").substring(0, 5).toUpperCase());
-
-
-
-
-
         familyGroupsRepository.save(group);
 
 
@@ -70,22 +71,13 @@ public class FamilyGroupService {
         // Lưu thành viên vào bảng trung gian
         familyGroupMembersRepository.save(member);
 
-
-
-
-        return FamilyGroupResponse.builder()
-                .id(group.getGroupId())
-                .createdBy(user.getEmail())
-                .groupName(group.getGroupName())
-                .createdAt(group.getCreatedAt())
-                .inviteCode(group.getInviteCode())
-                .build();
+        return toFamilyGroupResponse(group);
     }
 
     public List<FamilyGroupResponse> getAllFamilyGroup(){
 
         List<FamilyGroup> familyGroupsLists = familyGroupsRepository.findAll();
-        return familyGroupsLists.stream().map(this::toFamilyGroupResponse).collect(Collectors.toList());
+        return familyGroupsLists.stream().map(FamilyGroupMapper::toFamilyGroupResponse).collect(Collectors.toList());
 
     }
 
@@ -108,7 +100,7 @@ public class FamilyGroupService {
     }
 
     public String getInvitedCodeByGroupId(Integer groupId){
-        return familyGroupsRepository.findById(groupId).get().getInviteCode();
+        return familyGroupsRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)).getInviteCode();
     }
 
 
@@ -162,19 +154,9 @@ public class FamilyGroupService {
         group.setMembers(members);
         familyGroupsRepository.save(group);
 
-        return FamilyGroupResponse.builder()
-                .id(group.getGroupId())
-                .groupName(group.getGroupName())
-                .createdBy(group.getCreatedBy().getUsername())
-                .createdAt(group.getCreatedAt())
-                .members(
-                        group.getMembers().stream()
-                                .map(member -> UserToUserResponse(member.getUser()))
-                                .collect(Collectors.toSet())
-                )
-                .build();
+        return toFamilyGroupResponse(group);
     }
-
+    @Transactional
     public FamilyGroupResponse joinGroupByCode(String code){
         try {
             FamilyGroup group = familyGroupsRepository.findByInviteCode(code);
@@ -257,47 +239,14 @@ public class FamilyGroupService {
         group.setMembers(updatedMembers);
         familyGroupsRepository.save(group);
 
-        return FamilyGroupResponse.builder()
-                .id(group.getGroupId())
-                .groupName(group.getGroupName())
-                .createdBy(group.getCreatedBy().getUsername())
-                .members(
-                        updatedMembers.stream()
-                                .map(member -> UserToUserResponse(member.getUser()))
-                                .collect(Collectors.toSet())
-                )
-                .build();
+        return toFamilyGroupResponse(group);
     }
 
     public void deleteFamilyGroup(Integer groupId) {
         familyGroupsRepository.deleteById(groupId);
    }
 
-    public UserResponse UserToUserResponse(User user) {
-        UserResponse userResponse = new UserResponse();
-        userResponse.setUserid(user.getUserId());
-        userResponse.setUsername(user.getUsername());
-        userResponse.setEmail(user.getEmail());
-        userResponse.setFullName(user.getFullName());
-        userResponse.setRole(user.getRole().toString());
-        userResponse.setCreatedAt(user.getCreatedAt());
-        userResponse.setUpdatedAt(user.getUpdatedAt());
-        return userResponse;
 
-    }
-
-    public FamilyGroupResponse toFamilyGroupResponse(FamilyGroup familyGroup) {
-        FamilyGroupResponse familyGroupResponse = new FamilyGroupResponse();
-        familyGroupResponse.setId(familyGroup.getGroupId());
-        familyGroupResponse.setGroupName(familyGroup.getGroupName());
-        familyGroupResponse.setCreatedBy(familyGroup.getCreatedBy().getUsername());
-        familyGroupResponse.setCreatedAt(familyGroup.getCreatedAt());
-        familyGroupResponse.setInviteCode(familyGroupResponse.getInviteCode());
-        familyGroupResponse.setMembers(familyGroup.getMembers().stream()
-                .map(member -> UserToUserResponse(member.getUser()))
-                .collect(Collectors.toSet()));
-        return familyGroupResponse;
-    }
 
     private FamilyGroup getFamilyGroup(Integer groupId) {
         return familyGroupsRepository.findById(groupId).orElseThrow(() -> new AppException(ErrorCode.FAMILYGROUP_NOT_EXISTED) );
