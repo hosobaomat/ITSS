@@ -8,6 +8,7 @@ import nhom27.itss.be.dto.response.ApiResponse;
 import nhom27.itss.be.dto.response.MealDetailResponse;
 import nhom27.itss.be.dto.response.MealPlanResponse;
 import nhom27.itss.be.entity.MealPlan;
+import nhom27.itss.be.mapper.MealPlanMapper;
 import nhom27.itss.be.repository.MealPlansRepository;
 import nhom27.itss.be.service.MealPlanService;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class MealPlanController {
         List<MealPlan> result = mealPlanRepository.findAll();
 
         return ApiResponse.<List<MealPlanResponse>>builder()
-                .result(result.stream().map(mealPlanService::mapPlanToResponse).toList())
+                .result(result.stream().map(MealPlanMapper::toMealPlanResponse).toList())
                 .code(200)
                 .build();
     }
