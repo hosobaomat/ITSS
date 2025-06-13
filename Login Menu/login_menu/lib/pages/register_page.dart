@@ -24,71 +24,82 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController fullNameController = TextEditingController();
   final AuthService authService = AuthService();
+  String? errorUsername;
+String? errorEmail;
+String? errorFullName;
+String? errorPassword;
+String? errorConfirmPassword;
+
   // role mặc định
   String selectedRole = 'user';
 
-  // Gọi API đăng ký
   Future<void> signUpUser() async {
-    final username = usernameController.text.trim();
-    final password = passwordController.text.trim();
-    final confirmPassword = confirmPasswordController.text.trim();
-    final email = emailController.text.trim();
-    final fullName = fullNameController.text.trim();
-    String? token;
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password không khớp')),
-      );
-      return;
-    }
+  setState(() {
+    errorUsername = usernameController.text.trim().isEmpty ? 'Vui lòng nhập username' : null;
+    errorEmail = emailController.text.trim().isEmpty ? 'Vui lòng nhập email' : null;
+    errorFullName = fullNameController.text.trim().isEmpty ? 'Vui lòng nhập họ tên' : null;
+    errorPassword = passwordController.text.trim().isEmpty ? 'Vui lòng nhập mật khẩu' : null;
+    errorConfirmPassword = confirmPasswordController.text.trim().isEmpty ? 'Vui lòng xác nhận mật khẩu' : null;
 
-    final user = User(
-      username: username,
-      password: password,
-      email: email,
-      fullName: fullName,
-      role: selectedRole,
+    if (passwordController.text != confirmPasswordController.text) {
+      errorConfirmPassword = 'Mật khẩu xác nhận không khớp';
+    }
+  });
+
+  if (errorUsername != null ||
+      errorEmail != null ||
+      errorFullName != null ||
+      errorPassword != null ||
+      errorConfirmPassword != null) {
+    return; // Dừng nếu có lỗi
+  }
+
+  // Dưới đây giữ nguyên logic cũ
+  final user = User(
+    username: usernameController.text.trim(),
+    password: passwordController.text.trim(),
+    email: emailController.text.trim(),
+    fullName: fullNameController.text.trim(),
+    role: selectedRole,
+  );
+
+  try {
+    final response = await http.post(
+      Uri.parse('${DataStore().url}/users'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(user.toJson()),
     );
 
-    try {
-      final response = await http.post(
-        Uri.parse('${DataStore().url}/users'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(user.toJson()),
-      );
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final decodedBody = jsonDecode(response.body);
-        DataStore().userCreateID = decodedBody['result']['userid'];
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Đăng ký thành công')),
-        );
-        bool success = await authService.login(
-          email,
-          password,
-        );
-        if (success) {
-          token = authService.token;
-          print(token);
-        }
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => JoinGroupPage(
-                    token: token ?? '',
-                  )),
-        ); // quay lại màn hình login (nếu có)
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Đăng ký thất bại: ${response.body}')),
-        );
-      }
-    } catch (e) {
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final decodedBody = jsonDecode(response.body);
+      DataStore().userCreateID = decodedBody['result']['userid'];
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi kết nối: $e')),
+        SnackBar(content: Text('Đăng ký thành công')),
+      );
+      bool success = await authService.login(
+        emailController.text.trim(),
+        passwordController.text.trim(),
+      );
+      String? token;
+      if (success) {
+        token = authService.token;
+      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => JoinGroupPage(token: token ?? '')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đăng ký thất bại: ${response.body}')),
       );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Lỗi kết nối: $e')),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -111,17 +122,17 @@ class _RegisterPageState extends State<RegisterPage> {
                 const Icon(Icons.lock, size: 100),
                 const SizedBox(height: 20),
 
-                _buildTextField("Username", usernameController),
+                _buildTextField("Username", usernameController, errorText: errorUsername),
                 const SizedBox(height: 10),
-                _buildTextField("Email", emailController),
+                _buildTextField("Email", emailController, errorText: errorEmail),
                 const SizedBox(height: 10),
-                _buildTextField("Full Name", fullNameController),
+                _buildTextField("Full Name", fullNameController, errorText: errorFullName),
                 const SizedBox(height: 10),
                 _buildTextField("Password", passwordController,
-                    isPassword: true),
+                    isPassword: true, errorText: errorPassword),
                 const SizedBox(height: 10),
                 _buildTextField("Confirm Password", confirmPasswordController,
-                    isPassword: true),
+                    isPassword: true, errorText: errorConfirmPassword),
                 const SizedBox(height: 10),
 
                 // Role dropdown
@@ -158,7 +169,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   // Hàm tạo ô nhập liệu
   Widget _buildTextField(String label, TextEditingController controller,
-      {bool isPassword = false}) {
+      {bool isPassword = false, String? errorText}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 50),
       child: TextField(
@@ -166,6 +177,7 @@ class _RegisterPageState extends State<RegisterPage> {
         obscureText: isPassword,
         decoration: InputDecoration(
           labelText: label,
+          errorText: errorText,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),
             borderSide: const BorderSide(color: Colors.grey),

@@ -343,10 +343,11 @@ class _MealPlanScreenGetState extends State<MealPlanScreenGet> {
                                 const Icon(Icons.delete, color: Colors.white),
                           ),
                           onDismissed: (direction) {
+                            final removedPlan = mealPlan; // Lưu lại để dùng an toàn
                             setState(() {
-                              mealplan.removeAt(index);
-                              _deleteMealPlan(mealPlan.planId);
+                              mealplan.removeWhere((m) => m.planId == removedPlan.planId);
                             });
+                            _deleteMealPlan(removedPlan.planId);
                           },
                           child: _buildMealPlanCard(
                               mealPlan), // Sử dụng lại hàm hiện có

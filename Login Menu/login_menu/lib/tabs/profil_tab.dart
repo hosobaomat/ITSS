@@ -119,6 +119,8 @@ class _ProfilTabState extends State<ProfilTab> {
       await prefs.remove('avatar_path');
       foodProvider.clearItems();
       mealPlanProvider.clearPlans();
+      DataStore().clearAll;
+      print(DataStore().GroupID);
       print('Đã xóa dữ liệu cục bộ');
 
       // Điều hướng về màn hình đăng nhập
@@ -207,7 +209,7 @@ class _ProfilTabState extends State<ProfilTab> {
                               groupName: familyGroup1?.groupName ?? '',
                               createdBy: familyGroup1?.createdBy ?? '',
                               createdAt:
-                                  familyGroup1?.createdAt ?? DateTime.now(),
+                                  familyGroup1?.createdAt ?? DateTime.now(), currentUser: DataStore().username,
                             )));
               },
             ),

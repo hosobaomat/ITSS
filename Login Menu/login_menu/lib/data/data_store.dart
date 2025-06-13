@@ -48,6 +48,11 @@ class DataStore {
     recipesresponse = [];
     mealPlanResponse = [];
     recipesSuggest = [];
+    GroupID = 0;
+    UserID = 0;
+    userCreateID = 0;
+    groupcreatID = 0;
+    tokenSignup = '';
   }
 
   //

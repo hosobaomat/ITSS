@@ -13,6 +13,7 @@ import 'package:login_menu/models/foodCategoryResponse.dart';
 import 'package:login_menu/models/foodItemsResponse.dart';
 import 'package:login_menu/models/fooditem.dart';
 import 'package:login_menu/models/getGroupMember.dart';
+import 'package:login_menu/models/getInviteCode.dart';
 import 'package:login_menu/models/getMealPlan.dart';
 import 'package:login_menu/models/getmissingIngredient.dart';
 import 'package:login_menu/models/notification.dart';
@@ -731,7 +732,7 @@ class AuthService {
     );
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body)['result'] as Map<String, dynamic>;
+      final data = jsonDecode(utf8.decode(response.bodyBytes))['result'] as Map<String, dynamic>;
 
       // Ánh xạ từ Map<String, dynamic> sang List<ConsumptionTrend>
       return data.entries.map((entry) {
@@ -878,5 +879,53 @@ class AuthService {
         'Body: ${response.body}',
       );
     }
+  }
+
+  Future<void> deleteGroup(int GroupId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token'); // Lấy token từ SharedPreferences
+
+    if (token == null || token.isEmpty) {
+      throw Exception('Token không tồn tại. Vui lòng đăng nhập lại.');
+    }
+
+    final response = await http.delete(
+      Uri.parse('$apiUrl/family_group/$GroupId'), // API DELETE với GroupId
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token', // Thêm token vào header
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Không thể xóa danh sách. Lỗi: ${response.body}');
+    }
+
+    print('Nhom voi groupId $GroupId đã được xóa khỏi MySQL');
+  }
+
+  Future<Getinvitecode?> fetchGroupCode(int groupId) async {
+    final url = Uri.parse("$apiUrl/family_group/code/$groupId");
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': 'Bearer $token', // Thêm token vào header
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return Getinvitecode.fromJson(jsonData);
+      } else {
+        print('Lỗi khi gọi API: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi kết nối: $e');
+    }
+
+    return null;
   }
 }

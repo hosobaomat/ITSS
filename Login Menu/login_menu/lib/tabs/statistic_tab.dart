@@ -78,193 +78,199 @@ class _StatisticTabState extends State<StatisticTab> {
 
   // Bảng "Sản phẩm đã mua"
   Widget _buildUsedItemsTable() {
-    return Column(
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: Text(
-            'Sản phẩm đã sử dụng', // Tiêu đề cho bảng "Sản phẩm đã mua"
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Text(
+              'Sản phẩm đã sử dụng', // Tiêu đề cho bảng "Sản phẩm đã mua"
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
             ),
           ),
-        ),
-        FutureBuilder<List<ItemModel>>(
-          future: AuthService().getUsedItems(DataStore().GroupID),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('Không có dữ liệu'));
-            } else {
-              final usedItems = snapshot.data!;
-              return Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: DataTable(
-                    columnSpacing: 12,
-                    headingRowColor:
-                        MaterialStateProperty.all(Colors.blue.shade50),
-                    headingTextStyle: const TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.blue),
-                    columns: const [
-                      DataColumn(label: Text('Tên thực phẩm')),
-                      DataColumn(label: Text('SL')),
-                      DataColumn(label: Text('Ngày')),
-                      DataColumn(label: Text('Giờ')),
-                    ],
-                    rows: usedItems.map((item) {
-                      return DataRow(
-                        cells: [
-                          DataCell(Text(item.foodname)),
-                          DataCell(Text('${item.quantity}')),
-                          DataCell(Text(
-                              '${item.actionDate.day.toString().padLeft(2, '0')}/${item.actionDate.month.toString().padLeft(2, '0')}/${item.actionDate.year}')),
-                          DataCell(Text(
-                              '${item.actionDate.hour.toString().padLeft(2, '0')}:${item.actionDate.minute.toString().padLeft(2, '0')}')),
-                        ],
-                      );
-                    }).toList(),
+          FutureBuilder<List<ItemModel>>(
+            future: AuthService().getUsedItems(DataStore().GroupID),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('Không có dữ liệu'));
+              } else {
+                final usedItems = snapshot.data!;
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: DataTable(
+                      columnSpacing: 12,
+                      headingRowColor:
+                          MaterialStateProperty.all(Colors.blue.shade50),
+                      headingTextStyle: const TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.blue),
+                      columns: const [
+                        DataColumn(label: Text('Tên thực phẩm')),
+                        DataColumn(label: Text('SL')),
+                        DataColumn(label: Text('Ngày')),
+                        DataColumn(label: Text('Giờ')),
+                      ],
+                      rows: usedItems.map((item) {
+                        return DataRow(
+                          cells: [
+                            DataCell(Text(item.foodname)),
+                            DataCell(Text('${item.quantity}')),
+                            DataCell(Text(
+                                '${item.actionDate.day.toString().padLeft(2, '0')}/${item.actionDate.month.toString().padLeft(2, '0')}/${item.actionDate.year}')),
+                            DataCell(Text(
+                                '${item.actionDate.hour.toString().padLeft(2, '0')}:${item.actionDate.minute.toString().padLeft(2, '0')}')),
+                          ],
+                        );
+                      }).toList(),
+                    ),
                   ),
-                ),
-              );
-            }
-          },
-        ),
-      ],
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 
   // Bảng "Sản phẩm đã lãng phí"
   Widget _buildWastedItemsTable() {
-    return Column(
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: Text(
-            'Sản phẩm đã lãng phí', // Tiêu đề cho bảng "Sản phẩm đã lãng phí"
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.deepPurple,
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Text(
+              'Sản phẩm đã lãng phí', // Tiêu đề cho bảng "Sản phẩm đã lãng phí"
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
             ),
           ),
-        ),
-        FutureBuilder<List<ItemModel>>(
-          future: AuthService().getWastedItems(DataStore().GroupID),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('Không có dữ liệu'));
-            } else {
-              final wastedItems = snapshot.data!;
-              return Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: DataTable(
-                    columnSpacing: 12,
-                    headingRowColor:
-                        MaterialStateProperty.all(Colors.deepPurple.shade50),
-                    headingTextStyle: const TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.deepPurple),
-                    columns: const [
-                      DataColumn(label: Text('Thực phẩm')),
-                      DataColumn(label: Text('SL')),
-                      DataColumn(label: Text('Ngày')),
-                      DataColumn(label: Text('Giờ')),
-                    ],
-                    rows: wastedItems.map((item) {
-                      return DataRow(
-                        cells: [
-                          DataCell(Text(item.foodname)),
-                          DataCell(Text('${item.quantity}')),
-                          DataCell(Text(
-                              '${item.actionDate.day.toString().padLeft(2, '0')}/${item.actionDate.month.toString().padLeft(2, '0')}/${item.actionDate.year}')),
-                          DataCell(Text(
-                              '${item.actionDate.hour.toString().padLeft(2, '0')}:${item.actionDate.minute.toString().padLeft(2, '0')}')),
-                        ],
-                      );
-                    }).toList(),
+          FutureBuilder<List<ItemModel>>(
+            future: AuthService().getWastedItems(DataStore().GroupID),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('Không có dữ liệu'));
+              } else {
+                final wastedItems = snapshot.data!;
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: DataTable(
+                      columnSpacing: 12,
+                      headingRowColor:
+                          MaterialStateProperty.all(Colors.deepPurple.shade50),
+                      headingTextStyle: const TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                      columns: const [
+                        DataColumn(label: Text('Thực phẩm')),
+                        DataColumn(label: Text('SL')),
+                        DataColumn(label: Text('Ngày')),
+                        DataColumn(label: Text('Giờ')),
+                      ],
+                      rows: wastedItems.map((item) {
+                        return DataRow(
+                          cells: [
+                            DataCell(Text(item.foodname)),
+                            DataCell(Text('${item.quantity}')),
+                            DataCell(Text(
+                                '${item.actionDate.day.toString().padLeft(2, '0')}/${item.actionDate.month.toString().padLeft(2, '0')}/${item.actionDate.year}')),
+                            DataCell(Text(
+                                '${item.actionDate.hour.toString().padLeft(2, '0')}:${item.actionDate.minute.toString().padLeft(2, '0')}')),
+                          ],
+                        );
+                      }).toList(),
+                    ),
                   ),
-                ),
-              );
-            }
-          },
-        ),
-      ],
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 
   // Bảng "Xu hướng tiêu thụ của gia đình"
   Widget _buildConsumptionTrendTable() {
-    return Column(
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: Text(
-            'Xu hướng tiêu thụ của gia đình', // Tiêu đề cho bảng "Xu hướng tiêu thụ của gia đình"
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.green,
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Text(
+              'Xu hướng tiêu thụ của gia đình', // Tiêu đề cho bảng "Xu hướng tiêu thụ của gia đình"
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
             ),
           ),
-        ),
-        FutureBuilder<List<ConsumptionTrend>>(
-          future: AuthService().getConsumptionTrend(DataStore().GroupID),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('Không có dữ liệu'));
-            } else {
-              final consumptionData = snapshot.data!;
-              return Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: DataTable(
-                    columnSpacing: 12,
-                    headingRowColor:
-                        MaterialStateProperty.all(Colors.green.shade50),
-                    headingTextStyle: const TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.green),
-                    columns: const [
-                      DataColumn(label: Text('Tên thực phẩm')),
-                      DataColumn(label: Text('Tỷ lệ tiêu thụ')),
-                    ],
-                    rows: consumptionData.map((item) {
-                      return DataRow(
-                        cells: [
-                          DataCell(Text(item.categoryName)),
-                          DataCell(Text('${item.consumptionPercentage}')),
-                        ],
-                      );
-                    }).toList(),
+          FutureBuilder<List<ConsumptionTrend>>(
+            future: AuthService().getConsumptionTrend(DataStore().GroupID),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('Không có dữ liệu'));
+              } else {
+                final consumptionData = snapshot.data!;
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: DataTable(
+                      columnSpacing: 12,
+                      headingRowColor:
+                          MaterialStateProperty.all(Colors.green.shade50),
+                      headingTextStyle: const TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.green),
+                      columns: const [
+                        DataColumn(label: Text('Tên thực phẩm')),
+                        DataColumn(label: Text('Tỷ lệ tiêu thụ')),
+                      ],
+                      rows: consumptionData.map((item) {
+                        return DataRow(
+                          cells: [
+                            DataCell(Text(item.categoryName)),
+                            DataCell(Text('${item.consumptionPercentage}')),
+                          ],
+                        );
+                      }).toList(),
+                    ),
                   ),
-                ),
-              );
-            }
-          },
-        ),
-      ],
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }
