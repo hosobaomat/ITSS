@@ -31,6 +31,9 @@ public interface FoodItemsRepository extends JpaRepository<FoodItem, Integer> {
     List<String> findDistinctStorageLocations();
 
 
+    @Query("SELECT f FROM FoodItem f WHERE f.expiryDate <= :date AND f.is_deleted = 0")
+    List<FoodItem> findFoodItemsExpiringBefore(@Param("date") Date date);
+
 
 
 }

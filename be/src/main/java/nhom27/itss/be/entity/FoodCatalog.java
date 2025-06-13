@@ -31,13 +31,13 @@ public class FoodCatalog {
     @Column(name = "description")
     String description;
 
-    @OneToMany(mappedBy = "foodCatalog")
+    @OneToMany(mappedBy = "foodCatalog",cascade = CascadeType.ALL)
     private Set<FoodItem> fooditems = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "foodCatalog")
+    @OneToMany(mappedBy = "foodCatalog",cascade = CascadeType.ALL)
     private Set<RecipeIngredient> recipeingredients = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "food")
+    @OneToMany(mappedBy = "food",cascade = CascadeType.ALL)
     private Set<ShoppingListItem> shoppinglistitems = new LinkedHashSet<>();
 
 

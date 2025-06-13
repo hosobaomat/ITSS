@@ -47,25 +47,25 @@ public class User {
     @Column(name = "updated_at")
     Timestamp updatedAt;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     List<FamilyGroupMember> familyGroupMembers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "createdBy")
+    @OneToMany(mappedBy = "createdBy",cascade = CascadeType.ALL)
     private Set<FamilyGroup> familygroups = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "createdBy")
+    @OneToMany(mappedBy = "createdBy",cascade = CascadeType.ALL)
     private Set<MealPlan> mealplans = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private Set<Notification> notifications = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "createdBy")
+    @OneToMany(mappedBy = "createdBy",cascade = CascadeType.ALL)
     private Set<Recipe> recipes = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "purchasedBy")
+    @OneToMany(mappedBy = "purchasedBy",cascade = CascadeType.ALL)
     private Set<ShoppingListItem> shoppinglistitems = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "createdBy")
+    @OneToMany(mappedBy = "createdBy",cascade = CascadeType.ALL)
     private Set<ShoppingList> shoppinglists = new LinkedHashSet<>();
 
 }

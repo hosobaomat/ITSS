@@ -42,11 +42,9 @@ public class Recipe {
     Timestamp createdAt;
 
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
-
 
 
     @OneToMany(mappedBy = "recipe",cascade = CascadeType.ALL,fetch = FetchType.EAGER)

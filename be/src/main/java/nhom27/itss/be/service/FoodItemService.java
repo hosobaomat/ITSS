@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -198,6 +199,45 @@ public class FoodItemService {
             }
         }
     }
+
+
+
+//    @Scheduled(cron = "0 0 0 * * *") // chạy lúc 8h sáng mỗi ngày
+//    @Transactional
+//    public void checkUpcomingExpiringFoodItems() {
+//        LocalDate now = LocalDate.now();
+//        LocalDate threeDaysLater = now.plusDays(3);
+//
+//        List<FoodItem> soonToExpireItems = foodItemRepository.findFoodItemsExpiringBefore(
+//                Date.from(threeDaysLater.atStartOfDay(ZoneId.systemDefault()).toInstant())
+//        );
+//
+//        for (FoodItem item : soonToExpireItems) {
+//            if (item.getIs_deleted() != 0) continue;
+//
+//            FamilyGroup group = item.getGroup();
+//
+//            for (FamilyGroupMember member : group.getMembers()) {
+//                if (!notificationsRepository.existsByFoodAndNotificationTypeAndUser(
+//                        item, String.valueOf(NotificationType.UPCOMING_EXPIRY), member.getUser())) {
+//
+//                    Notification notification = Notification.builder()
+//                            .user(member.getUser())
+//                            .food(item)
+//                            .message(String.format("Thực phẩm %s sẽ hết hạn vào %s. Vui lòng sử dụng sớm!",
+//                                    item.getFoodCatalog().getFoodName(),
+//                                    item.getExpirationDate().toString()))
+//                            .notificationType(String.valueOf(NotificationType.UPCOMING_EXPIRY))
+//                            .createdAt(new Timestamp(System.currentTimeMillis()))
+//                            .read(false)
+//                            .build();
+//
+//                    notificationsRepository.save(notification);
+//                }
+//            }
+//        }
+//    }
+
 
 
 

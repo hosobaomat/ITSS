@@ -36,15 +36,13 @@ public class FamilyGroup {
     @OneToMany(mappedBy = "group",cascade = CascadeType.ALL )
     Set<FamilyGroupMember> members = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "group")
+    @OneToMany(mappedBy = "group",cascade = CascadeType.ALL)
     Set<FoodItem> foodItems = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "group")
+    @OneToMany(mappedBy = "group",cascade = CascadeType.ALL)
     Set<MealPlan> mealplans = new LinkedHashSet<>();
 
-
-
-    @OneToMany(mappedBy = "group")
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
     Set<ShoppingList> shoppinglists = new LinkedHashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
