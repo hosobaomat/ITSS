@@ -89,11 +89,11 @@ public class FoodHistoryService {
                             .build();
                     notificationsRepository.save(notification);
                 }
-                item.setIs_deleted(1);
-                foodItemRepository.save(item);
+
             }
 
-
+                item.setIs_deleted(1);
+                foodItemRepository.save(item);
 
             }
         }
@@ -101,7 +101,7 @@ public class FoodHistoryService {
 
     }
 
-    @Scheduled(cron = "0 */5 * * * *") // chạy lúc 8h sáng mỗi ngày
+    @Scheduled(cron = "0 * * * * *") // chạy lúc 8h sáng mỗi ngày
     @Transactional
     public void checkUpcomingExpiringFoodItems() {
         LocalDate now = LocalDate.now();
@@ -112,13 +112,13 @@ public class FoodHistoryService {
         );
 
         for (FoodItem item : soonToExpireItems) {
-            if (item.getIs_deleted() != 0) continue;
+            if (item.getIs_deleted() != 0 && item.getIs_deleted() != 2 ) continue;
 
             FamilyGroup group = item.getGroup();
 
             for (FamilyGroupMember member : group.getMembers()) {
                 if (!notificationsRepository.existsByFoodAndNotificationTypeAndUser(
-                        item, "UPEXPIRY_FOOD", member.getUser())) {
+                        item, String.valueOf(NotificationType.UPEXPIRED), member.getUser())) {
 
                     Notification notification = Notification.builder()
                             .user(member.getUser())
@@ -126,7 +126,7 @@ public class FoodHistoryService {
                             .message(String.format("Thực phẩm %s sẽ hết hạn vào %s. Vui lòng sử dụng sớm!",
                                     item.getFoodCatalog().getFoodName(),
                                     item.getExpiryDate().toString()))
-                            .notificationType("UPEXPIRY_FOOD")
+                            .notificationType(String.valueOf(NotificationType.UPEXPIRED))
                             .createdAt(new Timestamp(System.currentTimeMillis()))
                             .read(false)
                             .build();
@@ -134,6 +134,9 @@ public class FoodHistoryService {
                     notificationsRepository.save(notification);
                 }
             }
+
+            item.setIs_deleted(2);
+            foodItemRepository.save(item);
         }
     }
 
