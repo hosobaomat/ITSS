@@ -21,8 +21,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,7 +51,7 @@ public class FoodHistoryService {
     NotificationsRepository notificationsRepository;
 
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 */5 * * * *")
     @Transactional
     public void checkExpiringFoodItems() {
 
@@ -94,8 +97,45 @@ public class FoodHistoryService {
 
             }
         }
+
+
     }
 
+    @Scheduled(cron = "0 */5 * * * *") // chạy lúc 8h sáng mỗi ngày
+    @Transactional
+    public void checkUpcomingExpiringFoodItems() {
+        LocalDate now = LocalDate.now();
+        LocalDate threeDaysLater = now.plusDays(3);
+
+        List<FoodItem> soonToExpireItems = foodItemRepository.findFoodItemsExpiringBefore(
+                Date.from(threeDaysLater.atStartOfDay(ZoneId.systemDefault()).toInstant())
+        );
+
+        for (FoodItem item : soonToExpireItems) {
+            if (item.getIs_deleted() != 0) continue;
+
+            FamilyGroup group = item.getGroup();
+
+            for (FamilyGroupMember member : group.getMembers()) {
+                if (!notificationsRepository.existsByFoodAndNotificationTypeAndUser(
+                        item, "UPEXPIRY_FOOD", member.getUser())) {
+
+                    Notification notification = Notification.builder()
+                            .user(member.getUser())
+                            .food(item)
+                            .message(String.format("Thực phẩm %s sẽ hết hạn vào %s. Vui lòng sử dụng sớm!",
+                                    item.getFoodCatalog().getFoodName(),
+                                    item.getExpiryDate().toString()))
+                            .notificationType("UPEXPIRY_FOOD")
+                            .createdAt(new Timestamp(System.currentTimeMillis()))
+                            .read(false)
+                            .build();
+
+                    notificationsRepository.save(notification);
+                }
+            }
+        }
+    }
 
 
 
