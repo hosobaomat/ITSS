@@ -1,0 +1,58 @@
+name: Deploy to EC2 via SSH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code (for Actions context, not deployed)
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ${{ secrets.SERVER_USERNAME}}
+          key: ${{ secrets.SERVER_PRIVATE_KEY }}
+          script: |
+            PROJECT_DIR=/home/ubuntu/itss_be
+            REPO_URL=https://github.com/abobeothui812/ITSS_PROJECT_BE.git  # đổi URL repo thật
+            
+            if [ ! -d "$PROJECT_DIR/.git" ]; then
+              echo "⚠️  Project folder is missing or not a git repo. Re-cloning..."
+              rm -rf $PROJECT_DIR  # Xóa thư mục cũ nếu không đúng
+              git clone $REPO_URL $PROJECT_DIR
+            fi
+            
+            cd $PROJECT_DIR || { echo "❌ Cannot access project directory!"; exit 1; }
+            
+            echo "===> Updating code..."
+            if [ -d ".git" ]; then
+              git reset --hard
+              git pull origin main
+            else
+              echo "❌ Not a git repository."
+              exit 1
+            fi
+            
+            if [ -f be/Dockerfile ]; then
+              docker rmi itss_be:latest
+              docker build -t itss_be:latest ./be
+            else
+              echo "❌ Dockerfile not found in be/"
+              exit 1
+            fi
+
+           
+
+            echo "===> Restarting Docker container..."
+            docker stop itss_be || true
+            docker rm itss_be || true
+            docker run -d --name itss_be --network itss_be -p 8080:8080 -e DBMS_CONNECTION="jdbc:mysql://mysql:3306/DichoTienloi?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true" -e DBMS_PASSWORD=${{secrets.DB_PASSWORD}} -e DBMS_USERNAME=${{secrets.DB_USERNAME}}  itss_be:latest
+
+            echo "✅ Deployment completed!"
