@@ -1,7 +1,7 @@
 class FoodCatalogResponse {
-  int? foodCatalogId;
-  String? foodCatalogName;
-  String? foodCatalogDescription;
+  int foodCatalogId;
+  String foodCatalogName;
+  String foodCatalogDescription;
 
   FoodCatalogResponse(
     this.foodCatalogId,

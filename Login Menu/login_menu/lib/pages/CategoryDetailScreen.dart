@@ -95,7 +95,6 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
 
           setState(() {
             units = unitSet.toList();
-            
           });
         } else {
           throw Exception('Dữ liệu result không phải là danh sách');
@@ -136,8 +135,8 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                 onChanged: (val) {
                   setState(() {
                     if (val == true) {
-                      final newItem =
-                          SelectedItem(name: item, quantity: 1, unit: '');
+                      final newItem = SelectedItem(
+                          id: 0, name: item, quantity: 1, unit: '');
                       _selectedItems[item] = newItem;
                       quantityControllers[item] =
                           TextEditingController(text: '1');

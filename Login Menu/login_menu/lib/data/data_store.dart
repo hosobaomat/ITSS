@@ -1,5 +1,6 @@
 import 'package:login_menu/models/foodCatalogResponse.dart';
 import 'package:login_menu/models/foodCategoryResponse.dart';
+import 'package:login_menu/models/getGroupMember.dart';
 import 'package:login_menu/models/getMealPlan.dart';
 import 'package:login_menu/models/recipesResponse.dart';
 import 'package:login_menu/models/unitResponse.dart';
@@ -26,13 +27,19 @@ class DataStore {
   List<FoodCategoryResponse> categories = [];
   List<FoodCatalogResponse> foodCatalogs = [];
   List<UnitResponse> units = [];
+  late int? userId; // ID của người dùng hiện tại
   List<Recipesresponse> recipesresponse = [];
+  List<Recipesresponse> recipesSuggest = [];
   late AuthService authService;
-  late int GroupID=0;
-  late int UserID=0;
+  late int GroupID = 0;
+  late int UserID = 0;
   List<MealPlanResponse> mealPlanResponse = [];
   late String username = '';
-  late String email= '';
+  late String email = '';
+  late String url = 'http://192.168.1.19:8082/ITSS_BE';
+  late int userCreateID = 0;
+  late int groupcreatID = 0;
+  late String tokenSignup = '';
   // Hàm clear nếu cần reset
   void clearAll() {
     categories = [];
@@ -40,6 +47,12 @@ class DataStore {
     units = [];
     recipesresponse = [];
     mealPlanResponse = [];
+    recipesSuggest = [];
+    GroupID = 0;
+    UserID = 0;
+    userCreateID = 0;
+    groupcreatID = 0;
+    tokenSignup = '';
   }
 
   //

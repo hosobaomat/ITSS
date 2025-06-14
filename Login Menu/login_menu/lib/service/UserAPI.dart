@@ -4,7 +4,7 @@ import 'package:login_menu/service/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Userapi {
-  static const String apiUrl = AuthService.apiUrl;// Đổi IP backend của bạn
+  static const String apiUrl = AuthService.apiUrl;
   String? _token;
   String? get token => _token;
 

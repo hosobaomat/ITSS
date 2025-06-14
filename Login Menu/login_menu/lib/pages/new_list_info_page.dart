@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:login_menu/pages/new_list_items_page.dart';
 import 'package:login_menu/service/auth_service.dart';
 import 'package:login_menu/service/UserAPI.dart' as UserAPI;
@@ -67,11 +68,6 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
     }
   }
 
-  DateTime _combineDateOnly(DateTime date) {
-    final now = DateTime.now();
-    return DateTime(date.year, date.month, date.day);
-  }
-
   void _navigateToItemsPage() async {
     if (_listNameController.text.isEmpty || _selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -92,16 +88,17 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
       _isLoading = true;
     });
 
-    final request = ShoppingListCreateRequest(
-      _listNameController.text,
-      _userId!,
-      2,
-      _combineDateOnly(_selectedDate!),
-      _combineDateOnly(_selectedDate!.add(const Duration(days: 1))),
-      'DRAFT',
-    );
-
     try {
+      final _groupId = await widget.authService.getGroupIdByUserId(_userId!);
+      final request = ShoppingListCreateRequest(
+        _listNameController.text,
+        _userId!,
+        _groupId,
+        _selectedDate!.add(const Duration(days: 1)),
+        _selectedDate!.add(const Duration(days: 1)), // Default end date
+        'DRAFT',
+      );
+
       final listResponse = await widget.authService.addShoppingList(request);
       final listId = listResponse['result']?['id'] as int?;
 
@@ -199,7 +196,11 @@ class _NewListInfoPageState extends State<NewListInfoPage> {
             SizedBox(
               width: double.infinity,
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Center(
+                      child: LoadingAnimationWidget.discreteCircle(
+                      color: Colors.pink,
+                      size: 50,
+                    ))
                   : OutlinedButton(
                       onPressed: _navigateToItemsPage,
                       child: const Padding(

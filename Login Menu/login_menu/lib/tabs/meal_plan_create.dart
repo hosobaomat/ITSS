@@ -20,6 +20,7 @@ class MealPlanScreen extends StatefulWidget {
 
 class _MealPlanScreenState extends State<MealPlanScreen> {
   late TextEditingController _planNameController;
+  bool _isLoading = true;
   final createmealplan = Createmealplan(
     createdBy: DataStore().UserID,
     planName: '',

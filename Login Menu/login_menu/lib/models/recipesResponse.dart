@@ -1,3 +1,5 @@
+import 'package:login_menu/models/igredient.dart';
+
 class Recipesresponse {
   final int id;
   final String recipeName;
@@ -6,7 +8,7 @@ class Recipesresponse {
   final int cookTime;
   final String description;
   final String createdBy;
-
+  final List<Ingredient> ingredients;
   Recipesresponse({
     required this.id,
     required this.recipeName,
@@ -15,6 +17,7 @@ class Recipesresponse {
     required this.cookTime,
     required this.description,
     required this.createdBy,
+    required this.ingredients,
   });
 
   factory Recipesresponse.fromJson(Map<String, dynamic> json) {
@@ -26,6 +29,9 @@ class Recipesresponse {
       cookTime: json['cookTime'],
       description: json['description'],
       createdBy: json['createdBy'],
+      ingredients: (json['ingredients'] as List<dynamic>)
+          .map((e) => Ingredient.fromJson(e))
+          .toList(),
     );
   }
 
@@ -38,6 +44,7 @@ class Recipesresponse {
       'cookTime': cookTime,
       'description': description,
       'createdBy': createdBy,
+      'ingredients': ingredients.map((e) => e.toJson()).toList(),
     };
   }
 }

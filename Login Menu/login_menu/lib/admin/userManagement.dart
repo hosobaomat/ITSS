@@ -15,7 +15,7 @@ class UserManagementScreen extends StatefulWidget {
 class _UserManagementScreenState extends State<UserManagementScreen> {
   List<dynamic> users = [];
   String searchQuery = ''; // Lưu từ khóa tìm kiếm
-  static const String apiUrl = "http://10.134.158.47:8082/ITSS_BE";
+  static const String apiUrl = "http://192.168.0.102:8082/ITSS_BE";
 
   @override
   void initState() {

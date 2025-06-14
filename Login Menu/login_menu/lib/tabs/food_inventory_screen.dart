@@ -1,205 +1,229 @@
 import 'package:flutter/material.dart';
-import 'package:login_menu/models/fooditem.dart';
-import 'package:provider/provider.dart';
+import 'package:login_menu/data/data_store.dart';
+import 'package:login_menu/models/foodItemsResponse.dart';
+import 'package:login_menu/pages/addFoodItems_page.dart';
+import 'package:login_menu/service/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class FoodInventoryScreen extends StatefulWidget {
-  const FoodInventoryScreen({super.key, required this.inventoryItems});
-  final List<FoodItem> inventoryItems;
+  const FoodInventoryScreen({
+    super.key,
+    required this.authService,
+    required this.items,
+  });
+  final AuthService authService;
+  final List<FoodItemResponse> items;
 
   @override
-  _FoodInventoryScreenState createState() => _FoodInventoryScreenState();
+  State<FoodInventoryScreen> createState() => _FoodInventoryScreenState();
 }
 
 class _FoodInventoryScreenState extends State<FoodInventoryScreen> {
-  List<FoodItem> filteredItems = [];
-  List<FoodItem> expiringItems = []; // Lưu trữ món sắp hết hạn
-  bool _isDialogShowing = false;
-  FoodInventoryProvider? _provider; // Lưu trữ tham chiếu đến provider
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Lưu tham chiếu đến FoodInventoryProvider
-    _provider = Provider.of<FoodInventoryProvider>(context, listen: false);
-  }
-
-  void _showExpiringItemsDialogIfNeeded() {
-    if (!mounted) return;
-    if (expiringItems.isNotEmpty && !_isDialogShowing) {
-      _isDialogShowing = true;
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('⚠️ Cảnh báo thực phẩm sắp hết hạn'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: expiringItems.length,
-              itemBuilder: (context, index) {
-                final item = expiringItems[index];
-                return ListTile(
-                  leading: Icon(item.icon),
-                  title: Text(item.name),
-                  subtitle: Text(
-                      'HSD: ${item.expiry!.day}/${item.expiry!.month}/${item.expiry!.year}'),
-                );
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _isDialogShowing = false;
-                print('[ShowExpiringItemsDialogIfNeeded] Người dùng đóng dialog');
-                Navigator.pop(context);
-              },
-              child: const Text('Đóng'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      print('[ShowExpiringItemsDialogIfNeeded] Không có món hết hạn hoặc dialog đang hiển thị');
-    }
-  }
-
   final TextEditingController searchController = TextEditingController();
+  List<foodCategory> categories = [];
+  List<FoodItemResponse> filteredItems = [];
+  bool isLoading = true;
+  String? errorMessage;
 
   @override
   void initState() {
     super.initState();
-    final merged = mergeItems(widget.inventoryItems,
-        Provider.of<FoodInventoryProvider>(context, listen: false).items);
-    final provider = Provider.of<FoodInventoryProvider>(context, listen: false);
-    for (var item in merged) {
-      if (!provider.items.any((e) => e.name == item.name)) {
-        provider.addItem(item);
-      }
+    _loadData();
+    searchController.addListener(_filterItems);
+  }
+
+  Future<int> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) throw Exception('Token không tồn tại');
+    final decodedToken = JwtDecoder.decode(token);
+    final userId =
+        decodedToken['userId']; // Hoặc 'id' nếu backend dùng key khác
+    if (userId == null) throw Exception('Không tìm thấy userId trong token');
+    return userId;
+  }
+
+  Future<void> _loadData() async {
+    try {
+      setState(() {
+        isLoading = true;
+        errorMessage = null;
+      });
+
+      final userId = await widget.authService.getUserId();
+      final groupId = await widget.authService.getGroupIdByUserId(userId);
+      final fetchedCategories =
+          await widget.authService.fetchFoodItemsByGroup(groupId);
+
+      setState(() {
+        categories = fetchedCategories;
+        filteredItems =
+            categories.expand((cat) => cat.foodItemResponses).toList();
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Lỗi tải dữ liệu: $e';
+        isLoading = false;
+      });
+      debugPrint('Lỗi load data: $e');
     }
-    filteredItems = List.from(provider.items);
-    provider.addListener(_onProviderChanged);
-    // Lần đầu cập nhật expiringItems và hiện dialog sau khi frame build xong
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _updateExpiringItems();
-      _showExpiringItemsDialogIfNeeded();
+  }
+
+  void _filterItems() {
+    final query = searchController.text.trim().toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        filteredItems =
+            categories.expand((cat) => cat.foodItemResponses).toList();
+      } else {
+        filteredItems = categories
+            .expand((cat) => cat.foodItemResponses)
+            .where((item) =>
+                item.foodname != null &&
+                item.foodname.toLowerCase().contains(query))
+            .toList();
+      }
     });
   }
 
   @override
   void dispose() {
-    // Sử dụng _provider thay vì Provider.of(context)
-    _provider?.removeListener(_onProviderChanged);
+    searchController.removeListener(_filterItems);
     searchController.dispose();
     super.dispose();
   }
 
-  void _onProviderChanged() {
-    // Khi provider thay đổi, chỉ update expiringItems, không hiện dialog
-    _updateExpiringItems();
-  }
-
-  Future<void> _updateExpiringItems() async {
-    final now = DateTime.now();
-    final threeDaysLater = now.add(const Duration(days: 3));
-
-    final provider = Provider.of<FoodInventoryProvider>(context, listen: false);
-    final newExpiring = provider.items.where((item) {
-      final expiry = item.expiry;
-      return expiry != null &&
-          expiry.isAfter(now) &&
-          expiry.isBefore(threeDaysLater);
-    }).toList();
-
-    setState(() {
-      expiringItems = newExpiring;
-    });
-    print('[UpdateExpiringItems] Có ${expiringItems.length} món sắp hết hạn:');
-  }
-
-  void updateSearch(String query) {
-    final inventory =
-        Provider.of<FoodInventoryProvider>(context, listen: false).items;
-    setState(() {
-      filteredItems = inventory.where((item) {
-        return item.name.toLowerCase().contains(query.toLowerCase());
-      }).toList();
-    });
-  }
-
-  List<FoodItem> mergeItems(List<FoodItem> base, List<FoodItem> updated) {
-    final Map<String, FoodItem> itemMap = {
-      for (var item in base) item.name: item,
-    };
-
-    for (var item in updated) {
-      itemMap[item.name] = item; // Ghi đè nếu đã có
+  Map<String, List<FoodItemResponse>> _groupItemsByCategory() {
+    final groupedItems = <String, List<FoodItemResponse>>{};
+    for (var cat in categories) {
+      final categoryName = cat.categoryName ?? 'Uncategorized';
+      groupedItems[categoryName] = cat.foodItemResponses
+          .where((item) => filteredItems.contains(item))
+          .toList();
     }
-
-    return itemMap.values.toList();
+    // Loại bỏ các danh mục rỗng
+    groupedItems.removeWhere((key, value) => value.isEmpty);
+    return groupedItems;
   }
 
   @override
   Widget build(BuildContext context) {
+    final query = searchController.text.trim();
+    final groupedItems = _groupItemsByCategory();
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12.0),
-            child: Text(
-              'Food Inventory',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: TextField(
+      appBar: AppBar(title: const Text('Food Inventory'), actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          tooltip: 'Tải lại dữ liệu',
+          onPressed: () {
+            _loadData(); // Gọi lại hàm load
+          },
+        ),
+      ]),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
               controller: searchController,
-              onChanged: updateSearch,
               decoration: InputDecoration(
-                hintText: 'Search items',
+                hintText: 'Tìm kiếm thực phẩm...',
                 prefixIcon: const Icon(Icons.search),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 filled: true,
                 fillColor: Colors.grey[200],
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: Selector<FoodInventoryProvider, List<FoodItem>>(
-              selector: (_, provider) => provider.items,
-              builder: (context, inventory, _) {
-                final query = searchController.text.trim().toLowerCase();
-                final results = query.isEmpty
-                    ? inventory
-                    : inventory
-                        .where(
-                            (item) => item.name.toLowerCase().contains(query))
-                        .toList();
+            const SizedBox(height: 12),
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : errorMessage != null
+                      ? Center(child: Text(errorMessage!))
+                      : filteredItems.isEmpty
+                          ? const Center(child: Text('Không có thực phẩm nào.'))
+                          : query.isEmpty
+                              ? ListView.builder(
+                                  itemCount: groupedItems.keys.length,
+                                  itemBuilder: (context, index) {
+                                    final categoryName =
+                                        groupedItems.keys.elementAt(index);
+                                    final itemsInCategory =
+                                        groupedItems[categoryName]!;
 
-                return results.isEmpty
-                    ? const Center(child: Text('No items found.'))
-                    : ListView.builder(
-                        itemCount: results.length,
-                        itemBuilder: (context, index) {
-                          final item = results[index];
-                          return ListTile(
-                            title: Text(item.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            trailing: Text('${item.quantity}/${item.location}'),
-                            subtitle: Text(
-                                '${item.expiry!.day}/${item.expiry!.month}/${item.expiry!.year}'),
-                          );
-                        },
-                      );
-              },
+                                    return ExpansionTile(
+                                      title: Text(
+                                        categoryName,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      children: itemsInCategory.map((item) {
+                                        return ListTile(
+                                          title: Text(item.foodname),
+                                          subtitle: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                  'Số lượng: ${item.quantity} ${item.unitName}'),
+                                              Text(
+                                                  'Nơi lưu trữ: ${item.storageLocation}'),
+                                              Text(
+                                                'Ngày hết hạn: ${item.expiryDate.day}/${item.expiryDate.month}/${item.expiryDate.year}',
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                    );
+                                  },
+                                )
+                              : ListView.builder(
+                                  itemCount: filteredItems.length,
+                                  itemBuilder: (context, index) {
+                                    final item = filteredItems[index];
+                                    return ListTile(
+                                      title: Text(item.foodname),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                              'Số lượng: ${item.quantity} ${item.unitName}'),
+                                          Text(
+                                              'Nơi lưu trữ: ${item.storageLocation}'),
+                                          Text(
+                                            'Ngày hết hạn: ${item.expiryDate.day}/${item.expiryDate.month}/${item.expiryDate.year}',
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
             ),
-          )
-        ],
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => AddNewFoodItemScreen(
+                    authService: widget.authService,
+                    userId: DataStore().userId,
+                    groupId: DataStore().GroupID)),
+          ).then((_) {
+            // Làm mới dữ liệu sau khi thêm thực phẩm mới
+            _loadData();
+          });
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

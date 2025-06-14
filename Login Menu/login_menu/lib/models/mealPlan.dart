@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:login_menu/models/fooditem.dart';
+import 'package:login_menu/models/recipes.dart';
 import 'package:login_menu/models/recipesResponse.dart'; // Đảm bảo import đúng Recipesresponse
 
 class MealPlan {
@@ -43,6 +45,18 @@ class MealPlanProvider with ChangeNotifier {
     }
   }
 
+  bool checkIngredients(Recipe recipe, List<FoodItem> inventory) {
+    if (recipe.ingredients.isEmpty)
+      return false; // Tránh lỗi nếu không có nguyên liệu
+    for (var ingredient in recipe.ingredients) {
+      final trimmedIngredient = ingredient.trim().toLowerCase();
+      final item = inventory.firstWhere(
+        (item) => item.name.trim().toLowerCase() == trimmedIngredient,
+      );
+      if (item.name.isEmpty || item.quantity <= 0) return false;
+    }
+    return true;
+  }
 
   void removeMealPlanForDate(DateTime date) {
     if (_dailyPlans.containsKey(date)) {

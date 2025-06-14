@@ -5,14 +5,14 @@ class FoodCategoryResponse {
   int? categoryId;
   String? categoryName;
   String? categoryDescription;
-  Set<FoodCatalogResponse>? foodCatalogResponses;
+  Set<FoodCatalogResponse> foodCatalogResponses;
   Set<UnitResponse>? unitResponses;
 
   FoodCategoryResponse(
     this.categoryId,
     this.categoryName,
     this.categoryDescription, {
-    this.foodCatalogResponses,
+    required this.foodCatalogResponses,
     this.unitResponses,
   });
 

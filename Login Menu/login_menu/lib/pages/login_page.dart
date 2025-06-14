@@ -21,8 +21,22 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService authService = AuthService();
+  String? errorUsername;
+  String? errorPassword;
 
   void _login() async {
+    setState(() {
+      errorUsername = _usernameController.text.trim().isEmpty
+          ? 'Vui lòng nhập tên đăng nhập'
+          : null;
+      errorPassword = _passwordController.text.trim().isEmpty
+          ? 'Vui lòng nhập mật khẩu'
+          : null;
+    });
+
+    if (errorUsername != null || errorPassword != null) {
+      return; // Dừng lại nếu có lỗi
+    }
     bool success = await authService.login(
       _usernameController.text,
       _passwordController.text,
@@ -38,9 +52,8 @@ class _LoginPageState extends State<LoginPage> {
       print(token);
 
       if (token != null) {
-        JwtDecoder.decode(token);
-
-        String role = 'user';
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        String role = decodedToken['role'];
 
         if (role == 'admin') {
           Navigator.pushReplacement(
@@ -124,9 +137,14 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _usernameController,
                     decoration: InputDecoration(
                       labelText: "Username",
+                      errorText: errorUsername,
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
                         borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: const BorderSide(color: Colors.blue),
                       ),
                     ),
                   ),
@@ -141,9 +159,14 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _passwordController,
                     decoration: InputDecoration(
                       labelText: "Password",
+                      errorText: errorPassword,
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
                         borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: const BorderSide(color: Colors.blue),
                       ),
                     ),
                   ),
@@ -185,30 +208,30 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 20),
 
                 //another login's
-                const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Divider(thickness: 1, color: Colors.black),
-                      ),
-                      Text('or continue with'),
-                      Expanded(
-                        child: Divider(thickness: 1, color: Colors.black),
-                      ),
-                    ],
-                  ),
-                ),
+                // const Padding(
+                //   padding: EdgeInsets.all(20),
+                //   child: Row(
+                //     children: [
+                //       Expanded(
+                //         child: Divider(thickness: 1, color: Colors.black),
+                //       ),
+                //       Text('or continue with'),
+                //       Expanded(
+                //         child: Divider(thickness: 1, color: Colors.black),
+                //       ),
+                //     ],
+                //   ),
+                // ),
 
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset('lib/images/google.png', height: 50),
-                    ],
-                  ),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.all(20),
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     children: [
+                //       Image.asset('lib/images/google.png', height: 50),
+                //     ],
+                //   ),
+                // ),
 
                 const SizedBox(height: 15),
 
