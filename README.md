@@ -8,6 +8,7 @@ git clone https://github.com/hosobaomat/ITSS.git
 Bước 1: Mở file:
 
 backend/be/src/main/java/nhom27/itss/be/BeApplication.java
+
 Bước 2: Chạy file BeApplication.java bằng IDE như IntelliJ hoặc Eclipse để khởi động server backend.
 
 3. Cài đặt các công nghệ cần thiết
@@ -23,10 +24,8 @@ Java và Maven (nếu chưa có)
 
 4. Chạy trang Admin Web (Django)
 Bước 1: Di chuyển đến thư mục:
-
 frontend/Admin_Web_Django/myproject
 Bước 2: Tạo tài khoản superuser để đăng nhập admin:
-
 python manage.py createsuperuser
 👉 Làm theo hướng dẫn trên terminal để nhập username, email, password.
 
