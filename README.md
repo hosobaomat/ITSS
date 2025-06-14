@@ -12,6 +12,7 @@ backend/be/src/main/java/nhom27/itss/be/BeApplication.java
 Bước 2: Chạy file BeApplication.java bằng IDE như IntelliJ hoặc Eclipse để khởi động server backend.
 
 3. Cài đặt các công nghệ cần thiết
+
 Bạn cần cài đặt:
 
 Python (>=3.9)
@@ -23,16 +24,23 @@ Flutter
 Java và Maven (nếu chưa có)
 
 4. Chạy trang Admin Web (Django)
+
 Bước 1: Di chuyển đến thư mục:
+
 frontend/Admin_Web_Django/myproject
+
 Bước 2: Tạo tài khoản superuser để đăng nhập admin:
+
 python manage.py createsuperuser
+
 👉 Làm theo hướng dẫn trên terminal để nhập username, email, password.
 
 Bước 3: Chạy server Django:
 
 python manage.py runserver
+
 5. Chạy ứng dụng Flutter cho người dùng (Mobile App)
+
 ⚠️ Cấu hình địa chỉ IP nội bộ (IPv4)
 Bước 1: Mở terminal/cmd và gõ:
 
